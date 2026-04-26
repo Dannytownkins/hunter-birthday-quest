@@ -1671,7 +1671,7 @@
     stage3: { notes: [196, 196, 262, 233, 196, 262, 233, 196], type: 'square', step: 220, vol: 0.06 },
     stage4: { notes: [262, 330, 392, 523, 392, 330, 262, 196], type: 'triangle', step: 200, vol: 0.06 },
     stage5: { notes: [98, 98, 116, 98, 87, 98, 116, 130], type: 'sawtooth', step: 240, vol: 0.07 },
-    stage6: { notes: [523, 659, 784, 932, 880, 784, 698, 587, 523, 659, 784, 932, 880, 784, 659, 523], type: 'square', step: 200, vol: 0.07 },
+    stage6: { notes: [932, 1047, 932, 698, 587, 698, 932, 1047, 698, 587, 523, 466, 523, 587, 698, 932], type: 'triangle', step: 180, vol: 0.06 },
     stage7: { notes: [175, 175, 175, 165, 175, 175, 156, 175], type: 'sawtooth', step: 180, vol: 0.07 },
     stage8: { notes: [523, 659, 784, 1047, 784, 659, 523, 1047], type: 'triangle', step: 260, vol: 0.07 },
   };
@@ -2599,12 +2599,8 @@
       if (dodgeRunning) {
         const totalTime = dodgeRound === 2 ? 15 : 12;
         const elapsed = totalTime - dodgeTime;
-        let gap = elapsed < 4 ? 850 : elapsed < 8 ? 500 : 280;
-        if (dodgeRound === 2) gap = Math.max(120, gap * 0.5);
-        // Round 2 late: occasional double-spawn for chaos
-        if (dodgeRound === 2 && elapsed > 8 && Math.random() < 0.35) {
-          setTimeout(() => { if (dodgeRunning) spawnCursed(); }, 100);
-        }
+        let gap = elapsed < 4 ? 850 : elapsed < 8 ? 550 : 380;
+        if (dodgeRound === 2) gap = Math.max(280, gap * 0.75);
         dodgeSpawnTimer = setTimeout(spawnCursed, gap + Math.random() * 180);
       }
     }
