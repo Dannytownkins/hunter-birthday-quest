@@ -1264,12 +1264,32 @@
   function playSwing() { playBeep(880, 0.08, 'triangle', 0.12); }
   function playPunch() { playBeep(120, 0.08, 'sawtooth', 0.2); }
 
+  // Stage entry jingles
+  function playJingle(notes, type = 'square', vol = 0.16) {
+    notes.forEach((n, i) => setTimeout(() => playBeep(n, 0.12, type, vol), i * 90));
+  }
+  const STAGE_JINGLES = {
+    stage1: [392, 523, 659, 784],          // bright intro
+    stage2: [330, 415, 494, 415, 330],     // urban swing
+    stage3: [659, 587, 523, 587, 659],     // MJ-ish vibe
+    stage4: [523, 659, 523, 659, 784],     // bouncy
+    stage5: [196, 233, 196, 174, 196],     // dark boss
+    stage6: [220, 277, 233, 277, 220],     // weird cursed
+    stage7: [311, 311, 277, 311],          // algorithm angry
+    stage8: [523, 659, 784, 1047, 1319],   // fanfare
+  };
+
   function showStage(idx) {
     stages.forEach((id, i) => {
       const el = document.getElementById(id);
       if (el) el.classList.toggle('active', i === idx);
     });
     currentStage = idx;
+    const jingle = STAGE_JINGLES[stages[idx]];
+    if (jingle) {
+      const type = stages[idx] === 'stage5' || stages[idx] === 'stage7' ? 'sawtooth' : 'square';
+      playJingle(jingle, type);
+    }
     if (stages[idx] === 'stage2') initSpideyGame();
     else { spideyGameRunning = false; cleanupSpideyTarget(); }
     if (stages[idx] === 'stage3') initMJRhythm();
@@ -1278,7 +1298,7 @@
     else stopComboLoop();
     if (stages[idx] === 'stage6') { initSixSevenRain(); initDodgeGame(); }
     if (stages[idx] === 'stage7') initAlgoBoss();
-    if (stages[idx] === 'stage8') { burstConfetti(); playWinSound(); }
+    if (stages[idx] === 'stage8') burstConfetti();
   }
   function startGame() { showStage(1); }
   function nextStage() { if (currentStage < stages.length - 1) showStage(currentStage + 1); }
@@ -1483,8 +1503,9 @@
       laneDiv.appendChild(note);
 
       const boardRect = board.getBoundingClientRect();
-      const distance = boardRect.height - 64; // distance to hit line
-      const fallDuration = 1800;
+      const distance = boardRect.height - 64;
+      // sub-level: speed up as you hit more
+      const fallDuration = mjScore < 3 ? 1900 : mjScore < 5 ? 1500 : 1200;
       const startTs = performance.now();
       note.dataset.start = startTs;
       note.dataset.duration = fallDuration;
@@ -1512,8 +1533,9 @@
       }
       requestAnimationFrame(step);
 
-      if (mjGameRunning && mjScore + mjMissed < 12) {
-        mjSpawnTimer = setTimeout(spawnNote, 800 + Math.random() * 200);
+      if (mjGameRunning && mjScore + mjMissed < 14) {
+        const gap = mjScore < 3 ? 850 : mjScore < 5 ? 650 : 500;
+        mjSpawnTimer = setTimeout(spawnNote, gap + Math.random() * 150);
       }
     }
     spawnNote();
@@ -1639,7 +1661,10 @@
         el.remove();
       }, fallDuration);
 
-      if (nuggetGameRunning) setTimeout(spawnNugget, 600 + Math.random() * 400);
+      if (nuggetGameRunning) {
+        const baseGap = nuggetCount < 3 ? 700 : nuggetCount < 6 ? 480 : 350;
+        setTimeout(spawnNugget, baseGap + Math.random() * 200);
+      }
     }
     spawnNugget();
   }
@@ -1727,7 +1752,11 @@
       }
       requestAnimationFrame(step);
 
-      if (dodgeRunning) dodgeSpawnTimer = setTimeout(spawnCursed, 500 + Math.random() * 400);
+      if (dodgeRunning) {
+        const elapsed = 12 - dodgeTime;
+        const gap = elapsed < 4 ? 600 : elapsed < 8 ? 380 : 240;
+        dodgeSpawnTimer = setTimeout(spawnCursed, gap + Math.random() * 200);
+      }
     }
     spawnCursed();
 
@@ -1894,7 +1923,8 @@
       }, fallDuration);
 
       if (algoGameRunning) {
-        algoSpawnTimer = setTimeout(spawnDislike, 700 + Math.random() * 500);
+        const gap = algoHp > 66 ? 850 : algoHp > 33 ? 600 : 400;
+        algoSpawnTimer = setTimeout(spawnDislike, gap + Math.random() * 200);
       }
     }
     spawnDislike();
