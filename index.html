@@ -8,9 +8,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Bungee&family=Bangers&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-  html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Press Start 2P', monospace; color: #fff; }
-  #game { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Press Start 2P', monospace; color: #fff; touch-action: manipulation; overscroll-behavior: none; }
+  #game { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+  /* mobile-friendly tap targets */
+  button { touch-action: manipulation; min-height: 44px; }
 
   /* Stage container */
   .stage {
@@ -1691,7 +1693,14 @@
     if (stages[idx] === 'stage7') initAlgoBoss();
     if (stages[idx] === 'stage8') burstConfetti();
   }
-  function startGame() { showStage(1); }
+  function startGame() {
+    // Unlock audio on first user gesture (mobile Safari requirement)
+    getCtx();
+    MJ_VOICE_AUDIOS.forEach(a => {
+      try { a.muted = true; a.play().then(() => { a.pause(); a.currentTime = 0; a.muted = false; }).catch(()=>{}); } catch(e){}
+    });
+    showStage(1);
+  }
   function nextStage() {
     const next = currentStage + 1;
     if (next >= stages.length) return;
@@ -2480,9 +2489,13 @@
       if (dodgeRunning) {
         const totalTime = dodgeRound === 2 ? 15 : 12;
         const elapsed = totalTime - dodgeTime;
-        let gap = elapsed < 4 ? 850 : elapsed < 8 ? 500 : 300;
-        if (dodgeRound === 2) gap = Math.max(150, gap * 0.55);
-        dodgeSpawnTimer = setTimeout(spawnCursed, gap + Math.random() * 200);
+        let gap = elapsed < 4 ? 850 : elapsed < 8 ? 500 : 280;
+        if (dodgeRound === 2) gap = Math.max(120, gap * 0.5);
+        // Round 2 late: occasional double-spawn for chaos
+        if (dodgeRound === 2 && elapsed > 8 && Math.random() < 0.35) {
+          setTimeout(() => { if (dodgeRunning) spawnCursed(); }, 100);
+        }
+        dodgeSpawnTimer = setTimeout(spawnCursed, gap + Math.random() * 180);
       }
     }
     spawnCursed();
