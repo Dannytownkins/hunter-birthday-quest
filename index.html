@@ -557,75 +557,93 @@
   }
   .dinner-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #000; }
   .dinner-btn.picked { background: #00ff66; }
-  /* 6-7 hand pose */
+  /* 6-7 weighing-hands pose — horizontal arms with palms up, alternating bob */
   .six-seven-hunter {
-    width: 110px;
+    width: 200px;
+    height: 130px;
     margin: 0 auto;
     position: relative;
-    animation: six-seven-bob 0.6s infinite ease-in-out;
   }
-  @keyframes six-seven-bob {
-    0%, 100% { transform: translateY(0) rotate(-3deg); }
-    50% { transform: translateY(-6px) rotate(3deg); }
+  .six-seven-hunter > svg {
+    position: absolute;
+    width: 90px;
+    height: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+    z-index: 2;
   }
   .six-seven-hunter .six-arm,
   .six-seven-hunter .seven-arm {
     position: absolute;
-    width: 22px; height: 50px;
+    width: 60px; height: 16px;
     background: #f4d4a4;
     border: 2px solid #000;
-    top: 35%;
-    transform-origin: top center;
+    top: 50px;
   }
   .six-seven-hunter .six-arm {
-    left: -4px;
-    animation: arm-six 1s infinite;
+    left: 8px;
+    animation: arm-bob-left 0.9s infinite ease-in-out;
   }
   .six-seven-hunter .seven-arm {
-    right: -4px;
-    animation: arm-seven 1s infinite;
+    right: 8px;
+    animation: arm-bob-right 0.9s infinite ease-in-out;
   }
-  .six-seven-hunter .six-arm::after,
+  /* hands at the END of the arms, palm-up cup shape */
+  .six-seven-hunter .six-arm::after {
+    content: '';
+    position: absolute;
+    left: -10px; top: -8px;
+    width: 30px; height: 20px;
+    background: #f4d4a4;
+    border: 2px solid #000;
+    border-radius: 50% 50% 60% 60% / 70% 70% 100% 100%;
+  }
   .six-seven-hunter .seven-arm::after {
     content: '';
     position: absolute;
-    bottom: -16px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 24px; height: 24px;
+    right: -10px; top: -8px;
+    width: 30px; height: 20px;
     background: #f4d4a4;
     border: 2px solid #000;
-    border-radius: 50%;
+    border-radius: 50% 50% 60% 60% / 70% 70% 100% 100%;
   }
+  /* "6" / "7" labels above each hand, alternating intensity */
   .six-seven-hunter .six-arm::before {
-    content: '6'; position: absolute;
-    bottom: -38px; left: 50%; transform: translateX(-50%);
-    color: #ff00ff; font-family: 'Bangers', cursive; font-size: 1.6rem;
+    content: '6';
+    position: absolute;
+    top: -42px; left: -14px;
+    color: #ff00ff;
+    font-family: 'Bangers', cursive;
+    font-size: 2rem;
     text-shadow: 2px 2px 0 #000;
-    animation: chant-six 1s infinite;
+    animation: chant-six 0.9s infinite;
   }
   .six-seven-hunter .seven-arm::before {
-    content: '7'; position: absolute;
-    bottom: -38px; left: 50%; transform: translateX(-50%);
-    color: #00ffff; font-family: 'Bangers', cursive; font-size: 1.6rem;
+    content: '7';
+    position: absolute;
+    top: -42px; right: -14px;
+    color: #00ffff;
+    font-family: 'Bangers', cursive;
+    font-size: 2rem;
     text-shadow: 2px 2px 0 #000;
-    animation: chant-seven 1s infinite;
+    animation: chant-seven 0.9s infinite;
   }
-  @keyframes arm-six {
-    0%, 50% { transform: rotate(-30deg); }
-    50.01%, 100% { transform: rotate(20deg); }
+  @keyframes arm-bob-left {
+    0%, 100% { transform: translateY(-12px); }
+    50% { transform: translateY(8px); }
   }
-  @keyframes arm-seven {
-    0%, 50% { transform: rotate(20deg); }
-    50.01%, 100% { transform: rotate(30deg); }
+  @keyframes arm-bob-right {
+    0%, 100% { transform: translateY(8px); }
+    50% { transform: translateY(-12px); }
   }
   @keyframes chant-six {
-    0%, 49% { opacity: 1; transform: translateX(-50%) scale(1.3); }
-    50%, 100% { opacity: 0.3; transform: translateX(-50%) scale(0.9); }
+    0%, 100% { opacity: 1; transform: scale(1.3); }
+    50% { opacity: 0.4; transform: scale(0.9); }
   }
   @keyframes chant-seven {
-    0%, 49% { opacity: 0.3; transform: translateX(-50%) scale(0.9); }
-    50%, 100% { opacity: 1; transform: translateX(-50%) scale(1.3); }
+    0%, 100% { opacity: 0.4; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.3); }
   }
   .six-seven-text {
     font-family: 'Bangers', cursive;
