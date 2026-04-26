@@ -1502,9 +1502,31 @@
         <span style="color:#888;">P.S. PIZZER WHEN WE GET BACK.</span>
       </div>
     </div>
-    <button class="start-btn next-btn" onclick="restartGame()" style="margin-top: 30px;">PLAY AGAIN</button>
+    <button class="start-btn next-btn" onclick="showNextGamePicker()" style="margin-top: 30px;">WHAT'S NEXT? →</button>
   </div>
 
+</div>
+
+<!-- NEXT GAME PICKER -->
+<div class="cutscene" id="next-game-picker" style="background: linear-gradient(180deg, #001a4d 0%, #4a0e6e 100%);">
+  <div class="cutscene-banner" style="color: #00ff66; text-shadow: 4px 4px 0 #f72585, 8px 8px 0 #000;">GAME 2 LOADING...</div>
+  <div class="cutscene-panel" style="border-color: #00ff66;">
+    <div class="cutscene-bubble dad" data-delay="0">
+      <span class="cutscene-speaker">DAD:</span>so what we buildin' next, BOY? you pick. we make it together.
+    </div>
+    <div class="dinner-options" style="grid-template-columns: 1fr;">
+      <button class="dinner-btn" onclick="pickNextGame('TACOS QUEST 🌮')">🌮 TACOS QUEST</button>
+      <button class="dinner-btn" onclick="pickNextGame('MINECRAFT KINGDOM ⛏️')">⛏️ MINECRAFT KINGDOM</button>
+      <button class="dinner-btn" onclick="pickNextGame('SUPER NUGGET BROS 🍗')">🍗 SUPER NUGGET BROS</button>
+      <button class="dinner-btn" onclick="pickNextGame('BALD DAD: ORIGINS 👨‍🦲')">👨‍🦲 BALD DAD: ORIGINS</button>
+      <button class="dinner-btn" onclick="pickNextGame('DRAGON BOSS 🐉')">🐉 DRAGON BOSS</button>
+      <button class="dinner-btn" onclick="pickNextGame('SPACE PIZZER 🚀')">🚀 SPACE PIZZER</button>
+    </div>
+    <div class="cutscene-bubble dad" id="nextgame-confirm" style="display:none;">
+      <span class="cutscene-speaker">DAD:</span><span id="nextgame-confirm-text"></span>
+    </div>
+  </div>
+  <button class="cutscene-continue" id="nextgame-continue" onclick="advanceFromNextGame()">PLAY AGAIN</button>
 </div>
 
 <!-- CUTSCENE OVERLAY -->
@@ -1939,6 +1961,30 @@
         showStage(idx);
       }
     }
+  }
+
+  // Next game picker
+  function showNextGamePicker() {
+    stopBGM();
+    const overlay = document.getElementById('next-game-picker');
+    overlay.classList.add('active');
+    document.getElementById('nextgame-confirm').style.display = 'none';
+    document.getElementById('nextgame-continue').classList.remove('ready');
+    document.querySelectorAll('#next-game-picker .dinner-btn').forEach(b => b.classList.remove('picked'));
+    playJingle([523, 659, 784, 1047], 'square', 0.16);
+  }
+  function pickNextGame(label) {
+    document.querySelectorAll('#next-game-picker .dinner-btn').forEach(b => b.classList.remove('picked'));
+    event.target.classList.add('picked');
+    document.getElementById('nextgame-confirm-text').textContent = `LOCKED IN: "${label}". WE BUILD THIS NEXT, BOY.`;
+    document.getElementById('nextgame-confirm').style.display = 'block';
+    document.getElementById('nextgame-continue').classList.add('ready');
+    playWinSound();
+  }
+  function advanceFromNextGame() {
+    if (!document.getElementById('nextgame-continue').classList.contains('ready')) return;
+    document.getElementById('next-game-picker').classList.remove('active');
+    restartGame();
   }
 
   // Game over / retry / skip
