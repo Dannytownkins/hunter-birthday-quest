@@ -2234,16 +2234,27 @@
       setTimeout(() => {
         const cupRect = cup.getBoundingClientRect();
         const elRect = el.getBoundingClientRect();
-        const stageRect = stage.getBoundingClientRect();
         const xCenter = elRect.left + elRect.width/2;
-        if (xCenter > cupRect.left && xCenter < cupRect.right && isNugget) {
-          nuggetCount++;
-          document.getElementById('nugget-score').textContent = `NUGGETS: ${nuggetCount} / 8`;
-          if (nuggetCount >= 8) {
+        const inCup = xCenter > cupRect.left && xCenter < cupRect.right;
+        if (inCup) {
+          if (isNugget) {
+            nuggetCount++;
+            document.getElementById('nugget-score').textContent = `NUGGETS: ${nuggetCount} / 8`;
+            playBeep(660 + nuggetCount * 30, 0.1, 'triangle', 0.18);  // CHIME on catch
+            if (nuggetCount >= 8) {
+              nuggetGameRunning = false;
+              document.getElementById('nugget-skip').style.display = 'inline-block';
+              document.getElementById('nugget-score').textContent = `🍗 NICE! ${nuggetCount} NUGGETS COLLECTED 🥛`;
+              playWinSound();
+            }
+          } else {
+            // BROCCOLI caught = FAIL
             nuggetGameRunning = false;
-            document.getElementById('nugget-skip').style.display = 'inline-block';
-            document.getElementById('nugget-score').textContent = `🍗 NICE! ${nuggetCount} NUGGETS COLLECTED 🥛`;
+            playPunch();
+            showGameOver('YOU CAUGHT BROCCOLI! NOT IN MY CHOCOLATE MILK!');
           }
+        } else if (!isNugget) {
+          // missed broccoli = fine
         }
         el.remove();
       }, fallDuration);
