@@ -438,6 +438,146 @@
   }
   @keyframes flicker { 0%, 100% { opacity: 0.6; } 50% { opacity: 0.4; } }
   /* dead .boss CSS removed in v4 */
+
+  /* CUTSCENES (v5) */
+  .cutscene {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(160deg, #1a0a3a 0%, #2d0046 50%, #4a0e6e 100%);
+    z-index: 999;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    cursor: pointer;
+  }
+  .cutscene.active { display: flex; animation: cutscene-fade 0.4s ease; }
+  @keyframes cutscene-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .cutscene-banner {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    color: #ffe66d;
+    text-shadow: 4px 4px 0 #f72585, 8px 8px 0 #000;
+    letter-spacing: 4px;
+    margin-bottom: 30px;
+    animation: cutscene-banner 0.5s ease;
+  }
+  @keyframes cutscene-banner {
+    from { transform: scale(0) rotate(-15deg); }
+    to { transform: scale(1) rotate(-3deg); }
+  }
+  .cutscene-panel {
+    background: rgba(0,0,0,0.45);
+    border: 4px solid #ffe66d;
+    border-radius: 16px;
+    padding: 24px 18px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6), inset 0 0 24px rgba(255,230,109,0.2);
+    max-width: 92vw;
+    width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .cutscene-cast {
+    display: flex; justify-content: space-around; align-items: flex-end;
+    gap: 20px;
+  }
+  .cutscene-cast .rblx-char { width: 70px; }
+  .cutscene-bubble {
+    background: #fff;
+    color: #000;
+    border: 3px solid #000;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(0.65rem, 1.6vw, 0.85rem);
+    line-height: 1.6;
+    position: relative;
+    animation: bubble-in 0.4s ease forwards;
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  .cutscene-bubble.dad { background: #ffe66d; }
+  .cutscene-bubble.hunter { background: #ff6b35; color: #fff; border-color: #000; }
+  .cutscene-bubble.narrator { background: #1a0a3a; color: #ffe66d; border-color: #ffe66d; font-style: italic; }
+  .cutscene-bubble[data-delay="0"] { animation-delay: 0.2s; }
+  .cutscene-bubble[data-delay="1"] { animation-delay: 0.7s; }
+  .cutscene-bubble[data-delay="2"] { animation-delay: 1.2s; }
+  .cutscene-bubble[data-delay="3"] { animation-delay: 1.7s; }
+  .cutscene-bubble[data-delay="4"] { animation-delay: 2.2s; }
+  @keyframes bubble-in {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .cutscene-speaker {
+    font-family: 'Bangers', cursive;
+    font-size: 0.9rem;
+    color: #f72585;
+    text-shadow: 1px 1px 0 #000;
+    letter-spacing: 2px;
+    margin-right: 6px;
+  }
+  .cutscene-bubble.dad .cutscene-speaker { color: #c8102e; }
+  .cutscene-bubble.hunter .cutscene-speaker { color: #ffe66d; text-shadow: 1px 1px 0 #000; }
+  .cutscene-bubble.narrator .cutscene-speaker { color: #fff; }
+  .cutscene-continue {
+    margin-top: 24px;
+    background: #ffe66d;
+    color: #000;
+    border: 3px solid #000;
+    padding: 14px 28px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(0.7rem, 2vw, 1rem);
+    cursor: pointer;
+    box-shadow: 4px 4px 0 #000;
+    animation: pulse 1s infinite;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  .cutscene-continue.ready { opacity: 1; pointer-events: auto; }
+  .cutscene-continue:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #000; }
+  .dinner-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .dinner-btn {
+    background: #fff; color: #000;
+    border: 3px solid #000; padding: 12px 8px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(0.6rem, 1.6vw, 0.85rem);
+    cursor: pointer;
+    box-shadow: 4px 4px 0 #000;
+    transition: transform 0.05s;
+  }
+  .dinner-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #000; }
+  .dinner-btn.picked { background: #00ff66; }
+  /* 6-7 hand pose */
+  .six-seven-pose svg {
+    animation: six-seven-dance 1.2s infinite;
+    transform-origin: center center;
+  }
+  @keyframes six-seven-dance {
+    0%, 100% { transform: rotate(-8deg); }
+    50% { transform: rotate(8deg); }
+  }
+  .six-seven-text {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(2rem, 6vw, 4rem);
+    color: #ff00ff;
+    text-shadow: 3px 0 #00ffff, -3px 0 #ffe66d, 0 4px 0 #000;
+    animation: six-seven-pulse 0.6s infinite;
+    text-align: center;
+  }
+  @keyframes six-seven-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
   .health-bar {
     position: absolute; top: 80px; left: 10%; right: 10%; height: 30px;
     background: #000; border: 3px solid #ffe66d;
@@ -1230,6 +1370,52 @@
 
 </div>
 
+<!-- CUTSCENE OVERLAY -->
+<div class="cutscene" id="cutscene" onclick="advanceCutscene()">
+  <div class="cutscene-banner" id="cutscene-banner">MEANWHILE...</div>
+  <div class="cutscene-panel" id="cutscene-panel"></div>
+  <button class="cutscene-continue" id="cutscene-continue">TAP TO CONTINUE →</button>
+</div>
+
+<!-- DINNER CHOICE OVERLAY -->
+<div class="cutscene" id="dinner-choice" style="background: linear-gradient(160deg, #87ceeb 0%, #ff6b35 100%);">
+  <div class="cutscene-banner" style="color: #fff; text-shadow: 4px 4px 0 #c8102e, 8px 8px 0 #000;">HALFWAY THERE!</div>
+  <div class="cutscene-panel" style="border-color: #fff;">
+    <div class="cutscene-cast">
+      <div class="rblx-char dad-char" id="dinner-dad-sprite"></div>
+    </div>
+    <div class="cutscene-bubble dad" data-delay="0">
+      <span class="cutscene-speaker">DAD:</span>yo BOY. what u want for real dinner tonight?
+    </div>
+    <div class="dinner-options">
+      <button class="dinner-btn" onclick="pickDinner('PIZZA')">🍕 PIZZER</button>
+      <button class="dinner-btn" onclick="pickDinner('NUGGETS')">🍗 NUGGETS</button>
+      <button class="dinner-btn" onclick="pickDinner('TACOS')">🌮 TACOS</button>
+      <button class="dinner-btn" onclick="pickDinner('BURGERS')">🍔 BURGERS</button>
+      <button class="dinner-btn" onclick="pickDinner('SUSHI')">🍣 SUSHI</button>
+      <button class="dinner-btn" onclick="pickDinner('CHINESE')">🥡 CHINESE</button>
+    </div>
+    <div class="cutscene-bubble dad" id="dinner-confirm" style="display:none;">
+      <span class="cutscene-speaker">DAD:</span><span id="dinner-confirm-text"></span>
+    </div>
+  </div>
+  <button class="cutscene-continue" id="dinner-continue" onclick="advanceFromDinner()">TAP TO CONTINUE →</button>
+</div>
+
+<!-- GAME OVER OVERLAY -->
+<div class="cutscene" id="game-over" style="background: linear-gradient(160deg, #2d0000 0%, #5e0000 100%);">
+  <div class="cutscene-banner" style="color: #ff4466; text-shadow: 4px 4px 0 #000;">OOF.</div>
+  <div class="cutscene-panel" style="border-color: #ff4466; align-items: center;">
+    <div class="cutscene-bubble narrator" data-delay="0">
+      <span class="cutscene-speaker">GAME:</span><span id="game-over-msg">YOU GOT BONKED!</span>
+    </div>
+    <div style="display: flex; gap: 16px; justify-content: center; margin-top: 14px;">
+      <button class="dinner-btn" onclick="retryStage()" style="background: #ffe66d;">↻ RETRY</button>
+      <button class="dinner-btn" onclick="skipStage()" style="background: #00ffcc;">→ SKIP</button>
+    </div>
+  </div>
+</div>
+
 <script>
   let currentStage = 0;
   const stages = ['title', 'stage1', 'stage2', 'stage3', 'stage4', 'stage5', 'stage6', 'stage7', 'stage8'];
@@ -1301,7 +1487,256 @@
     if (stages[idx] === 'stage8') burstConfetti();
   }
   function startGame() { showStage(1); }
-  function nextStage() { if (currentStage < stages.length - 1) showStage(currentStage + 1); }
+  function nextStage() {
+    const next = currentStage + 1;
+    if (next >= stages.length) return;
+    const targetStage = stages[next];
+    // halfway cutscene before stage 5
+    if (targetStage === 'stage5' && !window.dinnerPicked) {
+      showDinnerChoice(next);
+      return;
+    }
+    if (CUTSCENES[targetStage]) {
+      showCutscene(next);
+      return;
+    }
+    showStage(next);
+  }
+
+  // CUTSCENE DATA
+  const HUNTER_SVG = `<svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="14" y="0" width="32" height="32" fill="#f4d4a4" stroke="#000" stroke-width="2"/>
+    <rect x="10" y="-2" width="40" height="10" fill="#0046b8" stroke="#000" stroke-width="2"/>
+    <rect x="20" y="14" width="4" height="6" fill="#000"/>
+    <rect x="36" y="14" width="4" height="6" fill="#000"/>
+    <path d="M 20 24 Q 30 30 40 24" stroke="#000" stroke-width="2" fill="none"/>
+    <rect x="8" y="32" width="44" height="36" fill="#ff6b35" stroke="#000" stroke-width="2"/>
+    <rect x="0" y="34" width="8" height="32" fill="#f4d4a4" stroke="#000" stroke-width="2"/>
+    <rect x="52" y="34" width="8" height="32" fill="#f4d4a4" stroke="#000" stroke-width="2"/>
+    <rect x="14" y="68" width="14" height="30" fill="#1e3a8a" stroke="#000" stroke-width="2"/>
+    <rect x="32" y="68" width="14" height="30" fill="#1e3a8a" stroke="#000" stroke-width="2"/>
+  </svg>`;
+  const DAD_SVG = `<svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="14" y="0" width="32" height="32" fill="#e8c89c" stroke="#000" stroke-width="2"/>
+    <ellipse cx="22" cy="6" rx="6" ry="2" fill="#fff" opacity="0.6"/>
+    <rect x="20" y="14" width="4" height="6" fill="#000"/>
+    <rect x="36" y="14" width="4" height="6" fill="#000"/>
+    <path d="M 16 22 Q 30 30 44 22 L 44 28 Q 30 34 16 28 Z" fill="#4a3a2a" opacity="0.7"/>
+    <path d="M 22 26 Q 30 30 38 26" stroke="#000" stroke-width="2" fill="none"/>
+    <rect x="8" y="32" width="44" height="36" fill="#1a1a1a" stroke="#000" stroke-width="2"/>
+    <text x="30" y="54" text-anchor="middle" font-family="monospace" font-size="8" fill="#ffe66d" font-weight="bold">DAD</text>
+    <rect x="0" y="34" width="8" height="32" fill="#e8c89c" stroke="#000" stroke-width="2"/>
+    <rect x="52" y="34" width="8" height="32" fill="#e8c89c" stroke="#000" stroke-width="2"/>
+    <rect x="14" y="68" width="14" height="30" fill="#3a3a3a" stroke="#000" stroke-width="2"/>
+    <rect x="32" y="68" width="14" height="30" fill="#3a3a3a" stroke="#000" stroke-width="2"/>
+  </svg>`;
+
+  const CUTSCENES = {
+    stage2: {
+      banner: 'CHAPTER 1: SUIT UP',
+      cast: ['hunter', 'dad'],
+      lines: [
+        { who: 'dad', text: 'yo BOY. lemme show you the city.' },
+        { who: 'dad', text: '*tosses a SPIDER-MAN MASK at hunter*' },
+        { who: 'hunter', text: 'wait DAD WHA—' },
+        { who: 'narrator', text: 'no time. SWING.' }
+      ]
+    },
+    stage3: {
+      banner: 'CHAPTER 2: THE STAGE',
+      cast: ['hunter', 'dad'],
+      lines: [
+        { who: 'narrator', text: 'spidey lands in front of a MASSIVE STAGE.' },
+        { who: 'hunter', text: 'why are we at a CONCERT' },
+        { who: 'dad', text: 'because the KING IS PERFORMING.' },
+        { who: 'dad', text: 'do the moonwalk. don\'t embarrass me.' }
+      ]
+    },
+    stage4: {
+      banner: 'CHAPTER 3: SNACK BREAK',
+      cast: ['hunter', 'dad'],
+      lines: [
+        { who: 'dad', text: 'ok that was sick. you hungry?' },
+        { who: 'hunter', text: 'PIZZER???' },
+        { who: 'dad', text: 'nuggets first. catch them ALL in your milk.' },
+        { who: 'hunter', text: 'why is it RAINING NUGGETS dad' },
+        { who: 'dad', text: 'do not ask questions BOY. catch.' }
+      ]
+    },
+    stage5: {
+      banner: 'CHAPTER 4: A TROLL APPEARS',
+      cast: ['hunter', 'dad'],
+      lines: [
+        { who: 'narrator', text: '*the ground shakes*' },
+        { who: 'hunter', text: 'DAD WHAT WAS THAT' },
+        { who: 'dad', text: '...the troll. tag-team, BOY.' },
+        { who: 'dad', text: 'tap when the cursor hits the GREEN.' }
+      ]
+    },
+    stage6: {
+      banner: 'CHAPTER 5: ???',
+      cast: ['hunter', 'dad'],
+      lines: [
+        { who: 'narrator', text: 'a portal opens. a yellow hand emerges.' },
+        { who: 'hunter', text: 'six...' },
+        { who: 'narrator', text: '*hunter does the gesture*' },
+        { who: 'dad', text: 'don\'t' },
+        { who: 'hunter', text: 'SEVEN!!!' }
+      ],
+      sixseven: true,
+    },
+    stage7: {
+      banner: 'CHAPTER 6: THE LAIR',
+      cast: ['hunter', 'dad'],
+      lines: [
+        { who: 'narrator', text: 'they reach the SOURCE of all the cursed.' },
+        { who: 'dad', text: 'this is where it ends, BOY.' },
+        { who: 'hunter', text: 'the algorithm???' },
+        { who: 'dad', text: 'smash every dislike. don\'t let it heal.' }
+      ]
+    },
+    stage8: {
+      banner: 'CHAPTER 7: ONE MORE THING...',
+      cast: ['hunter', 'dad'],
+      lines: [
+        { who: 'hunter', text: 'WE DID IT DAD' },
+        { who: 'dad', text: 'wait BOY. there\'s ONE more thing.' },
+        { who: 'hunter', text: '...what' },
+        { who: 'dad', text: 'check your pocket.' }
+      ]
+    }
+  };
+
+  let cutsceneTargetIdx = null;
+
+  function showCutscene(targetIdx) {
+    cutsceneTargetIdx = targetIdx;
+    const target = stages[targetIdx];
+    const data = CUTSCENES[target];
+    if (!data) { showStage(targetIdx); return; }
+
+    document.getElementById('cutscene-banner').textContent = data.banner;
+    const panel = document.getElementById('cutscene-panel');
+
+    // Build cast row
+    let html = '<div class="cutscene-cast">';
+    data.cast.forEach(c => {
+      if (c === 'hunter') html += `<div class="rblx-char hunter-char" style="width:60px;">${HUNTER_SVG}</div>`;
+      if (c === 'dad') html += `<div class="rblx-char dad-char" style="width:60px;">${DAD_SVG}</div>`;
+    });
+    html += '</div>';
+
+    // 6-7 special pose for cursed cutscene
+    if (data.sixseven) {
+      html += `<div class="six-seven-text">SIX! SEVEN!</div>`;
+    }
+
+    // Build dialogue bubbles
+    data.lines.forEach((line, i) => {
+      const speakerLabel = line.who === 'dad' ? 'BALD DAD:' : line.who === 'hunter' ? 'HUNTER:' : '';
+      const cls = line.who;
+      html += `<div class="cutscene-bubble ${cls}" data-delay="${Math.min(i, 4)}"><span class="cutscene-speaker">${speakerLabel}</span>${line.text}</div>`;
+    });
+    panel.innerHTML = html;
+
+    // Show overlay
+    document.getElementById('cutscene').classList.add('active');
+    const continueBtn = document.getElementById('cutscene-continue');
+    continueBtn.classList.remove('ready');
+    const totalDelay = Math.min(data.lines.length - 1, 4) * 500 + 600;
+    setTimeout(() => continueBtn.classList.add('ready'), totalDelay);
+
+    // play subtle entry tone
+    playBeep(440, 0.1, 'square', 0.1);
+  }
+  function advanceCutscene() {
+    const continueBtn = document.getElementById('cutscene-continue');
+    if (!continueBtn.classList.contains('ready')) return;
+    document.getElementById('cutscene').classList.remove('active');
+    if (cutsceneTargetIdx !== null) {
+      const idx = cutsceneTargetIdx;
+      cutsceneTargetIdx = null;
+      showStage(idx);
+    }
+  }
+
+  // Halfway dinner-choice
+  let dinnerNextIdx = null;
+  function showDinnerChoice(targetIdx) {
+    dinnerNextIdx = targetIdx;
+    document.getElementById('dinner-dad-sprite').innerHTML = DAD_SVG;
+    const overlay = document.getElementById('dinner-choice');
+    overlay.classList.add('active');
+    document.getElementById('dinner-confirm').style.display = 'none';
+    document.getElementById('dinner-continue').classList.remove('ready');
+    document.querySelectorAll('.dinner-btn').forEach(b => b.classList.remove('picked'));
+    playBeep(523, 0.1, 'triangle', 0.14);
+  }
+  function pickDinner(food) {
+    window.dinnerPicked = food;
+    document.querySelectorAll('.dinner-btn').forEach(b => b.classList.remove('picked'));
+    event.target.classList.add('picked');
+    const phrases = {
+      PIZZA: 'PIZZER ON THE WAY BOY 🍕',
+      NUGGETS: 'NUGGS COMING UP 🍗',
+      TACOS: 'TACOS IT IS 🌮',
+      BURGERS: 'GETTING BURGERS BOY 🍔',
+      SUSHI: 'BOUGIE TONIGHT — SUSHI 🍣',
+      CHINESE: 'ORDERING CHINESE 🥡',
+    };
+    document.getElementById('dinner-confirm-text').textContent = phrases[food] || 'GOT IT BOY';
+    document.getElementById('dinner-confirm').style.display = 'block';
+    document.getElementById('dinner-continue').classList.add('ready');
+    playWinSound();
+  }
+  function advanceFromDinner() {
+    if (!document.getElementById('dinner-continue').classList.contains('ready')) return;
+    document.getElementById('dinner-choice').classList.remove('active');
+    if (dinnerNextIdx !== null) {
+      const idx = dinnerNextIdx;
+      dinnerNextIdx = null;
+      // After dinner, show the cutscene for the target stage if any
+      if (CUTSCENES[stages[idx]]) {
+        showCutscene(idx);
+      } else {
+        showStage(idx);
+      }
+    }
+  }
+
+  // Game over / retry / skip
+  let gameOverPrevStage = null;
+  function showGameOver(msg) {
+    gameOverPrevStage = currentStage;
+    document.getElementById('game-over-msg').textContent = msg || 'YOU GOT BONKED!';
+    document.getElementById('game-over').classList.add('active');
+    playPunch();
+  }
+  function retryStage() {
+    document.getElementById('game-over').classList.remove('active');
+    if (gameOverPrevStage !== null) {
+      // Reset state for current stage and replay
+      const stage = stages[gameOverPrevStage];
+      if (stage === 'stage2') { spideyHits = 0; spideyGameRunning = false; cleanupSpideyTarget(); }
+      if (stage === 'stage3') { mjScore = 0; mjMissed = 0; mjGameRunning = false; if (mjSpawnTimer) clearTimeout(mjSpawnTimer); document.querySelectorAll('.rhythm-note').forEach(n => n.remove()); }
+      if (stage === 'stage4') { nuggetCount = 0; nuggetGameRunning = false; }
+      if (stage === 'stage6') { dodgeRunning = false; if (dodgeTickTimer) clearInterval(dodgeTickTimer); if (dodgeSpawnTimer) clearTimeout(dodgeSpawnTimer); document.querySelectorAll('.dodge-arena .cursed-falling').forEach(c => c.remove()); }
+      if (stage === 'stage7') { algoGameRunning = false; if (algoSpawnTimer) clearTimeout(algoSpawnTimer); document.querySelectorAll('.hate-zone .dislike').forEach(d => d.remove()); algoHp = 100; }
+      showStage(gameOverPrevStage);
+      gameOverPrevStage = null;
+    }
+  }
+  function skipStage() {
+    document.getElementById('game-over').classList.remove('active');
+    if (gameOverPrevStage !== null) {
+      const idx = gameOverPrevStage + 1;
+      gameOverPrevStage = null;
+      if (idx < stages.length) {
+        if (CUTSCENES[stages[idx]]) showCutscene(idx);
+        else showStage(idx);
+      }
+    }
+  }
   function restartGame() {
     spideyHits = 0;
     spideyGameRunning = false;
@@ -1331,6 +1766,7 @@
 
   // STAGE 2: Spider-Man timing game
   let spideyHits = 0;
+  let spideyMisses = 0;
   let spideyGameRunning = false;
   let spideyCurrentTarget = null;
   let spideyCurrentRing = null;
@@ -1339,7 +1775,8 @@
     if (spideyGameRunning) return;
     spideyGameRunning = true;
     spideyHits = 0;
-    document.getElementById('swing-counter').textContent = `SWINGS: 0 / 6`;
+    spideyMisses = 0;
+    document.getElementById('swing-counter').textContent = `SWINGS: 0 / 6 • MISS: 0/3`;
     document.getElementById('web-line').style.opacity = '0';
     document.getElementById('web-line').style.height = '0';
     const spidey = document.getElementById('spidey-char');
@@ -1429,7 +1866,7 @@
       ring.style.opacity = '0';
       playSwing();
 
-      document.getElementById('swing-counter').textContent = `SWINGS: ${spideyHits} / 6`;
+      document.getElementById('swing-counter').textContent = `SWINGS: ${spideyHits} / 6 • MISS: ${spideyMisses}/3`;
       document.getElementById('spidey-phase').textContent = getSpideyPhaseText();
 
       if (spideyHits >= 6) {
@@ -1449,6 +1886,7 @@
     spideyCurrentTimer = setTimeout(() => {
       if (target.dataset.popped) return;
       target.dataset.popped = 'miss';
+      spideyMisses++;
       const flash = document.createElement('div');
       flash.className = 'miss-flash';
       flash.textContent = 'MISS!';
@@ -1459,6 +1897,13 @@
       ring.style.opacity = '0';
       target.style.opacity = '0';
       playHit();
+      document.getElementById('swing-counter').textContent = `SWINGS: ${spideyHits} / 6 • MISS: ${spideyMisses}/3`;
+      if (spideyMisses >= 3) {
+        spideyGameRunning = false;
+        cleanupSpideyTarget();
+        showGameOver('SPIDEY MISSED 3 TIMES!');
+        return;
+      }
       // respawn after short delay
       setTimeout(spawnSpideyTarget, 500);
     }, window_ + 80);
@@ -1525,6 +1970,12 @@
             showJudge('MISS', '#888');
             setTimeout(() => note.remove(), 300);
             mjActiveNotes = mjActiveNotes.filter(n => n !== note);
+            if (mjMissed >= 5) {
+              mjGameRunning = false;
+              if (mjSpawnTimer) clearTimeout(mjSpawnTimer);
+              showGameOver('TOO MANY MISSED BEATS!');
+              return;
+            }
           }
           return;
         }
@@ -1740,12 +2191,14 @@
           dodgeLives--;
           document.getElementById('dodge-lives').textContent = `HP: ${dodgeLives}`;
           playHit();
-          if (dodgeLives <= 0) {
-            // soft fail — let them continue but flash
-            dodgeLives = 1;
-            document.getElementById('dodge-lives').textContent = `HP: ${dodgeLives}`;
-          }
           setTimeout(() => c.remove(), 300);
+          if (dodgeLives <= 0) {
+            dodgeRunning = false;
+            if (dodgeTickTimer) clearInterval(dodgeTickTimer);
+            if (dodgeSpawnTimer) clearTimeout(dodgeSpawnTimer);
+            showGameOver('THE CURSED GOT YOU!');
+            return;
+          }
           return;
         }
         requestAnimationFrame(step);
@@ -1860,13 +2313,15 @@
 
   // STAGE 7: Algorithm boss — falling dislikes game
   let algoHp = 100;
+  let algoMisses = 0;
   let algoGameRunning = false;
   let algoSpawnTimer = null;
   function initAlgoBoss() {
     if (algoGameRunning) return;
     algoGameRunning = true;
     algoHp = 100;
-    document.getElementById('algo-hp-text').textContent = `ALGORITHM HP: ${algoHp}%`;
+    algoMisses = 0;
+    document.getElementById('algo-hp-text').textContent = `ALGORITHM HP: ${algoHp}% • MISS: 0/8`;
     document.getElementById('algo-next-btn').style.display = 'none';
     const boss = document.querySelector('#stage7 .algorithm-boss');
     boss.style.opacity = '1';
@@ -1901,24 +2356,29 @@
         if (d.classList.contains('popped')) return;
         d.classList.add('popped');
         algoHp = Math.max(0, algoHp - 8);
-        document.getElementById('algo-hp-text').textContent = `ALGORITHM HP: ${algoHp}%`;
+        document.getElementById('algo-hp-text').textContent = `ALGORITHM HP: ${algoHp}% • MISS: ${algoMisses}/8`;
         boss.style.transform = `scale(${1 - (100 - algoHp) / 200}) rotate(${(100 - algoHp) * 1.5}deg)`;
         playBeep(660 + algoHp * 4, 0.08);
         setTimeout(() => d.remove(), 500);
         if (algoHp <= 0) defeatAlgoFinal();
       });
 
-      // If reaches the boss, "heal" it slightly to punish missing
+      // If reaches the boss, count miss + heal boss
       setTimeout(() => {
         if (!d.classList.contains('popped') && d.parentNode) {
           d.style.opacity = '0';
           d.style.transform = 'scale(0.5)';
-          // small punishment: regenerate boss a tiny bit, but cap so the game still ends
+          algoMisses++;
           if (algoHp < 100 && algoHp > 0) {
             algoHp = Math.min(100, algoHp + 3);
-            document.getElementById('algo-hp-text').textContent = `ALGORITHM HP: ${algoHp}%`;
           }
+          document.getElementById('algo-hp-text').textContent = `ALGORITHM HP: ${algoHp}% • MISS: ${algoMisses}/8`;
           setTimeout(() => d.remove(), 300);
+          if (algoMisses >= 8) {
+            algoGameRunning = false;
+            if (algoSpawnTimer) clearTimeout(algoSpawnTimer);
+            showGameOver('TOO MANY DISLIKES GOT THROUGH!');
+          }
         }
       }, fallDuration);
 
