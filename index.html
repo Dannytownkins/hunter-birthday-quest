@@ -92,12 +92,69 @@
   /* Stage HUD */
   .hud {
     position: absolute; top: 20px; left: 0; right: 0;
-    display: flex; justify-content: space-between; padding: 0 20px;
+    display: flex; justify-content: space-between; padding: 0 20px 0 64px;
     font-size: clamp(0.6rem, 1.5vw, 1rem);
     pointer-events: none;
   }
   .stage-label { background: #000; color: #ffe66d; padding: 8px 12px; border: 2px solid #ffe66d; }
   .stage-counter { background: #000; color: #fff; padding: 8px 12px; border: 2px solid #fff; }
+
+  /* Always-visible HOME / pause button (hidden on title and finale) */
+  .home-btn {
+    position: fixed;
+    top: max(12px, env(safe-area-inset-top));
+    left: 12px;
+    width: 44px; height: 44px;
+    background: #000;
+    color: #ffe66d;
+    border: 3px solid #ffe66d;
+    border-radius: 8px;
+    font-family: 'Bangers', cursive;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 50;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 3px 3px 0 #000;
+    padding: 0;
+  }
+  .home-btn.visible { display: flex; }
+  .home-btn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 #000; }
+
+  /* Stage select grid on title */
+  #title .stage-select {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    width: min(360px, 84vw);
+  }
+  #title .stage-select button {
+    background: #1a0a3a;
+    color: #ffe66d;
+    border: 2px solid #ffe66d;
+    border-radius: 6px;
+    padding: 10px 4px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    line-height: 1.4;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 #000;
+  }
+  #title .stage-select button:active {
+    transform: translate(1px, 1px); box-shadow: 1px 1px 0 #000;
+    background: #ffe66d; color: #1a0a3a;
+  }
+  #title .stage-select-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.7rem;
+    color: #fff;
+    text-shadow: 2px 2px 0 #000;
+    margin-top: 24px;
+    letter-spacing: 2px;
+  }
 
   /* Stage 1: Roblox world */
   #stage1 { background: #87ceeb; }
@@ -140,9 +197,11 @@
     padding: 6px 10px;
     border: 3px solid #000;
     border-radius: 8px;
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-family: 'Press Start 2P', monospace;
-    white-space: nowrap;
+    max-width: 38vw;
+    text-align: center;
+    line-height: 1.4;
     animation: bubble-pop 2s ease-in-out infinite;
   }
   .chat-bubble::after {
@@ -242,24 +301,26 @@
   }
   .phase-banner {
     position: absolute;
-    top: 110px;
+    top: 56px;
     left: 50%;
     transform: translateX(-50%);
     background: #c8102e;
     color: #fff;
-    padding: 6px 14px;
-    border: 3px solid #fff;
+    padding: 4px 12px;
+    border: 2px solid #fff;
     font-family: 'Press Start 2P', monospace;
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     z-index: 5;
     box-shadow: 0 0 12px #c8102e;
+    white-space: nowrap;
   }
   #stage2 .swing-counter {
-    position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
+    position: absolute; top: 96px; left: 50%; transform: translateX(-50%);
     background: #000; color: #ffe66d;
-    padding: 8px 16px; font-size: 0.8rem;
+    padding: 8px 14px; font-size: 0.7rem;
     border: 2px solid #ffe66d;
     z-index: 4;
+    white-space: nowrap;
   }
 
   /* Stage 3: MJ moonwalk */
@@ -391,27 +452,13 @@
 
   /* Stage 4: Chicken nugget rain */
   #stage4 { background: linear-gradient(180deg, #87ceeb 0%, #ffd166 100%); }
-  .nugget {
+  .nugget, .broccoli {
     position: absolute;
-    width: 40px; height: 30px;
-    background: #d4a574;
-    border-radius: 50%;
-    border: 3px solid #8b5e3c;
-    box-shadow: inset -3px -3px 0 #8b5e3c;
+    width: 52px; height: 52px;
+    pointer-events: none;
+    filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35));
   }
-  .broccoli {
-    position: absolute;
-    width: 36px; height: 36px;
-    background: #2d5a2d;
-    border-radius: 50%;
-    border: 3px solid #1a3a1a;
-  }
-  .broccoli::before {
-    content: ''; position: absolute; inset: 4px;
-    background: radial-gradient(circle at 30% 30%, #4a7a4a 4px, transparent 5px),
-                radial-gradient(circle at 70% 30%, #4a7a4a 4px, transparent 5px),
-                radial-gradient(circle at 50% 70%, #4a7a4a 4px, transparent 5px);
-  }
+  .nugget svg, .broccoli svg { width: 100%; height: 100%; display: block; }
   .cup {
     position: absolute; bottom: 5%; left: 50%; transform: translateX(-50%);
     width: 100px; height: 120px;
@@ -704,18 +751,6 @@
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.15); }
   }
-  .six-seven-text {
-    font-family: 'Bangers', cursive;
-    font-size: clamp(2rem, 6vw, 4rem);
-    color: #ff00ff;
-    text-shadow: 3px 0 #00ffff, -3px 0 #ffe66d, 0 4px 0 #000;
-    animation: six-seven-pulse 0.6s infinite;
-    text-align: center;
-  }
-  @keyframes six-seven-pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
-  }
   .health-bar {
     position: absolute; top: 80px; left: 10%; right: 10%; height: 30px;
     background: #000; border: 3px solid #ffe66d;
@@ -843,8 +878,34 @@
     100% { opacity: 0; transform: translate(-50%, -40px) scale(1); }
   }
 
-  /* Stage 6: Cursed Simpsons level */
-  #stage6 { background: #ffe66d; overflow: hidden; }
+  /* Stage 6: Springfield (Simpsons) dodge level */
+  #stage6 {
+    background: linear-gradient(180deg, #74cce5 0%, #a8dff0 60%, #6bb24a 60%, #5ea045 100%);
+    overflow: hidden;
+  }
+  #stage6 .springfield-clouds {
+    position: absolute; top: 0; left: 0; right: 0; height: 28%;
+    background:
+      radial-gradient(28px 14px at 12% 35%, #fff 65%, transparent 70%),
+      radial-gradient(36px 18px at 28% 22%, #fff 65%, transparent 70%),
+      radial-gradient(40px 18px at 58% 40%, #fff 65%, transparent 70%),
+      radial-gradient(32px 16px at 78% 25%, #fff 65%, transparent 70%),
+      radial-gradient(26px 14px at 92% 45%, #fff 65%, transparent 70%);
+    opacity: 0.95;
+    pointer-events: none;
+    animation: cloud-drift 80s linear infinite;
+  }
+  @keyframes cloud-drift {
+    0% { background-position: 0 0; }
+    100% { background-position: 100vw 0; }
+  }
+  #stage6 .springfield-skyline {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 38%;
+    pointer-events: none;
+    z-index: 1;
+  }
+  #stage6 .springfield-skyline svg { width: 100%; height: 100%; display: block; }
   .dodge-hud {
     position: absolute; top: 70px; left: 0; right: 0;
     display: flex; justify-content: space-between; padding: 0 30px;
@@ -860,26 +921,37 @@
   .dodge-arena {
     position: absolute;
     top: 110px; left: 5%; right: 5%; bottom: 18%;
-    border: 3px dashed #ff00ff;
-    background: rgba(0,0,0,0.05);
+    border: 3px dashed #1a1a1a;
+    background: rgba(255,255,255,0.06);
     overflow: hidden;
     z-index: 2;
+    touch-action: none;
   }
   .dodge-player {
     position: absolute;
-    width: 50px; height: 60px;
-    bottom: 10px; left: 50%;
+    width: 60px; height: 80px;
+    bottom: 4px; left: 50%;
     transform: translateX(-50%);
     z-index: 3;
     transition: left 0.05s ease-out;
     filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
   }
+  .dodge-player svg { width: 100%; height: 100%; display: block; }
   .dodge-arena .cursed-falling {
     position: absolute;
-    font-size: 2.5rem;
+    width: 56px; height: 56px;
     z-index: 2;
     will-change: transform, top;
     pointer-events: none;
+    filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35));
+  }
+  .dodge-arena .cursed-falling svg { width: 100%; height: 100%; display: block; }
+  .dodge-arena .cursed-falling.pow {
+    animation: pow-wobble 0.9s infinite ease-in-out;
+  }
+  @keyframes pow-wobble {
+    0%, 100% { transform: rotate(-6deg); }
+    50% { transform: rotate(6deg); }
   }
   .dodge-arena .cursed-falling.hit {
     animation: cursed-hit 0.3s forwards;
@@ -895,49 +967,16 @@
     position: absolute;
     font-family: 'Bangers', cursive;
     font-size: clamp(1.5rem, 3vw, 2.5rem);
-    color: #ff00ff;
-    text-shadow: 2px 0 #00ffff, -2px 0 #ffe66d;
+    color: #ffe66d;
+    text-shadow: 3px 3px 0 #1a1a1a, -1px -1px 0 #1a1a1a, 1px -1px 0 #1a1a1a, -1px 1px 0 #1a1a1a;
     animation: six-seven-fall 4s linear infinite;
+    letter-spacing: 1px;
   }
   @keyframes six-seven-fall {
     0% { transform: translateY(-100vh) rotate(-15deg); opacity: 0; }
     10% { opacity: 1; }
     100% { transform: translateY(100vh) rotate(15deg); opacity: 0; }
   }
-  #stage6 .glitch {
-    position: absolute; inset: 0;
-    background: repeating-linear-gradient(0deg, #ff00ff 0 2px, transparent 2px 4px, #00ffff 4px 6px, transparent 6px 8px);
-    opacity: 0.1;
-    animation: glitch-shift 0.1s infinite;
-  }
-  @keyframes glitch-shift {
-    0% { transform: translate(0); } 20% { transform: translate(-2px, 1px); }
-    40% { transform: translate(2px, -1px); } 60% { transform: translate(-1px, -2px); }
-    80% { transform: translate(1px, 2px); } 100% { transform: translate(0); }
-  }
-  #stage6 h2 {
-    font-family: 'Bangers', cursive;
-    font-size: clamp(2rem, 6vw, 4rem);
-    color: #ff00ff;
-    text-shadow: 3px 0 #00ffff, -3px 0 #ffff00;
-    animation: glitch-text 0.3s infinite;
-  }
-  @keyframes glitch-text {
-    0%, 100% { transform: translate(0); }
-    25% { transform: translate(-3px, 2px) skew(-2deg); }
-    50% { transform: translate(3px, -2px) skew(2deg); }
-    75% { transform: translate(-2px, -2px); }
-  }
-  .cursed-thing {
-    position: absolute;
-    font-size: clamp(2rem, 5vw, 4rem);
-    animation: float-cursed 3s infinite ease-in-out;
-  }
-  @keyframes float-cursed {
-    0%, 100% { transform: translateY(0) rotate(0); }
-    50% { transform: translateY(-30px) rotate(180deg); }
-  }
-
   /* Stage 7: YouTube algorithm boss */
   #stage7 { background: #ff0000; overflow: hidden; }
   #stage7 .yt-bg {
@@ -1151,9 +1190,49 @@
     position: absolute; inset: 0;
     cursor: pointer;
   }
+
+  /* Floating score popups used everywhere — gives feedback that's hard to miss */
+  .score-popup {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-family: 'Bangers', cursive;
+    font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+    pointer-events: none;
+    z-index: 12;
+    animation: score-popup 0.85s ease-out forwards;
+    white-space: nowrap;
+    letter-spacing: 1px;
+  }
+  @keyframes score-popup {
+    0% { transform: translate(-50%, -50%) scale(0.4) rotate(-6deg); opacity: 0; }
+    25% { transform: translate(-50%, -85%) scale(1.25) rotate(4deg); opacity: 1; }
+    100% { transform: translate(-50%, -160%) scale(1) rotate(0); opacity: 0; }
+  }
+
+  /* Stage-level shake (for player damage / boss impact). Apply via .shake-once class for ~250ms. */
+  .stage.shake-once {
+    animation: stage-shake 0.28s linear;
+  }
+  @keyframes stage-shake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-6px, 4px); }
+    40% { transform: translate(6px, -4px); }
+    60% { transform: translate(-4px, -3px); }
+    80% { transform: translate(4px, 3px); }
+  }
+
+  /* Bart "chomp" reaction when catching a donut — quick squash */
+  .dodge-player.chomp svg { animation: bart-chomp 0.25s ease-out; }
+  @keyframes bart-chomp {
+    0% { transform: scaleY(1) scaleX(1); }
+    50% { transform: scaleY(0.85) scaleX(1.1); }
+    100% { transform: scaleY(1) scaleX(1); }
+  }
 </style>
 </head>
 <body>
+<button class="home-btn" id="home-btn" onclick="goHome()" aria-label="Home">⌂</button>
 <div id="game">
 
   <!-- TITLE SCREEN -->
@@ -1161,6 +1240,8 @@
     <h1>HUNTER'S<br/>QUEST</h1>
     <div class="age">8</div>
     <button class="start-btn pulse" onclick="startGame()">PRESS START</button>
+    <div class="stage-select-label">JUMP TO ANY STAGE</div>
+    <div class="stage-select" id="stage-select"></div>
   </div>
 
   <!-- STAGE 1: ROBLOX SPAWN -->
@@ -1171,11 +1252,11 @@
     </div>
     <div class="clouds"></div>
     <div class="ground"></div>
-    <div class="big-text" style="position: absolute; top: 25%; left: 0; right: 0; z-index: 4;">WELCOME, HUNTER</div>
-    <div class="character-row" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 5;">
-      <div class="rblx-char hunter-char">
+    <div class="big-text" style="position: absolute; top: 14%; left: 0; right: 0; z-index: 4;">WELCOME, HUNTER</div>
+    <div class="character-row" style="position: absolute; top: 54%; left: 50%; transform: translate(-50%, -50%); z-index: 5;">
+      <div class="rblx-char hunter-char" id="stage1-hunter" onclick="cycleStage1Chat('hunter')" style="cursor:pointer;">
         <div class="name-tag">HUNTER_LVL_8</div>
-        <div class="chat-bubble" style="left: 50%; transform: translateX(-50%); top: -76px;">DAD UR BALD</div>
+        <div class="chat-bubble" id="stage1-hunter-bubble" style="left: 50%; transform: translateX(-50%); top: -76px;">DAD UR BALD</div>
         <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
           <!-- head (block) -->
           <rect x="14" y="0" width="32" height="32" fill="#f4d4a4" stroke="#000" stroke-width="2"/>
@@ -1196,9 +1277,9 @@
           <rect x="32" y="68" width="14" height="30" fill="#1e3a8a" stroke="#000" stroke-width="2"/>
         </svg>
       </div>
-      <div class="rblx-char dad-char">
+      <div class="rblx-char dad-char" id="stage1-dad" onclick="cycleStage1Chat('dad')" style="cursor:pointer;">
         <div class="name-tag" style="background:#ffe66d;">BALD_DAD_69</div>
-        <div class="chat-bubble" style="left: 50%; transform: translateX(-50%); top: -76px; background: #ffe66d;">PIZZER TIME</div>
+        <div class="chat-bubble" id="stage1-dad-bubble" style="left: 50%; transform: translateX(-50%); top: -76px; background: #ffe66d;">PIZZER TIME</div>
         <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
           <!-- bald head with shine -->
           <rect x="14" y="0" width="32" height="32" fill="#e8c89c" stroke="#000" stroke-width="2"/>
@@ -1440,9 +1521,58 @@
     <button class="mash-btn" id="mash-btn" onclick="mashBoss()">BOY!</button>
   </div>
 
-  <!-- STAGE 6: CURSED SIMPSONS LEVEL — DODGE GAME -->
+  <!-- STAGE 6: SPRINGFIELD DODGE -->
   <div class="stage" id="stage6">
-    <div class="glitch"></div>
+    <div class="springfield-clouds"></div>
+    <div class="springfield-skyline">
+      <svg viewBox="0 0 1000 240" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- distant hills -->
+        <path d="M 0 240 L 0 170 Q 80 120 160 150 Q 240 110 320 145 Q 400 105 480 140 Q 560 100 640 135 Q 720 115 800 145 Q 880 110 1000 150 L 1000 240 Z" fill="#7faa55"/>
+        <!-- nuclear plant cooling towers -->
+        <g transform="translate(120 70)">
+          <path d="M 0 110 Q -8 60 12 0 L 60 0 Q 80 60 72 110 Z" fill="#cfd8d6" stroke="#1a1a1a" stroke-width="3"/>
+          <path d="M -6 22 L 78 22" stroke="#1a1a1a" stroke-width="2"/>
+          <ellipse cx="36" cy="-2" rx="34" ry="6" fill="#cfd8d6" stroke="#1a1a1a" stroke-width="3"/>
+          <!-- steam -->
+          <ellipse cx="20" cy="-18" rx="14" ry="8" fill="#fff" opacity="0.85"/>
+          <ellipse cx="44" cy="-26" rx="18" ry="10" fill="#fff" opacity="0.85"/>
+          <ellipse cx="36" cy="-12" rx="22" ry="7" fill="#fff" opacity="0.85"/>
+        </g>
+        <g transform="translate(220 70)">
+          <path d="M 0 110 Q -8 60 12 0 L 60 0 Q 80 60 72 110 Z" fill="#cfd8d6" stroke="#1a1a1a" stroke-width="3"/>
+          <path d="M -6 22 L 78 22" stroke="#1a1a1a" stroke-width="2"/>
+          <ellipse cx="36" cy="-2" rx="34" ry="6" fill="#cfd8d6" stroke="#1a1a1a" stroke-width="3"/>
+          <ellipse cx="22" cy="-22" rx="14" ry="8" fill="#fff" opacity="0.85"/>
+          <ellipse cx="46" cy="-30" rx="18" ry="10" fill="#fff" opacity="0.85"/>
+        </g>
+        <!-- Simpson house: pink walls, orange roof -->
+        <g transform="translate(420 90)">
+          <polygon points="0,40 50,0 100,40" fill="#dd6633" stroke="#1a1a1a" stroke-width="3"/>
+          <rect x="6" y="40" width="88" height="78" fill="#f4b6b8" stroke="#1a1a1a" stroke-width="3"/>
+          <rect x="40" y="80" width="20" height="38" fill="#7a3a1f" stroke="#1a1a1a" stroke-width="2.5"/>
+          <rect x="14" y="58" width="18" height="14" fill="#a8e0ff" stroke="#1a1a1a" stroke-width="2.5"/>
+          <rect x="68" y="58" width="18" height="14" fill="#a8e0ff" stroke="#1a1a1a" stroke-width="2.5"/>
+          <!-- chimney -->
+          <rect x="62" y="6" width="14" height="22" fill="#dd6633" stroke="#1a1a1a" stroke-width="2.5"/>
+        </g>
+        <!-- Kwik-E-Mart-ish shop -->
+        <g transform="translate(620 100)">
+          <rect x="0" y="20" width="140" height="100" fill="#f4d35e" stroke="#1a1a1a" stroke-width="3"/>
+          <rect x="0" y="0" width="140" height="22" fill="#dd2222" stroke="#1a1a1a" stroke-width="3"/>
+          <rect x="20" y="40" width="36" height="34" fill="#a8e0ff" stroke="#1a1a1a" stroke-width="2.5"/>
+          <rect x="84" y="40" width="36" height="34" fill="#a8e0ff" stroke="#1a1a1a" stroke-width="2.5"/>
+          <rect x="56" y="74" width="28" height="46" fill="#7a3a1f" stroke="#1a1a1a" stroke-width="2.5"/>
+        </g>
+        <!-- palm tree -->
+        <g transform="translate(820 60)">
+          <rect x="20" y="60" width="10" height="100" fill="#7a4f1f" stroke="#1a1a1a" stroke-width="2"/>
+          <path d="M 25 60 Q 0 50 -10 70 Q 10 56 25 60" fill="#3e8a44" stroke="#1a1a1a" stroke-width="2"/>
+          <path d="M 25 60 Q 50 50 60 70 Q 40 56 25 60" fill="#3e8a44" stroke="#1a1a1a" stroke-width="2"/>
+          <path d="M 25 60 Q 10 30 0 30 Q 18 46 25 60" fill="#3e8a44" stroke="#1a1a1a" stroke-width="2"/>
+          <path d="M 25 60 Q 40 30 50 30 Q 32 46 25 60" fill="#3e8a44" stroke="#1a1a1a" stroke-width="2"/>
+        </g>
+      </svg>
+    </div>
     <div class="hud">
       <div class="stage-label">STAGE ???</div>
       <div class="stage-counter">6 / 8</div>
@@ -1454,17 +1584,38 @@
     </div>
     <div class="dodge-arena" id="dodge-arena">
       <div class="dodge-player" id="dodge-player">
-        <svg viewBox="0 0 40 50" xmlns="http://www.w3.org/2000/svg">
-          <rect x="10" y="0" width="20" height="20" fill="#ffe66d" stroke="#000" stroke-width="2"/>
-          <circle cx="16" cy="10" r="2" fill="#000"/>
-          <circle cx="24" cy="10" r="2" fill="#000"/>
-          <path d="M 14 14 Q 20 18 26 14" stroke="#000" stroke-width="1.5" fill="none"/>
-          <rect x="12" y="20" width="16" height="22" fill="#ff6b35" stroke="#000" stroke-width="2"/>
-          <text x="20" y="35" text-anchor="middle" font-family="monospace" font-size="6" fill="#fff" font-weight="bold">8</text>
+        <svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+          <!-- ear -->
+          <ellipse cx="9" cy="20" rx="3" ry="4" fill="#ffe66d" stroke="#1a1a1a" stroke-width="2"/>
+          <!-- spiky-top head -->
+          <path d="M 12 16 L 14 6 L 19 14 L 23 4 L 28 14 L 32 4 L 37 14 L 41 4 L 46 14 L 50 8 L 50 28 Q 30 36 12 28 Z"
+                fill="#ffe66d" stroke="#1a1a1a" stroke-width="2" stroke-linejoin="round"/>
+          <!-- big white eyes -->
+          <ellipse cx="22" cy="22" rx="6" ry="7" fill="#fff" stroke="#1a1a1a" stroke-width="1.5"/>
+          <ellipse cx="36" cy="22" rx="6" ry="7" fill="#fff" stroke="#1a1a1a" stroke-width="1.5"/>
+          <circle cx="22" cy="24" r="1.6" fill="#000"/>
+          <circle cx="36" cy="24" r="1.6" fill="#000"/>
+          <!-- mouth + chin -->
+          <path d="M 22 30 Q 30 34 38 30" stroke="#1a1a1a" stroke-width="1.6" fill="none"/>
+          <!-- neck -->
+          <rect x="26" y="32" width="8" height="3" fill="#ffe66d" stroke="#1a1a1a" stroke-width="1.5"/>
+          <!-- red shirt -->
+          <rect x="14" y="35" width="32" height="20" fill="#dd2222" stroke="#1a1a1a" stroke-width="2"/>
+          <!-- arms -->
+          <rect x="6" y="36" width="8" height="14" fill="#ffe66d" stroke="#1a1a1a" stroke-width="2"/>
+          <rect x="46" y="36" width="8" height="14" fill="#ffe66d" stroke="#1a1a1a" stroke-width="2"/>
+          <!-- blue shorts -->
+          <rect x="16" y="55" width="28" height="10" fill="#3a5cae" stroke="#1a1a1a" stroke-width="2"/>
+          <!-- legs -->
+          <rect x="18" y="65" width="8" height="8" fill="#ffe66d" stroke="#1a1a1a" stroke-width="2"/>
+          <rect x="34" y="65" width="8" height="8" fill="#ffe66d" stroke="#1a1a1a" stroke-width="2"/>
+          <!-- shoes -->
+          <ellipse cx="22" cy="76" rx="6" ry="2.5" fill="#1f2840" stroke="#1a1a1a" stroke-width="1.5"/>
+          <ellipse cx="38" cy="76" rx="6" ry="2.5" fill="#1f2840" stroke="#1a1a1a" stroke-width="1.5"/>
         </svg>
       </div>
     </div>
-    <div class="instructions" style="background: #ffe66d; color: #000; border-color: #ff00ff; bottom: 6%;">DRAG TO DODGE — DON'T LET THE CURSED HIT YOU</div>
+    <div class="instructions" style="background: #ffe66d; color: #000; border-color: #1a1a1a; bottom: 6%;">DRAG TO DODGE — TAP DONUTS FOR BONUS</div>
     <button class="start-btn next-btn" id="dodge-next-btn" onclick="nextStage()" style="display:none; background: #00ffff; color: #000; position: absolute; bottom: 6%; left: 50%; transform: translateX(-50%); z-index: 10;">ESCAPE →</button>
   </div>
 
@@ -1516,12 +1667,12 @@
       <span class="cutscene-speaker">DAD:</span>so what we buildin' next, BOY? you pick. we make it together.
     </div>
     <div class="dinner-options" style="grid-template-columns: 1fr;">
-      <button class="dinner-btn" onclick="pickNextGame('TACOS QUEST 🌮')">🌮 TACOS QUEST</button>
-      <button class="dinner-btn" onclick="pickNextGame('MINECRAFT KINGDOM ⛏️')">⛏️ MINECRAFT KINGDOM</button>
-      <button class="dinner-btn" onclick="pickNextGame('SUPER NUGGET BROS 🍗')">🍗 SUPER NUGGET BROS</button>
-      <button class="dinner-btn" onclick="pickNextGame('BALD DAD: ORIGINS 👨‍🦲')">👨‍🦲 BALD DAD: ORIGINS</button>
-      <button class="dinner-btn" onclick="pickNextGame('DRAGON BOSS 🐉')">🐉 DRAGON BOSS</button>
-      <button class="dinner-btn" onclick="pickNextGame('SPACE PIZZER 🚀')">🚀 SPACE PIZZER</button>
+      <button class="dinner-btn" onclick="pickNextGame(this, 'TACOS QUEST 🌮')">🌮 TACOS QUEST</button>
+      <button class="dinner-btn" onclick="pickNextGame(this, 'MINECRAFT KINGDOM ⛏️')">⛏️ MINECRAFT KINGDOM</button>
+      <button class="dinner-btn" onclick="pickNextGame(this, 'SUPER NUGGET BROS 🍗')">🍗 SUPER NUGGET BROS</button>
+      <button class="dinner-btn" onclick="pickNextGame(this, 'BALD DAD: ORIGINS 👨‍🦲')">👨‍🦲 BALD DAD: ORIGINS</button>
+      <button class="dinner-btn" onclick="pickNextGame(this, 'DRAGON BOSS 🐉')">🐉 DRAGON BOSS</button>
+      <button class="dinner-btn" onclick="pickNextGame(this, 'SPACE PIZZER 🚀')">🚀 SPACE PIZZER</button>
     </div>
     <div class="cutscene-bubble dad" id="nextgame-confirm" style="display:none;">
       <span class="cutscene-speaker">DAD:</span><span id="nextgame-confirm-text"></span>
@@ -1548,12 +1699,12 @@
       <span class="cutscene-speaker">DAD:</span>yo BOY. what u want for real dinner tonight?
     </div>
     <div class="dinner-options">
-      <button class="dinner-btn" onclick="pickDinner('PIZZA')">🍕 PIZZER</button>
-      <button class="dinner-btn" onclick="pickDinner('NUGGETS')">🍗 NUGGETS</button>
-      <button class="dinner-btn" onclick="pickDinner('TACOS')">🌮 TACOS</button>
-      <button class="dinner-btn" onclick="pickDinner('BURGERS')">🍔 BURGERS</button>
-      <button class="dinner-btn" onclick="pickDinner('SUSHI')">🍣 SUSHI</button>
-      <button class="dinner-btn" onclick="pickDinner('CHINESE')">🥡 CHINESE</button>
+      <button class="dinner-btn" onclick="pickDinner(this, 'PIZZA')">🍕 PIZZER</button>
+      <button class="dinner-btn" onclick="pickDinner(this, 'NUGGETS')">🍗 NUGGETS</button>
+      <button class="dinner-btn" onclick="pickDinner(this, 'TACOS')">🌮 TACOS</button>
+      <button class="dinner-btn" onclick="pickDinner(this, 'BURGERS')">🍔 BURGERS</button>
+      <button class="dinner-btn" onclick="pickDinner(this, 'SUSHI')">🍣 SUSHI</button>
+      <button class="dinner-btn" onclick="pickDinner(this, 'CHINESE')">🥡 CHINESE</button>
     </div>
     <div class="cutscene-bubble dad" id="dinner-confirm" style="display:none;">
       <span class="cutscene-speaker">DAD:</span><span id="dinner-confirm-text"></span>
@@ -1613,10 +1764,11 @@
   function playWinSound() {
     const notes = [523, 659, 784, 1047];
     notes.forEach((f, i) => setTimeout(() => playBeep(f, 0.15, 'square', 0.18), i * 80));
+    buzz([30, 40, 30, 40, 80]);
   }
-  function playHit() { playBeep(180, 0.06, 'sawtooth', 0.18); }
-  function playSwing() { playBeep(880, 0.08, 'triangle', 0.12); }
-  function playPunch() { playBeep(120, 0.08, 'sawtooth', 0.2); }
+  function playHit() { playBeep(180, 0.06, 'sawtooth', 0.18); buzz(20); }
+  function playSwing() { playBeep(880, 0.08, 'triangle', 0.12); buzz(15); }
+  function playPunch() { playBeep(120, 0.08, 'sawtooth', 0.2); buzz(60); }
 
   // Round banner
   function showRoundBanner(text, sub, cb) {
@@ -1636,35 +1788,70 @@
     notes.forEach((n, i) => setTimeout(() => playBeep(n, 0.12, type, vol), i * 90));
   }
 
-  // MJ-style synth yelps (no TTS — just 8-bit chirps)
+  // Rhythm-hit feedback for the moonwalk stage. Real MJ vocal samples would be copyrighted, so this is
+  // a clean synthesized "snap + chirp" that fits the rhythm-game feel without pretending to be MJ.
   function playMJVoice() {
     const ctx = getCtx();
     if (!ctx) return;
-    // Random yelp pattern: pitch-up sweep with quick decay
-    const variants = [
-      { start: 900, end: 1500, dur: 0.12 },   // HEE
-      { start: 700, end: 1200, dur: 0.1 },    // HOO
-      { start: 1100, end: 1700, dur: 0.09 },  // YIP
-      { start: 800, end: 1400, dur: 0.11 },   // OW
-    ];
-    const v = variants[Math.floor(Math.random() * variants.length)];
+    // Bright pluck on top
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'square';
-    osc.frequency.setValueAtTime(v.start, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(v.end, ctx.currentTime + v.dur * 0.6);
-    osc.frequency.exponentialRampToValueAtTime(v.start * 0.7, ctx.currentTime + v.dur);
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + v.dur);
+    const startFreq = 880 + Math.random() * 220;
+    osc.frequency.setValueAtTime(startFreq, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(startFreq * 0.6, ctx.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
     osc.connect(gain).connect(ctx.destination);
     osc.start();
-    osc.stop(ctx.currentTime + v.dur);
+    osc.stop(ctx.currentTime + 0.14);
+    // Tight low thump underneath for groove
+    const kick = ctx.createOscillator();
+    const kg = ctx.createGain();
+    kick.type = 'sine';
+    kick.frequency.setValueAtTime(140, ctx.currentTime);
+    kick.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.08);
+    kg.gain.setValueAtTime(0.22, ctx.currentTime);
+    kg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+    kick.connect(kg).connect(ctx.destination);
+    kick.start();
+    kick.stop(ctx.currentTime + 0.08);
   }
-  // Keep the audio files we generated but unused for now (in case Dan wants them back)
-  const MJ_VOICE_AUDIOS = []; // disabled
+  // Empty pool kept so the audio-unlock loop in startGame doesn't crash on iOS.
+  const MJ_VOICE_POOL = [];
+
+  // Haptic feedback (ignored on iOS Safari which doesn't expose vibrate, fine on Android Chrome)
+  function buzz(ms) {
+    if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} }
+  }
+
+  // Pop a floating "+1!" or "PERFECT!" style indicator at a given % position inside a parent.
+  // Accepts an optional event so you can place the popup right where the user tapped.
+  function showScorePopup(parent, text, color, leftPct, topPct) {
+    if (!parent) return;
+    const el = document.createElement('div');
+    el.className = 'score-popup';
+    el.textContent = text;
+    el.style.color = color || '#ffe66d';
+    el.style.left = (leftPct == null ? 50 : leftPct) + '%';
+    el.style.top = (topPct == null ? 50 : topPct) + '%';
+    parent.appendChild(el);
+    setTimeout(() => el.remove(), 900);
+  }
+
+  // Briefly shake the active stage. Used on player-damage and big boss hits.
+  function shakeActiveStage() {
+    const stage = document.querySelector('.stage.active');
+    if (!stage) return;
+    stage.classList.remove('shake-once');
+    void stage.offsetWidth;
+    stage.classList.add('shake-once');
+    setTimeout(() => stage.classList.remove('shake-once'), 300);
+  }
 
   // Per-stage looping BGM
   let bgmLoop = null;
+  let bgmBassLoop = null;
   let bgmIdx = 0;
   const STAGE_BGM = {
     stage1: { notes: [262, 330, 392, 330, 262, 330, 523, 392], type: 'triangle', step: 250, vol: 0.06 },
@@ -1672,7 +1859,21 @@
     stage3: { notes: [196, 196, 262, 233, 196, 262, 233, 196], type: 'square', step: 220, vol: 0.06 },
     stage4: { notes: [262, 330, 392, 523, 392, 330, 262, 196], type: 'triangle', step: 200, vol: 0.06 },
     stage5: { notes: [98, 98, 116, 98, 87, 98, 116, 130], type: 'sawtooth', step: 240, vol: 0.07 },
-    stage6: { notes: [932, 1047, 932, 698, 587, 698, 932, 1047, 698, 587, 523, 466, 523, 587, 698, 932], type: 'triangle', step: 180, vol: 0.06 },
+    // Stage 6 — 8-bit Simpsons-style melody. C Lydian (C D E F# G A B), bouncy.
+    // Lead riff approximates the iconic "The Simp-sons!" opening contour, then a Lydian arpeggio loop.
+    // Bass alternates root/fifth on a slower pulse so it grooves underneath the lead.
+    stage6: {
+      notes: [
+        523, 0, 659, 0, 740, 880, 1047, 880,    // "The Simp-sons!" rising motif
+        740, 880, 988, 880, 740, 659, 587, 523, // lydian fall
+        523, 659, 740, 880, 988, 880, 740, 659, // playful bounce
+        587, 740, 659, 523, 0, 392, 0, 0,       // tag + breath
+      ],
+      type: 'square',
+      step: 150,
+      vol: 0.07,
+      bass: { notes: [131, 0, 196, 0], type: 'triangle', step: 600, vol: 0.09 },
+    },
     stage7: { notes: [175, 175, 175, 165, 175, 175, 156, 175], type: 'sawtooth', step: 180, vol: 0.07 },
     stage8: { notes: [523, 659, 784, 1047, 784, 659, 523, 1047], type: 'triangle', step: 260, vol: 0.07 },
   };
@@ -1683,13 +1884,25 @@
     bgmIdx = 0;
     bgmLoop = setInterval(() => {
       const note = conf.notes[bgmIdx % conf.notes.length];
-      playBeep(note, conf.step / 1000 * 0.9, conf.type, conf.vol);
+      if (note > 0) playBeep(note, conf.step / 1000 * 0.85, conf.type, conf.vol);
       bgmIdx++;
     }, conf.step);
+    // Optional bass voice for stages that supply one (currently the Simpsons stage)
+    if (conf.bass) {
+      let bassIdx = 0;
+      const bass = conf.bass;
+      bgmBassLoop = setInterval(() => {
+        const n = bass.notes[bassIdx % bass.notes.length];
+        if (n > 0) playBeep(n, bass.step / 1000 * 0.7, bass.type, bass.vol);
+        bassIdx++;
+      }, bass.step);
+    }
   }
   function stopBGM() {
     if (bgmLoop) clearInterval(bgmLoop);
+    if (bgmBassLoop) clearInterval(bgmBassLoop);
     bgmLoop = null;
+    bgmBassLoop = null;
   }
   const STAGE_JINGLES = {
     stage1: [392, 523, 659, 784],          // bright intro
@@ -1697,7 +1910,7 @@
     stage3: [659, 587, 523, 587, 659],     // MJ-ish vibe
     stage4: [523, 659, 523, 659, 784],     // bouncy
     stage5: [196, 233, 196, 174, 196],     // dark boss
-    stage6: [220, 277, 233, 277, 220],     // weird cursed
+    stage6: [523, 659, 740, 880, 1047],    // "The Simp-sons!" intro motif
     stage7: [311, 311, 277, 311],          // algorithm angry
     stage8: [523, 659, 784, 1047, 1319],   // fanfare
   };
@@ -1708,6 +1921,8 @@
       if (el) el.classList.toggle('active', i === idx);
     });
     currentStage = idx;
+    // Show HOME button on every stage except the title screen
+    document.getElementById('home-btn').classList.toggle('visible', idx > 0);
     const jingle = STAGE_JINGLES[stages[idx]];
     if (jingle) {
       const type = stages[idx] === 'stage5' || stages[idx] === 'stage7' ? 'sawtooth' : 'square';
@@ -1732,7 +1947,7 @@
   function startGame() {
     // Unlock audio on first user gesture (mobile Safari requirement)
     getCtx();
-    MJ_VOICE_AUDIOS.forEach(a => {
+    MJ_VOICE_POOL.forEach(a => {
       try { a.muted = true; a.play().then(() => { a.pause(); a.currentTime = 0; a.muted = false; }).catch(()=>{}); } catch(e){}
     });
     showStage(1);
@@ -1752,6 +1967,141 @@
     }
     showStage(next);
   }
+
+  // Food SVGs for stage 4 (broccoli is the cursed food, nuggets are the goal)
+  const NUGGET_SVG = `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+    <!-- irregular blobby nugget body -->
+    <path d="M 12 28 Q 8 18 18 14 Q 22 6 32 10 Q 44 6 48 18 Q 56 24 50 34 Q 54 46 42 48 Q 32 56 22 48 Q 8 48 12 36 Z"
+          fill="#e3b573" stroke="#6b3a1a" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- crispy bumps -->
+    <circle cx="22" cy="22" r="3" fill="#d49858"/>
+    <circle cx="34" cy="18" r="2.5" fill="#d49858"/>
+    <circle cx="42" cy="28" r="3" fill="#d49858"/>
+    <circle cx="28" cy="34" r="2.5" fill="#d49858"/>
+    <circle cx="20" cy="38" r="2" fill="#d49858"/>
+    <circle cx="38" cy="42" r="2.5" fill="#d49858"/>
+    <!-- highlight -->
+    <ellipse cx="20" cy="18" rx="4" ry="2" fill="#f5cc88" opacity="0.7"/>
+  </svg>`;
+
+  const BROCCOLI_SVG = `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+    <!-- pale stem -->
+    <path d="M 24 40 Q 22 48 24 56 L 36 56 Q 38 48 36 40 Z"
+          fill="#d8e3a6" stroke="#1a3a1a" stroke-width="2" stroke-linejoin="round"/>
+    <!-- stem ribs -->
+    <path d="M 28 44 L 28 54 M 32 44 L 32 54" stroke="#9fb375" stroke-width="1.5"/>
+    <!-- bumpy floret cluster (overlapping circles) -->
+    <circle cx="14" cy="26" r="9" fill="#3d6e2a" stroke="#1a3a1a" stroke-width="2"/>
+    <circle cx="46" cy="26" r="9" fill="#3d6e2a" stroke="#1a3a1a" stroke-width="2"/>
+    <circle cx="22" cy="14" r="10" fill="#4a8033" stroke="#1a3a1a" stroke-width="2"/>
+    <circle cx="38" cy="14" r="10" fill="#4a8033" stroke="#1a3a1a" stroke-width="2"/>
+    <circle cx="30" cy="22" r="11" fill="#4a8033" stroke="#1a3a1a" stroke-width="2"/>
+    <circle cx="20" cy="34" r="8" fill="#3d6e2a" stroke="#1a3a1a" stroke-width="2"/>
+    <circle cx="40" cy="34" r="8" fill="#3d6e2a" stroke="#1a3a1a" stroke-width="2"/>
+    <!-- texture dots that suggest tightly packed buds -->
+    <g fill="#2d5a1d">
+      <circle cx="16" cy="22" r="1.4"/><circle cx="22" cy="16" r="1.4"/>
+      <circle cx="30" cy="12" r="1.4"/><circle cx="38" cy="16" r="1.4"/>
+      <circle cx="44" cy="22" r="1.4"/><circle cx="20" cy="30" r="1.4"/>
+      <circle cx="28" cy="26" r="1.4"/><circle cx="36" cy="30" r="1.4"/>
+      <circle cx="40" cy="38" r="1.4"/><circle cx="22" cy="38" r="1.4"/>
+      <circle cx="14" cy="28" r="1.4"/><circle cx="46" cy="28" r="1.4"/>
+    </g>
+    <!-- top highlights -->
+    <ellipse cx="22" cy="10" rx="3" ry="1.6" fill="#7aaa55" opacity="0.7"/>
+    <ellipse cx="38" cy="10" rx="3" ry="1.6" fill="#7aaa55" opacity="0.7"/>
+  </svg>`;
+
+  // Springfield-themed sprites for the dodge stage. POW items reward bonus points; CURSED items damage HP.
+  const POW_SPRITES = [
+    // pink frosted donut with sprinkles — Bart's favorite, big bonus
+    `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="30" cy="30" r="25" fill="#c79661" stroke="#1a1a1a" stroke-width="2.5"/>
+      <path d="M 6 30 Q 12 8 30 6 Q 49 8 54 30 Q 52 38 47 36 Q 44 44 36 38 Q 32 46 26 38 Q 18 44 13 36 Q 9 38 6 30 Z" fill="#f7a8c9" stroke="#1a1a1a" stroke-width="2"/>
+      <circle cx="30" cy="30" r="9" fill="#7f5733" stroke="#1a1a1a" stroke-width="2"/>
+      <g stroke="#1a1a1a" stroke-width="0.6">
+        <rect x="14" y="14" width="3" height="6" fill="#f7e26b" transform="rotate(20 15 17)"/>
+        <rect x="40" y="11" width="3" height="6" fill="#dd2222" transform="rotate(-30 41 14)"/>
+        <rect x="16" y="34" width="3" height="6" fill="#3a5cae" transform="rotate(-50 17 37)"/>
+        <rect x="40" y="36" width="3" height="6" fill="#3e8a44" transform="rotate(40 41 39)"/>
+        <rect x="28" y="12" width="3" height="6" fill="#dd2222"/>
+        <rect x="44" y="22" width="3" height="6" fill="#a14fc4" transform="rotate(70 45 25)"/>
+      </g>
+    </svg>`,
+    // Krusty face — bonus
+    `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="30" cy="32" r="22" fill="#fff" stroke="#1a1a1a" stroke-width="2"/>
+      <path d="M 6 24 Q 18 4 30 8 Q 42 4 54 24 Q 46 18 36 22 Q 30 14 24 22 Q 14 18 6 24 Z" fill="#3e8a44" stroke="#1a1a1a" stroke-width="2"/>
+      <ellipse cx="30" cy="42" rx="14" ry="8" fill="#dd2222" stroke="#1a1a1a" stroke-width="2"/>
+      <rect x="22" y="38" width="16" height="4" fill="#fff" stroke="#1a1a1a" stroke-width="0.6"/>
+      <circle cx="22" cy="28" r="2" fill="#1a1a1a"/>
+      <circle cx="38" cy="28" r="2" fill="#1a1a1a"/>
+      <path d="M 18 22 L 26 24 M 34 24 L 42 22" stroke="#1a1a1a" stroke-width="2"/>
+      <circle cx="30" cy="34" r="3.5" fill="#dd2222" stroke="#1a1a1a" stroke-width="1.5"/>
+    </svg>`,
+    // Bart's slingshot — bonus
+    `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 18 8 L 30 28 L 42 8" stroke="#7a4f1f" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="30" y1="28" x2="30" y2="52" stroke="#7a4f1f" stroke-width="7" stroke-linecap="round"/>
+      <path d="M 18 8 Q 30 22 42 8" stroke="#dd2222" stroke-width="3" fill="none"/>
+      <circle cx="30" cy="20" r="3.5" fill="#1a1a1a" stroke="#dd2222" stroke-width="1.5"/>
+    </svg>`,
+  ];
+  const CURSED_SPRITES = [
+    // Duff beer — bad for Bart
+    `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <rect x="18" y="6" width="24" height="48" fill="#dd2222" stroke="#1a1a1a" stroke-width="2.5" rx="2"/>
+      <ellipse cx="30" cy="6" rx="12" ry="3" fill="#a8acb2" stroke="#1a1a1a" stroke-width="2"/>
+      <ellipse cx="30" cy="54" rx="12" ry="3" fill="#a8acb2" stroke="#1a1a1a" stroke-width="2"/>
+      <rect x="18" y="22" width="24" height="14" fill="#f7e26b" stroke="#1a1a1a" stroke-width="2"/>
+      <text x="30" y="33" text-anchor="middle" font-family="'Bangers', monospace" font-size="9" fill="#1a1a1a" font-weight="bold">DUFF</text>
+    </svg>`,
+    // Mr Burns
+    `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="30" cy="30" rx="16" ry="20" fill="#d6e2a8" stroke="#1a1a1a" stroke-width="2"/>
+      <polygon points="14,30 8,32 14,36" fill="#d6e2a8" stroke="#1a1a1a" stroke-width="2"/>
+      <polygon points="46,30 52,32 46,36" fill="#d6e2a8" stroke="#1a1a1a" stroke-width="2"/>
+      <ellipse cx="22" cy="26" rx="4" ry="3" fill="#fff" stroke="#1a1a1a" stroke-width="1.5"/>
+      <ellipse cx="38" cy="26" rx="4" ry="3" fill="#fff" stroke="#1a1a1a" stroke-width="1.5"/>
+      <circle cx="22" cy="26" r="1.4" fill="#000"/>
+      <circle cx="38" cy="26" r="1.4" fill="#000"/>
+      <path d="M 16 18 L 26 22 M 34 22 L 44 18" stroke="#1a1a1a" stroke-width="2.5"/>
+      <path d="M 28 28 L 32 38 L 26 38 Z" fill="#bdc88a" stroke="#1a1a1a" stroke-width="1.5"/>
+      <path d="M 22 46 Q 30 42 38 46" stroke="#1a1a1a" stroke-width="2" fill="none"/>
+    </svg>`,
+    // Skinner's bald head — homework guy
+    `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="30" cy="34" rx="18" ry="20" fill="#ffe66d" stroke="#1a1a1a" stroke-width="2"/>
+      <ellipse cx="20" cy="22" rx="3" ry="1" fill="#444"/>
+      <ellipse cx="40" cy="22" rx="3" ry="1" fill="#444"/>
+      <ellipse cx="22" cy="30" rx="3" ry="3" fill="#fff" stroke="#1a1a1a" stroke-width="1.5"/>
+      <ellipse cx="38" cy="30" rx="3" ry="3" fill="#fff" stroke="#1a1a1a" stroke-width="1.5"/>
+      <circle cx="22" cy="31" r="1.3" fill="#000"/>
+      <circle cx="38" cy="31" r="1.3" fill="#000"/>
+      <path d="M 22 42 L 38 42" stroke="#1a1a1a" stroke-width="2"/>
+      <rect x="18" y="50" width="24" height="8" fill="#3a5cae" stroke="#1a1a1a" stroke-width="2"/>
+    </svg>`,
+    // Broccoli (reuse the broccoli design from stage 4)
+    `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 24 40 Q 22 48 24 56 L 36 56 Q 38 48 36 40 Z" fill="#d8e3a6" stroke="#1a3a1a" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="14" cy="26" r="9" fill="#3d6e2a" stroke="#1a3a1a" stroke-width="2"/>
+      <circle cx="46" cy="26" r="9" fill="#3d6e2a" stroke="#1a3a1a" stroke-width="2"/>
+      <circle cx="22" cy="14" r="10" fill="#4a8033" stroke="#1a3a1a" stroke-width="2"/>
+      <circle cx="38" cy="14" r="10" fill="#4a8033" stroke="#1a3a1a" stroke-width="2"/>
+      <circle cx="30" cy="22" r="11" fill="#4a8033" stroke="#1a3a1a" stroke-width="2"/>
+    </svg>`,
+    // Detention slip
+    `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="10" width="40" height="42" fill="#fff" stroke="#1a1a1a" stroke-width="2.5" transform="rotate(-6 30 30)"/>
+      <g transform="rotate(-6 30 30)">
+        <text x="30" y="22" text-anchor="middle" font-family="monospace" font-size="6" fill="#dd2222" font-weight="bold">DETENTION</text>
+        <line x1="14" y1="28" x2="46" y2="28" stroke="#1a1a1a" stroke-width="0.8"/>
+        <line x1="14" y1="34" x2="46" y2="34" stroke="#1a1a1a" stroke-width="0.8"/>
+        <line x1="14" y1="40" x2="46" y2="40" stroke="#1a1a1a" stroke-width="0.8"/>
+        <line x1="14" y1="46" x2="46" y2="46" stroke="#1a1a1a" stroke-width="0.8"/>
+      </g>
+    </svg>`,
+  ];
 
   // CUTSCENE DATA
   const HUNTER_SVG = `<svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
@@ -1932,10 +2282,10 @@
     document.querySelectorAll('.dinner-btn').forEach(b => b.classList.remove('picked'));
     playBeep(523, 0.1, 'triangle', 0.14);
   }
-  function pickDinner(food) {
+  function pickDinner(btn, food) {
     window.dinnerPicked = food;
     document.querySelectorAll('.dinner-btn').forEach(b => b.classList.remove('picked'));
-    event.target.classList.add('picked');
+    btn.classList.add('picked');
     const phrases = {
       PIZZA: 'PIZZER ON THE WAY BOY 🍕',
       NUGGETS: 'NUGGS COMING UP 🍗',
@@ -1982,9 +2332,9 @@
       alert('error: ' + err.message);
     }
   }
-  function pickNextGame(label) {
+  function pickNextGame(btn, label) {
     document.querySelectorAll('#next-game-picker .dinner-btn').forEach(b => b.classList.remove('picked'));
-    event.target.classList.add('picked');
+    btn.classList.add('picked');
     document.getElementById('nextgame-confirm-text').textContent = `LOCKED IN: "${label}". WE BUILD THIS NEXT, BOY.`;
     document.getElementById('nextgame-confirm').style.display = 'block';
     document.getElementById('nextgame-continue').classList.add('ready');
@@ -2031,52 +2381,13 @@
     }
   }
   function restartGame() {
-    spideyHits = 0;
-    spideyRound = 1;
-    spideyGameRunning = false;
-    cleanupSpideyTarget();
-    mjScore = 0;
-    mjRound = 1;
-    mjGameRunning = false;
-    nuggetCount = 0;
-    nuggetRound = 1;
-    nuggetGameRunning = false;
-    bossHp = 100;
-    dodgeRunning = false;
-    dodgeRound = 1;
-    if (dodgeTickTimer) clearInterval(dodgeTickTimer);
-    if (dodgeSpawnTimer) clearTimeout(dodgeSpawnTimer);
-    algoGameRunning = false;
-    algoRound = 1;
-    if (algoSpawnTimer) clearTimeout(algoSpawnTimer);
+    silentReset();
     window.dinnerPicked = false;
-    document.getElementById('boss-hp').style.width = '100%';
-    const boss = document.getElementById('boss-troll');
-    if (boss) { boss.style.opacity = '1'; boss.style.transform = 'translate(-50%, -50%)'; }
-    const algoBoss = document.querySelector('.algorithm-boss');
-    if (algoBoss) { algoBoss.style.opacity = '1'; algoBoss.style.transform = ''; }
     const mj = document.getElementById('mj-char');
     if (mj) mj.style.transform = '';
     const spidey = document.getElementById('spidey-char');
     if (spidey) spidey.style.transform = '';
     document.getElementById('boss-prompt').innerHTML = 'HUNTER + BALD DAD<br/>VS<br/>THE TROLL';
-    bossMisses = 0;
-    // Defensive: hide all overlays
-    document.getElementById('cutscene').classList.remove('active');
-    document.getElementById('dinner-choice').classList.remove('active');
-    document.getElementById('game-over').classList.remove('active');
-    document.getElementById('round-banner').classList.remove('active');
-    cutsceneTargetIdx = null;
-    dinnerNextIdx = null;
-    gameOverPrevStage = null;
-    // Clean any residual sprites
-    document.querySelectorAll('.dodge-arena .cursed-falling, .hate-zone .dislike, .rhythm-note').forEach(e => e.remove());
-    // Reset visible boss states
-    const algoBossEl = document.querySelector('#stage7 .algorithm-boss');
-    if (algoBossEl) { algoBossEl.style.opacity = '1'; algoBossEl.style.transform = 'scale(1)'; }
-    document.getElementById('algo-next-btn').style.display = 'none';
-    document.getElementById('dodge-next-btn').style.display = 'none';
-    document.getElementById('nugget-skip').style.display = 'none';
     showStage(0);
   }
 
@@ -2094,7 +2405,7 @@
     spideyHits = 0;
     spideyMisses = 0;
     if (!roundResume) spideyRound = 1;
-    document.getElementById('swing-counter').textContent = `R${spideyRound} • SWINGS: 0/6 • MISS: 0/3`;
+    document.getElementById('swing-counter').textContent = `R${spideyRound} • SWINGS: 0/6 • MISS: 0/5`;
     document.getElementById('web-line').style.opacity = '0';
     document.getElementById('web-line').style.height = '0';
     const spidey = document.getElementById('spidey-char');
@@ -2180,6 +2491,7 @@
       flash.style.top = `${y - 5}%`;
       stage.appendChild(flash);
       setTimeout(() => flash.remove(), 700);
+      showScorePopup(stage, '+1', '#00ff66', x, y - 12);
 
       // pop target & ring
       target.style.transition = 'transform 0.3s, opacity 0.3s';
@@ -2188,7 +2500,7 @@
       ring.style.opacity = '0';
       playSwing();
 
-      document.getElementById('swing-counter').textContent = `R${spideyRound} • SWINGS: ${spideyHits}/6 • MISS: ${spideyMisses}/3`;
+      document.getElementById('swing-counter').textContent = `R${spideyRound} • SWINGS: ${spideyHits}/6 • MISS: ${spideyMisses}/5`;
       document.getElementById('spidey-phase').textContent = getSpideyPhaseText();
 
       if (spideyHits >= 6) {
@@ -2228,8 +2540,8 @@
       ring.style.opacity = '0';
       target.style.opacity = '0';
       playHit();
-      document.getElementById('swing-counter').textContent = `R${spideyRound} • SWINGS: ${spideyHits}/6 • MISS: ${spideyMisses}/3`;
-      if (spideyMisses >= 3) {
+      document.getElementById('swing-counter').textContent = `R${spideyRound} • SWINGS: ${spideyHits}/6 • MISS: ${spideyMisses}/5`;
+      if (spideyMisses >= 5) {
         spideyGameRunning = false;
         cleanupSpideyTarget();
         showGameOver('SPIDEY MISSED 3 TIMES!');
@@ -2304,7 +2616,7 @@
             showJudge('MISS', '#888');
             setTimeout(() => note.remove(), 300);
             mjActiveNotes = mjActiveNotes.filter(n => n !== note);
-            if (mjMissed >= 5) {
+            if (mjMissed >= 7) {
               mjGameRunning = false;
               if (mjSpawnTimer) clearTimeout(mjSpawnTimer);
               showGameOver('TOO MANY MISSED BEATS!');
@@ -2433,6 +2745,7 @@
       const isNugget = Math.random() > broccoliChance;
       const el = document.createElement('div');
       el.className = isNugget ? 'nugget' : 'broccoli';
+      el.innerHTML = isNugget ? NUGGET_SVG : BROCCOLI_SVG;
       const x = Math.random() * 80 + 10;
       el.style.left = `${x}%`;
       el.style.top = `-50px`;
@@ -2443,7 +2756,7 @@
       el.animate([
         { top: '-50px' },
         { top: '85%' }
-      ], { duration: fallDuration, easing: 'linear' });
+      ], { duration: fallDuration, easing: 'linear', fill: 'forwards' });
 
       setTimeout(() => {
         const cupRect = cup.getBoundingClientRect();
@@ -2455,6 +2768,9 @@
             nuggetCount++;
             document.getElementById('nugget-score').textContent = `R${nuggetRound} • NUGGETS: ${nuggetCount}/8`;
             playBeep(660 + nuggetCount * 30, 0.1, 'triangle', 0.18);  // CHIME on catch
+            const nuggetX = parseFloat(el.style.left) || 50;
+            showScorePopup(stage, '+1 NUGG!', '#ff8a3d', nuggetX, 78);
+            buzz(20);
             if (nuggetCount >= 8) {
               nuggetGameRunning = false;
               if (nuggetRound < 2) {
@@ -2471,10 +2787,13 @@
               }
             }
           } else {
-            // BROCCOLI caught = FAIL
-            nuggetGameRunning = false;
+            // BROCCOLI caught: lose a nugget (but no instant game over). Floor at 0.
+            nuggetCount = Math.max(0, nuggetCount - 1);
+            document.getElementById('nugget-score').textContent = `R${nuggetRound} • NUGGETS: ${nuggetCount}/8 — BLECH! BROCCOLI`;
             playPunch();
-            showGameOver('YOU CAUGHT BROCCOLI! NOT IN MY CHOCOLATE MILK!');
+            const broccX = parseFloat(el.style.left) || 50;
+            showScorePopup(stage, 'BLECH! -1', '#ff4466', broccX, 76);
+            shakeActiveStage();
           }
         } else if (!isNugget) {
           // missed broccoli = fine
@@ -2492,7 +2811,7 @@
 
   // STAGE 6: dodge game with tap-to-destroy collectables (multi-round)
   let dodgeRunning = false;
-  let dodgeLives = 3;
+  let dodgeLives = 4;
   let dodgeTime = 12;
   let dodgeRound = 1;
   let dodgeScore = 0;
@@ -2501,7 +2820,7 @@
   function initDodgeGame(roundResume) {
     if (dodgeRunning) return;
     dodgeRunning = true;
-    dodgeLives = 3;
+    dodgeLives = 4;
     dodgeScore = 0;
     dodgeTime = dodgeRound === 2 ? 15 : 12;
     if (!roundResume) { dodgeRound = 1; dodgeTime = 12; }
@@ -2526,15 +2845,14 @@
     arena.ontouchmove = movePlayer;
     arena.onclick = movePlayer;
 
-    const symbols = ['🟡', '🍩', '🍺', '😬', '🟡', '🍩', '👁️', '💀', '🟡', '🍩', '🍺', '👹', '🍞', '🌀'];
-    const powSymbols = ['🍩', '🍺', '🟡', '⭐', '🥯'];
     function spawnCursed() {
       if (!dodgeRunning) return;
       const c = document.createElement('div');
-      // 35% chance to be a tappable POW (donut/star/duff) worth 5 pts
-      const isPow = Math.random() < 0.35;
+      // 40% chance to be a tappable POW (donut/Krusty/slingshot) worth bonus points
+      const isPow = Math.random() < 0.4;
       c.className = isPow ? 'cursed-falling pow' : 'cursed-falling';
-      c.textContent = (isPow ? powSymbols : symbols)[Math.floor(Math.random() * (isPow ? powSymbols.length : symbols.length))];
+      const pool = isPow ? POW_SPRITES : CURSED_SPRITES;
+      c.innerHTML = pool[Math.floor(Math.random() * pool.length)];
       const x = Math.random() * 90 + 5;
       c.style.left = `${x}%`;
       c.style.top = `-50px`;
@@ -2552,6 +2870,13 @@
           document.getElementById('dodge-lives').textContent = `R${dodgeRound} • HP:${dodgeLives} • PTS:${dodgeScore}`;
           playBeep(900 + dodgeScore * 10, 0.08, 'square', 0.18);
           c.classList.add('hit');
+          buzz(20);
+          // Float "+5!" near where it was tapped (relative to arena, not stage)
+          const arenaRect = arena.getBoundingClientRect();
+          const cRect = c.getBoundingClientRect();
+          const lx = ((cRect.left + cRect.width/2) - arenaRect.left) / arenaRect.width * 100;
+          const ly = ((cRect.top + cRect.height/2) - arenaRect.top) / arenaRect.height * 100;
+          showScorePopup(arena, '+5!', '#f7e26b', lx, ly);
           setTimeout(() => c.remove(), 400);
         };
       }
@@ -2582,14 +2907,25 @@
         ) {
           c.classList.add('hit');
           if (c.dataset.pow === '1') {
-            // Auto-collect POW on body hit: bonus points
+            // Auto-collect POW on body hit: bonus points + Bart chomps it
             dodgeScore += 3;
             document.getElementById('dodge-lives').textContent = `R${dodgeRound} • HP:${dodgeLives} • PTS:${dodgeScore}`;
             playBeep(880, 0.1, 'square', 0.18);
+            const playerEl = document.getElementById('dodge-player');
+            playerEl.classList.remove('chomp');
+            void playerEl.offsetWidth;
+            playerEl.classList.add('chomp');
+            const arenaRect = arena.getBoundingClientRect();
+            const lx = ((cRect.left + cRect.width/2) - arenaRect.left) / arenaRect.width * 100;
+            showScorePopup(arena, '+3 NOM!', '#f7e26b', lx, 88);
           } else {
             dodgeLives--;
             document.getElementById('dodge-lives').textContent = `R${dodgeRound} • HP:${dodgeLives} • PTS:${dodgeScore}`;
             playHit();
+            shakeActiveStage();
+            const arenaRect = arena.getBoundingClientRect();
+            const lx = ((cRect.left + cRect.width/2) - arenaRect.left) / arenaRect.width * 100;
+            showScorePopup(arena, 'OUCH!', '#ff4466', lx, 88);
           }
           setTimeout(() => c.remove(), 300);
           if (dodgeLives <= 0) {
@@ -2645,7 +2981,7 @@
   function initSixSevenRain() {
     const rain = document.getElementById('six-seven-rain');
     rain.innerHTML = '';
-    const phrases = ['D\'OH!', 'AY CARUMBA!', 'EAT MY SHORTS', 'WOOHOO!', 'EXCELLENT', 'MMM... DONUT', 'DON\'T HAVE A COW', 'WORST EVER'];
+    const phrases = ['D\'OH!', 'AY CARUMBA!', 'EAT MY SHORTS', 'WOOHOO!', 'EXCELLENT', 'MMM... DONUT', 'DON\'T HAVE A COW, MAN', 'WORST. STAGE. EVER.', 'COWABUNGA!', 'OKILY DOKILY!', 'STEAMED HAMS', 'I\'M HELPING!'];
     for (let i = 0; i < 16; i++) {
       const s = document.createElement('span');
       s.textContent = phrases[Math.floor(Math.random() * phrases.length)];
@@ -2745,7 +3081,7 @@
       }
     }
 
-    if (bossMisses >= 7) {
+    if (bossMisses >= 10) {
       stopComboLoop();
       document.getElementById('boss-prompt').innerHTML = 'TROLL COUNTERATTACK!';
       showGameOver('THE TROLL HIT BACK! TIME YOUR TAPS!');
@@ -2775,7 +3111,7 @@
     algoHp = 100;
     algoMisses = 0;
     if (!roundResume) algoRound = 1;
-    document.getElementById('algo-hp-text').textContent = `R${algoRound} • ALGORITHM HP: ${algoHp}% • MISS: 0/8`;
+    document.getElementById('algo-hp-text').textContent = `R${algoRound} • HP: ${algoHp}% • MISS: 0/10`;
     document.getElementById('algo-next-btn').style.display = 'none';
     const boss = document.querySelector('#stage7 .algorithm-boss');
     boss.style.opacity = '1';
@@ -2810,7 +3146,7 @@
         if (d.classList.contains('popped')) return;
         d.classList.add('popped');
         algoHp = Math.max(0, algoHp - 8);
-        document.getElementById('algo-hp-text').textContent = `R${algoRound} • HP: ${algoHp}% • MISS: ${algoMisses}/8`;
+        document.getElementById('algo-hp-text').textContent = `R${algoRound} • HP: ${algoHp}% • MISS: ${algoMisses}/10`;
         boss.style.transform = `scale(${1 - (100 - algoHp) / 200}) rotate(${(100 - algoHp) * 1.5}deg)`;
         playBeep(660 + algoHp * 4, 0.08);
         setTimeout(() => d.remove(), 500);
@@ -2826,9 +3162,9 @@
           if (algoHp < 100 && algoHp > 0) {
             algoHp = Math.min(100, algoHp + 3);
           }
-          document.getElementById('algo-hp-text').textContent = `R${algoRound} • HP: ${algoHp}% • MISS: ${algoMisses}/8`;
+          document.getElementById('algo-hp-text').textContent = `R${algoRound} • HP: ${algoHp}% • MISS: ${algoMisses}/10`;
           setTimeout(() => d.remove(), 300);
-          if (algoMisses >= 8) {
+          if (algoMisses >= 10) {
             algoGameRunning = false;
             if (algoSpawnTimer) clearTimeout(algoSpawnTimer);
             showGameOver('TOO MANY DISLIKES GOT THROUGH!');
@@ -2881,6 +3217,93 @@
       setTimeout(() => piece.remove(), 6000);
     }
   }
+
+  // Stage 1 — clicking Hunter or Dad cycles a fun chat line so the spawn screen is interactive instead of static.
+  const STAGE1_LINES = {
+    hunter: ['DAD UR BALD', 'IM 8 NOW', 'POG', '6 7!!', 'NEED V-BUCKS', 'DAD CARRY ME', 'IM HIM'],
+    dad: ['PIZZER TIME', 'NICE FIT BOY', 'WHO WANTS PIZZER', 'CLEAN UR ROOM', 'NO ROBLOX YET', 'BIRTHDAY VIBES', 'I LOVE U BOY'],
+  };
+  const stage1ChatIdx = { hunter: 0, dad: 0 };
+  function cycleStage1Chat(who) {
+    stage1ChatIdx[who] = (stage1ChatIdx[who] + 1) % STAGE1_LINES[who].length;
+    const bubble = document.getElementById(`stage1-${who}-bubble`);
+    if (!bubble) return;
+    bubble.textContent = STAGE1_LINES[who][stage1ChatIdx[who]];
+    bubble.style.animation = 'none';
+    void bubble.offsetWidth;
+    bubble.style.animation = '';
+    playBeep(660, 0.06, 'square', 0.12);
+  }
+
+  // HOME / pause: hard-stop everything and return to title
+  function goHome() {
+    if (!confirm("Go back to the title screen? You'll start over.")) return;
+    restartGame();
+  }
+
+  // Stage select on title screen — build button grid + handle picks
+  const STAGE_INFO = [
+    null,
+    { emoji: '🟦', name: 'SPAWN' },
+    { emoji: '🕷️', name: 'WEBSLING' },
+    { emoji: '🕺', name: 'MOONWALK' },
+    { emoji: '🍗', name: 'NUGGETS' },
+    { emoji: '⚔️', name: 'BOY!' },
+    { emoji: '🌀', name: 'CURSED' },
+    { emoji: '📺', name: 'ALGORITHM' },
+    { emoji: '🎟️', name: 'FINALE' },
+  ];
+  function buildStageSelect() {
+    const container = document.getElementById('stage-select');
+    if (!container) return;
+    container.innerHTML = '';
+    for (let i = 1; i < STAGE_INFO.length; i++) {
+      const info = STAGE_INFO[i];
+      const btn = document.createElement('button');
+      btn.innerHTML = `<div style="font-size:1.4rem;line-height:1;margin-bottom:4px;">${info.emoji}</div>${i}<br/>${info.name}`;
+      btn.onclick = () => pickStage(i);
+      container.appendChild(btn);
+    }
+  }
+  function pickStage(idx) {
+    // Clean any in-progress game state first, then jump straight to the chosen stage (skip cutscenes).
+    silentReset();
+    window.dinnerPicked = true; // skip the halfway dinner overlay when jumping
+    showStage(idx);
+  }
+  // Tear down all per-stage timers and DOM artifacts without bouncing back to title.
+  function silentReset() {
+    spideyHits = 0; spideyRound = 1; spideyGameRunning = false; cleanupSpideyTarget();
+    mjScore = 0; mjRound = 1; mjGameRunning = false;
+    if (mjSpawnTimer) clearTimeout(mjSpawnTimer);
+    document.querySelectorAll('.rhythm-note').forEach(n => n.remove());
+    nuggetCount = 0; nuggetRound = 1; nuggetGameRunning = false;
+    document.querySelectorAll('.nugget, .broccoli').forEach(n => n.remove());
+    bossHp = 100; bossMisses = 0; stopComboLoop();
+    dodgeRunning = false; dodgeRound = 1;
+    if (dodgeTickTimer) clearInterval(dodgeTickTimer);
+    if (dodgeSpawnTimer) clearTimeout(dodgeSpawnTimer);
+    document.querySelectorAll('.dodge-arena .cursed-falling').forEach(c => c.remove());
+    algoGameRunning = false; algoRound = 1; algoHp = 100;
+    if (algoSpawnTimer) clearTimeout(algoSpawnTimer);
+    document.querySelectorAll('.hate-zone .dislike').forEach(d => d.remove());
+    document.getElementById('boss-hp').style.width = '100%';
+    document.getElementById('algo-next-btn').style.display = 'none';
+    document.getElementById('dodge-next-btn').style.display = 'none';
+    document.getElementById('nugget-skip').style.display = 'none';
+    const boss = document.getElementById('boss-troll');
+    if (boss) { boss.style.opacity = '1'; boss.style.transform = 'translate(-50%, -50%) scale(1)'; }
+    const algoBoss = document.querySelector('.algorithm-boss');
+    if (algoBoss) { algoBoss.style.opacity = '1'; algoBoss.style.transform = 'scale(1)'; }
+    document.getElementById('cutscene').classList.remove('active');
+    document.getElementById('dinner-choice').classList.remove('active');
+    document.getElementById('game-over').classList.remove('active');
+    document.getElementById('round-banner').classList.remove('active');
+    document.getElementById('next-game-picker').classList.remove('active');
+    cutsceneTargetIdx = null; dinnerNextIdx = null; gameOverPrevStage = null;
+    stopBGM();
+  }
+  buildStageSelect();
 
   // Keyboard for desktop
   document.addEventListener('keydown', (e) => {
