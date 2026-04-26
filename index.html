@@ -677,6 +677,40 @@
   #stage8 {
     background: linear-gradient(180deg, #001a4d 0%, #0046b8 50%, #00a3ff 100%);
   }
+  .finale-banner {
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .finale-line-1 {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    color: #ffe66d;
+    text-shadow: 3px 3px 0 #f72585, 6px 6px 0 #000;
+    letter-spacing: 4px;
+    animation: finale-line-1 0.6s ease forwards;
+    transform: scale(0);
+    opacity: 0;
+  }
+  .finale-line-2 {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(3rem, 8vw, 5rem);
+    color: #ffe66d;
+    text-shadow: 4px 4px 0 #f72585, 8px 8px 0 #000;
+    letter-spacing: 4px;
+    animation: finale-line-2 0.8s ease 0.5s forwards;
+    transform: scale(0);
+    opacity: 0;
+  }
+  @keyframes finale-line-1 {
+    0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+    60% { transform: scale(1.2) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  @keyframes finale-line-2 {
+    0% { transform: scale(0) rotate(10deg); opacity: 0; }
+    50% { transform: scale(1.3); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
   #stage8 .stars {
     position: absolute; inset: 0;
     background:
@@ -1128,7 +1162,10 @@
   <!-- STAGE 8: UNIVERSAL STUDIOS REVEAL -->
   <div class="stage" id="stage8">
     <div class="stars"></div>
-    <div class="big-text" style="color: #ffe66d; font-size: clamp(1.5rem, 4vw, 3rem); margin-bottom: 20px;">YOU WIN!!!</div>
+    <div class="finale-banner">
+      <div class="finale-line-1">YOU DID IT</div>
+      <div class="finale-line-2" id="finale-name">HUNTER!</div>
+    </div>
     <div class="ticket" id="ticket">
       <div class="label">★ ★ ★  REAL TICKET — DO NOT LOSE  ★ ★ ★</div>
       <h2>UNIVERSAL STUDIOS<br/>HOLLYWOOD</h2>
@@ -1213,7 +1250,7 @@
     if (mj) mj.style.transform = '';
     const spidey = document.getElementById('spidey-char');
     if (spidey) spidey.style.transform = '';
-    document.getElementById('boss-prompt').textContent = 'HUNTER & BALD DAD vs THE BOSS';
+    document.getElementById('boss-prompt').innerHTML = 'HUNTER + BALD DAD<br/>VS<br/>THE TROLL';
     showStage(0);
   }
 
