@@ -558,13 +558,86 @@
   .dinner-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #000; }
   .dinner-btn.picked { background: #00ff66; }
   /* 6-7 hand pose */
-  .six-seven-pose svg {
-    animation: six-seven-dance 1.2s infinite;
-    transform-origin: center center;
+  .six-seven-hunter {
+    width: 110px;
+    margin: 0 auto;
+    position: relative;
+    animation: six-seven-bob 0.6s infinite ease-in-out;
   }
-  @keyframes six-seven-dance {
-    0%, 100% { transform: rotate(-8deg); }
-    50% { transform: rotate(8deg); }
+  @keyframes six-seven-bob {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-6px) rotate(3deg); }
+  }
+  .six-seven-hunter .six-arm,
+  .six-seven-hunter .seven-arm {
+    position: absolute;
+    width: 22px; height: 50px;
+    background: #f4d4a4;
+    border: 2px solid #000;
+    top: 35%;
+    transform-origin: top center;
+  }
+  .six-seven-hunter .six-arm {
+    left: -4px;
+    animation: arm-six 1s infinite;
+  }
+  .six-seven-hunter .seven-arm {
+    right: -4px;
+    animation: arm-seven 1s infinite;
+  }
+  .six-seven-hunter .six-arm::after,
+  .six-seven-hunter .seven-arm::after {
+    content: '';
+    position: absolute;
+    bottom: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px; height: 24px;
+    background: #f4d4a4;
+    border: 2px solid #000;
+    border-radius: 50%;
+  }
+  .six-seven-hunter .six-arm::before {
+    content: '6'; position: absolute;
+    bottom: -38px; left: 50%; transform: translateX(-50%);
+    color: #ff00ff; font-family: 'Bangers', cursive; font-size: 1.6rem;
+    text-shadow: 2px 2px 0 #000;
+    animation: chant-six 1s infinite;
+  }
+  .six-seven-hunter .seven-arm::before {
+    content: '7'; position: absolute;
+    bottom: -38px; left: 50%; transform: translateX(-50%);
+    color: #00ffff; font-family: 'Bangers', cursive; font-size: 1.6rem;
+    text-shadow: 2px 2px 0 #000;
+    animation: chant-seven 1s infinite;
+  }
+  @keyframes arm-six {
+    0%, 50% { transform: rotate(-30deg); }
+    50.01%, 100% { transform: rotate(20deg); }
+  }
+  @keyframes arm-seven {
+    0%, 50% { transform: rotate(20deg); }
+    50.01%, 100% { transform: rotate(30deg); }
+  }
+  @keyframes chant-six {
+    0%, 49% { opacity: 1; transform: translateX(-50%) scale(1.3); }
+    50%, 100% { opacity: 0.3; transform: translateX(-50%) scale(0.9); }
+  }
+  @keyframes chant-seven {
+    0%, 49% { opacity: 0.3; transform: translateX(-50%) scale(0.9); }
+    50%, 100% { opacity: 1; transform: translateX(-50%) scale(1.3); }
+  }
+  .six-seven-text {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(2rem, 6vw, 4rem);
+    color: #ff00ff;
+    text-shadow: 3px 0 #00ffff, -3px 0 #ffe66d, 0 4px 0 #000;
+    animation: six-seven-pulse 0.6s infinite;
+    text-align: center;
+  }
+  @keyframes six-seven-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
   }
   .six-seven-text {
     font-family: 'Bangers', cursive;
@@ -1360,7 +1433,6 @@
       <div class="from">
         DATE: <strong>MAY 7TH</strong><br/><br/>
         FROM: DAD <span class="heart">♥</span><br/>
-        BEEN SAVING FOR THIS A WHILE.<br/>
         IT'S REAL. WE GO.<br/><br/>
         <span style="color:#888;">P.S. PIZZER WHEN WE GET BACK.</span>
       </div>
@@ -1454,6 +1526,35 @@
   function playJingle(notes, type = 'square', vol = 0.16) {
     notes.forEach((n, i) => setTimeout(() => playBeep(n, 0.12, type, vol), i * 90));
   }
+
+  // Per-stage looping BGM
+  let bgmLoop = null;
+  let bgmIdx = 0;
+  const STAGE_BGM = {
+    stage1: { notes: [262, 330, 392, 330, 262, 330, 523, 392], type: 'triangle', step: 250, vol: 0.06 },
+    stage2: { notes: [220, 220, 277, 220, 165, 165, 220, 165], type: 'sawtooth', step: 200, vol: 0.06 },
+    stage3: { notes: [196, 196, 262, 233, 196, 262, 233, 196], type: 'square', step: 220, vol: 0.06 },
+    stage4: { notes: [262, 330, 392, 523, 392, 330, 262, 196], type: 'triangle', step: 200, vol: 0.06 },
+    stage5: { notes: [98, 98, 116, 98, 87, 98, 116, 130], type: 'sawtooth', step: 240, vol: 0.07 },
+    stage6: { notes: [311, 277, 247, 277, 311, 277, 207, 277], type: 'square', step: 230, vol: 0.06 },
+    stage7: { notes: [175, 175, 175, 165, 175, 175, 156, 175], type: 'sawtooth', step: 180, vol: 0.07 },
+    stage8: { notes: [523, 659, 784, 1047, 784, 659, 523, 1047], type: 'triangle', step: 260, vol: 0.07 },
+  };
+  function startBGM(stageId) {
+    stopBGM();
+    const conf = STAGE_BGM[stageId];
+    if (!conf) return;
+    bgmIdx = 0;
+    bgmLoop = setInterval(() => {
+      const note = conf.notes[bgmIdx % conf.notes.length];
+      playBeep(note, conf.step / 1000 * 0.9, conf.type, conf.vol);
+      bgmIdx++;
+    }, conf.step);
+  }
+  function stopBGM() {
+    if (bgmLoop) clearInterval(bgmLoop);
+    bgmLoop = null;
+  }
   const STAGE_JINGLES = {
     stage1: [392, 523, 659, 784],          // bright intro
     stage2: [330, 415, 494, 415, 330],     // urban swing
@@ -1475,6 +1576,12 @@
     if (jingle) {
       const type = stages[idx] === 'stage5' || stages[idx] === 'stage7' ? 'sawtooth' : 'square';
       playJingle(jingle, type);
+    }
+    // Start per-stage BGM after the jingle finishes
+    stopBGM();
+    if (STAGE_BGM[stages[idx]]) {
+      const jingleLen = jingle ? jingle.length * 90 + 200 : 0;
+      setTimeout(() => { if (stages[currentStage] === stages[idx]) startBGM(stages[idx]); }, jingleLen);
     }
     if (stages[idx] === 'stage2') initSpideyGame();
     else { spideyGameRunning = false; cleanupSpideyTarget(); }
@@ -1536,11 +1643,13 @@
       banner: 'CHAPTER 1: SUIT UP',
       cast: ['hunter', 'dad'],
       lines: [
-        { who: 'dad', text: 'yo BOY. lemme show you the city.' },
+        { who: 'hunter', text: 'SIX!! SEVEN!!' },
+        { who: 'dad', text: 'BOY please. not now.' },
         { who: 'dad', text: '*tosses a SPIDER-MAN MASK at hunter*' },
         { who: 'hunter', text: 'wait DAD WHA—' },
         { who: 'narrator', text: 'no time. SWING.' }
-      ]
+      ],
+      sixseven: true,
     },
     stage3: {
       banner: 'CHAPTER 2: THE STAGE',
@@ -1574,16 +1683,15 @@
       ]
     },
     stage6: {
-      banner: 'CHAPTER 5: ???',
+      banner: 'CHAPTER 5: SPRINGFIELD',
       cast: ['hunter', 'dad'],
       lines: [
-        { who: 'narrator', text: 'a portal opens. a yellow hand emerges.' },
-        { who: 'hunter', text: 'six...' },
-        { who: 'narrator', text: '*hunter does the gesture*' },
-        { who: 'dad', text: 'don\'t' },
-        { who: 'hunter', text: 'SEVEN!!!' }
-      ],
-      sixseven: true,
+        { who: 'narrator', text: 'a portal opens. they fall in.' },
+        { who: 'narrator', text: 'everything is yellow.' },
+        { who: 'hunter', text: 'AY CARUMBA' },
+        { who: 'dad', text: 'D\'OH! it\'s SPRINGFIELD' },
+        { who: 'dad', text: 'don\'t let the donuts hit you, BOY.' }
+      ]
     },
     stage7: {
       banner: 'CHAPTER 6: THE LAIR',
@@ -1610,6 +1718,7 @@
   let cutsceneTargetIdx = null;
 
   function showCutscene(targetIdx) {
+    stopBGM();
     cutsceneTargetIdx = targetIdx;
     const target = stages[targetIdx];
     const data = CUTSCENES[target];
@@ -1620,13 +1729,19 @@
 
     // Build cast row
     let html = '<div class="cutscene-cast">';
-    data.cast.forEach(c => {
-      if (c === 'hunter') html += `<div class="rblx-char hunter-char" style="width:60px;">${HUNTER_SVG}</div>`;
-      if (c === 'dad') html += `<div class="rblx-char dad-char" style="width:60px;">${DAD_SVG}</div>`;
-    });
+    if (data.sixseven) {
+      // Special 6-7 hunter pose with animated arms + chant
+      html += `<div class="six-seven-hunter">${HUNTER_SVG}<div class="six-arm"></div><div class="seven-arm"></div></div>`;
+      html += `<div class="rblx-char dad-char" style="width:60px;">${DAD_SVG}</div>`;
+    } else {
+      data.cast.forEach(c => {
+        if (c === 'hunter') html += `<div class="rblx-char hunter-char" style="width:60px;">${HUNTER_SVG}</div>`;
+        if (c === 'dad') html += `<div class="rblx-char dad-char" style="width:60px;">${DAD_SVG}</div>`;
+      });
+    }
     html += '</div>';
 
-    // 6-7 special pose for cursed cutscene
+    // 6-7 chant text overlay
     if (data.sixseven) {
       html += `<div class="six-seven-text">SIX! SEVEN!</div>`;
     }
@@ -1663,6 +1778,7 @@
   // Halfway dinner-choice
   let dinnerNextIdx = null;
   function showDinnerChoice(targetIdx) {
+    stopBGM();
     dinnerNextIdx = targetIdx;
     document.getElementById('dinner-dad-sprite').innerHTML = DAD_SVG;
     const overlay = document.getElementById('dinner-choice');
@@ -1707,6 +1823,7 @@
   // Game over / retry / skip
   let gameOverPrevStage = null;
   function showGameOver(msg) {
+    stopBGM();
     gameOverPrevStage = currentStage;
     document.getElementById('game-over-msg').textContent = msg || 'YOU GOT BONKED!';
     document.getElementById('game-over').classList.add('active');
@@ -1785,9 +1902,9 @@
     spawnSpideyTarget();
   }
   function getSpideyWindow() {
-    if (spideyHits < 2) return 1600;
-    if (spideyHits < 4) return 1100;
-    return 800;
+    if (spideyHits < 2) return 2200;
+    if (spideyHits < 4) return 1500;
+    return 950;
   }
   function getSpideyPhaseText() {
     if (spideyHits < 2) return 'PHASE 1: WARMUP';
@@ -1950,7 +2067,7 @@
       const boardRect = board.getBoundingClientRect();
       const distance = boardRect.height - 64;
       // sub-level: speed up as you hit more
-      const fallDuration = mjScore < 3 ? 1900 : mjScore < 5 ? 1500 : 1200;
+      const fallDuration = mjScore < 3 ? 2400 : mjScore < 5 ? 1700 : 1300;
       const startTs = performance.now();
       note.dataset.start = startTs;
       note.dataset.duration = fallDuration;
@@ -1985,7 +2102,7 @@
       requestAnimationFrame(step);
 
       if (mjGameRunning && mjScore + mjMissed < 14) {
-        const gap = mjScore < 3 ? 850 : mjScore < 5 ? 650 : 500;
+        const gap = mjScore < 3 ? 1100 : mjScore < 5 ? 800 : 600;
         mjSpawnTimer = setTimeout(spawnNote, gap + Math.random() * 150);
       }
     }
@@ -2113,7 +2230,7 @@
       }, fallDuration);
 
       if (nuggetGameRunning) {
-        const baseGap = nuggetCount < 3 ? 700 : nuggetCount < 6 ? 480 : 350;
+        const baseGap = nuggetCount < 3 ? 900 : nuggetCount < 6 ? 600 : 400;
         setTimeout(spawnNugget, baseGap + Math.random() * 200);
       }
     }
@@ -2207,7 +2324,7 @@
 
       if (dodgeRunning) {
         const elapsed = 12 - dodgeTime;
-        const gap = elapsed < 4 ? 600 : elapsed < 8 ? 380 : 240;
+        const gap = elapsed < 4 ? 850 : elapsed < 8 ? 500 : 300;
         dodgeSpawnTimer = setTimeout(spawnCursed, gap + Math.random() * 200);
       }
     }
@@ -2228,17 +2345,17 @@
     }, 1000);
   }
 
-  // STAGE 6: 6-7 rain
+  // STAGE 6: Simpsons quote rain
   function initSixSevenRain() {
     const rain = document.getElementById('six-seven-rain');
     rain.innerHTML = '';
-    const phrases = ['6-7', '6-7', '6-7', '6-7-6-7', 'D\'OH', 'AY CARUMBA'];
-    for (let i = 0; i < 18; i++) {
+    const phrases = ['D\'OH!', 'AY CARUMBA!', 'EAT MY SHORTS', 'WOOHOO!', 'EXCELLENT', 'MMM... DONUT', 'DON\'T HAVE A COW', 'WORST EVER'];
+    for (let i = 0; i < 16; i++) {
       const s = document.createElement('span');
       s.textContent = phrases[Math.floor(Math.random() * phrases.length)];
       s.style.left = `${Math.random() * 95}%`;
       s.style.animationDelay = `${Math.random() * 4}s`;
-      s.style.animationDuration = `${3 + Math.random() * 3}s`;
+      s.style.animationDuration = `${4 + Math.random() * 3}s`;
       rain.appendChild(s);
     }
   }
@@ -2251,10 +2368,11 @@
   function startComboLoop() {
     if (comboLoop) return;
     const cursor = document.getElementById('combo-cursor');
-    const speed = 1.6; // pct per frame
     comboCursorPct = 0;
     comboCursorDir = 1;
     function tick() {
+      // ramp speed as boss HP drops: 0.9 → 1.4 → 2.0
+      const speed = bossHp > 66 ? 0.9 : bossHp > 33 ? 1.4 : 2.0;
       comboCursorPct += comboCursorDir * speed;
       if (comboCursorPct >= 100) { comboCursorPct = 100; comboCursorDir = -1; }
       if (comboCursorPct <= 0) { comboCursorPct = 0; comboCursorDir = 1; }
@@ -2383,7 +2501,7 @@
       }, fallDuration);
 
       if (algoGameRunning) {
-        const gap = algoHp > 66 ? 850 : algoHp > 33 ? 600 : 400;
+        const gap = algoHp > 66 ? 1100 : algoHp > 33 ? 750 : 500;
         algoSpawnTimer = setTimeout(spawnDislike, gap + Math.random() * 200);
       }
     }
