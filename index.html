@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Hunter's 8th Birthday Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Bungee&family=Bangers&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Press Start 2P', monospace; color: #fff; }
+  #game { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+
+  /* Stage container */
+  .stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.5s ease;
+    text-align: center;
+    padding: 20px;
+  }
+  .stage.active { opacity: 1; pointer-events: auto; }
+
+  /* Title screen */
+  #title { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #f72585 100%); }
+  #title h1 {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(2.5rem, 8vw, 6rem);
+    color: #ffe66d;
+    text-shadow: 4px 4px 0 #f72585, 8px 8px 0 #000;
+    line-height: 0.9;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    transform: rotate(-3deg);
+  }
+  #title .subtitle {
+    font-family: 'Bungee', sans-serif;
+    font-size: clamp(1rem, 3vw, 2rem);
+    color: #fff;
+    margin-bottom: 30px;
+    text-shadow: 3px 3px 0 #000;
+  }
+  #title .age {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(4rem, 15vw, 12rem);
+    color: #ffe66d;
+    text-shadow: 6px 6px 0 #f72585, 10px 10px 0 #000;
+    margin: 20px 0;
+    animation: bounce 1.2s infinite;
+  }
+  #title .cast {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(0.6rem, 1.5vw, 0.9rem);
+    color: #fff;
+    margin: 10px 0 20px;
+    line-height: 1.8;
+    text-shadow: 2px 2px 0 #000;
+  }
+  #title .cast strong { color: #ffe66d; }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-20px) rotate(3deg); }
+  }
+  .start-btn {
+    background: #ffe66d;
+    color: #000;
+    border: none;
+    padding: 20px 40px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    cursor: pointer;
+    box-shadow: 6px 6px 0 #000;
+    transition: transform 0.1s;
+    margin-top: 20px;
+    border-radius: 4px;
+  }
+  .start-btn:active { transform: translate(4px, 4px); box-shadow: 2px 2px 0 #000; }
+  .start-btn.pulse { animation: pulse 1s infinite; }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+
+  /* Stage HUD */
+  .hud {
+    position: absolute; top: 20px; left: 0; right: 0;
+    display: flex; justify-content: space-between; padding: 0 20px;
+    font-size: clamp(0.6rem, 1.5vw, 1rem);
+    pointer-events: none;
+  }
+  .stage-label { background: #000; color: #ffe66d; padding: 8px 12px; border: 2px solid #ffe66d; }
+  .stage-counter { background: #000; color: #fff; padding: 8px 12px; border: 2px solid #fff; }
+
+  /* Stage 1: Roblox world */
+  #stage1 { background: #87ceeb; }
+  #stage1 .ground {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 30%;
+    background: repeating-linear-gradient(90deg, #5d9c3a 0 60px, #4a8030 60px 120px);
+    image-rendering: pixelated;
+  }
+  #stage1 .clouds {
+    position: absolute; top: 10%; left: 0; right: 0; height: 100px;
+    background: #fff;
+    clip-path: polygon(10% 100%, 15% 60%, 25% 40%, 35% 60%, 45% 30%, 55% 50%, 65% 20%, 75% 50%, 85% 40%, 90% 100%);
+  }
+  .pixel-hunter {
+    width: 60px; height: 60px;
+    background: #ff6b35;
+    border: 4px solid #000;
+    image-rendering: pixelated;
+    position: relative;
+    box-shadow: 0 0 0 4px #fff inset, 0 0 0 8px #000 inset;
+  }
+  .pixel-dad {
+    width: 60px; height: 60px;
+    background: #d4a574;
+    border: 4px solid #000;
+    image-rendering: pixelated;
+    position: relative;
+    box-shadow: 0 0 0 4px #f4d4a4 inset, 0 0 0 8px #000 inset;
+  }
+  .character-row {
+    display: flex; gap: 80px; align-items: center;
+    position: relative;
+    z-index: 5;
+  }
+  #stage1 .name-tag {
+    position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+    background: #fff; color: #000; padding: 4px 8px; font-size: 0.7rem;
+    border: 2px solid #000;
+    white-space: nowrap;
+  }
+  .chat-bubble {
+    position: absolute;
+    background: #fff; color: #000;
+    padding: 6px 10px;
+    border: 3px solid #000;
+    border-radius: 8px;
+    font-size: 0.65rem;
+    font-family: 'Press Start 2P', monospace;
+    white-space: nowrap;
+    animation: bubble-pop 2s ease-in-out infinite;
+  }
+  .chat-bubble::after {
+    content: ''; position: absolute; bottom: -10px; left: 20px;
+    border-left: 8px solid transparent; border-right: 8px solid transparent;
+    border-top: 10px solid #000;
+  }
+  @keyframes bubble-pop {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  /* Stage 2: Spider-Man swing */
+  #stage2 { background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); }
+  #stage2 .skyline {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
+    background:
+      linear-gradient(180deg, transparent 0%, transparent 60%, #0a0a0a 60%),
+      repeating-linear-gradient(90deg, #1a1a2e 0 40px, #2d2d4a 40px 80px, #1a1a2e 80px 200px, #2d2d4a 200px 280px);
+  }
+  #stage2 .skyline::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle, #ffe66d 1px, transparent 1px) 0 0 / 20px 30px;
+    opacity: 0.4;
+  }
+  .spidey {
+    width: 50px; height: 50px;
+    background: #e62429;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 20px #e62429;
+    border: 3px solid #1a1a2e;
+  }
+  .spidey::after {
+    content: ''; position: absolute; inset: 5px;
+    border: 2px solid #1a1a2e; border-radius: 50%;
+    background: linear-gradient(45deg, transparent 48%, #1a1a2e 48%, #1a1a2e 52%, transparent 52%),
+                linear-gradient(135deg, transparent 48%, #1a1a2e 48%, #1a1a2e 52%, transparent 52%);
+  }
+
+  /* Stage 3: MJ moonwalk */
+  #stage3 { background: radial-gradient(ellipse at top, #4a0e6e 0%, #1a0033 70%, #000 100%); }
+  #stage3 .stage-floor {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 25%;
+    background: linear-gradient(180deg, #2a2a2a 0%, #000 100%);
+    border-top: 2px solid #ffe66d;
+    box-shadow: 0 -10px 40px #ffe66d44;
+  }
+  #stage3 .spotlight {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 200px; height: 80%;
+    background: radial-gradient(ellipse at top, #ffe66d 0%, transparent 60%);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .mj {
+    width: 60px; height: 80px;
+    background: #000;
+    position: relative;
+    border: 3px solid #ffe66d;
+  }
+  .mj::before {
+    content: ''; position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+    width: 30px; height: 30px;
+    background: #d4a574;
+    border-radius: 50%;
+    border: 3px solid #000;
+  }
+  .mj::after {
+    content: ''; position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
+    width: 36px; height: 18px;
+    background: #000;
+    border-radius: 18px 18px 0 0;
+  }
+
+  /* Stage 4: Chicken nugget rain */
+  #stage4 { background: linear-gradient(180deg, #87ceeb 0%, #ffd166 100%); }
+  .nugget {
+    position: absolute;
+    width: 40px; height: 30px;
+    background: #d4a574;
+    border-radius: 50%;
+    border: 3px solid #8b5e3c;
+    box-shadow: inset -3px -3px 0 #8b5e3c;
+  }
+  .broccoli {
+    position: absolute;
+    width: 36px; height: 36px;
+    background: #2d5a2d;
+    border-radius: 50%;
+    border: 3px solid #1a3a1a;
+  }
+  .broccoli::before {
+    content: ''; position: absolute; inset: 4px;
+    background: radial-gradient(circle at 30% 30%, #4a7a4a 4px, transparent 5px),
+                radial-gradient(circle at 70% 30%, #4a7a4a 4px, transparent 5px),
+                radial-gradient(circle at 50% 70%, #4a7a4a 4px, transparent 5px);
+  }
+  .cup {
+    position: absolute; bottom: 5%; left: 50%; transform: translateX(-50%);
+    width: 100px; height: 120px;
+    background: linear-gradient(180deg, #8b5e3c 0%, #5e3e2c 100%);
+    border: 4px solid #000;
+    border-radius: 0 0 30px 30px;
+  }
+  .cup::before {
+    content: ''; position: absolute; top: -10px; left: -10px; right: -10px;
+    height: 20px;
+    background: #fff;
+    border: 4px solid #000;
+    border-radius: 50%;
+  }
+  .score-display {
+    position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+    background: #000; color: #ffe66d;
+    padding: 10px 20px; font-size: clamp(0.8rem, 2vw, 1.2rem);
+    border: 3px solid #ffe66d;
+  }
+
+  /* Stage 5: Kratos boss */
+  #stage5 { background: linear-gradient(180deg, #2d0000 0%, #5e0000 50%, #8b0000 100%); }
+  #stage5::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 80%, #ff6b35 0%, transparent 40%);
+    opacity: 0.6;
+    animation: flicker 0.5s infinite;
+  }
+  @keyframes flicker { 0%, 100% { opacity: 0.6; } 50% { opacity: 0.4; } }
+  .boss {
+    width: 200px; height: 200px;
+    background: radial-gradient(circle at 30% 30%, #fff 8px, #000 10px, #000 20px, #5e0000 22px);
+    border-radius: 50%;
+    border: 6px solid #000;
+    box-shadow: 0 0 60px #ff0000;
+    position: relative;
+  }
+  .boss::after {
+    content: 'GRRR'; position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%);
+    color: #ff6b35; font-size: 1.5rem; font-family: 'Bangers', cursive;
+    text-shadow: 3px 3px 0 #000;
+    white-space: nowrap;
+  }
+  .health-bar {
+    position: absolute; top: 80px; left: 10%; right: 10%; height: 30px;
+    background: #000; border: 3px solid #ffe66d;
+  }
+  .health-fill {
+    height: 100%; background: linear-gradient(90deg, #ff0000 0%, #ff6b35 100%);
+    transition: width 0.2s;
+  }
+  .mash-btn {
+    position: absolute; bottom: 10%; left: 50%; transform: translateX(-50%);
+    background: #ffe66d; color: #000;
+    border: 4px solid #000;
+    padding: 30px 60px;
+    font-family: 'Bangers', cursive; font-size: clamp(1.5rem, 4vw, 2.5rem);
+    cursor: pointer;
+    box-shadow: 6px 6px 0 #000;
+    border-radius: 8px;
+  }
+  .mash-btn:active { transform: translate(calc(-50% + 4px), 4px); box-shadow: 2px 2px 0 #000; }
+  .duo {
+    position: absolute; bottom: 25%;
+    display: flex; gap: 40px;
+    left: 50%; transform: translateX(-50%);
+  }
+  .kratos-hunter, .kratos-dad {
+    padding: 12px 20px;
+    font-family: 'Bangers', cursive;
+    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    background: #000;
+    border: 3px solid #ffe66d;
+    color: #ffe66d;
+    text-shadow: 2px 2px 0 #5e0000;
+  }
+  .kratos-dad {
+    background: #ffe66d; color: #5e0000;
+    text-shadow: none;
+    border-color: #000;
+  }
+
+  /* Stage 6: Cursed Simpsons level */
+  #stage6 { background: #ffe66d; overflow: hidden; }
+  .six-seven-rain {
+    position: absolute; inset: 0;
+    pointer-events: none;
+  }
+  .six-seven-rain span {
+    position: absolute;
+    font-family: 'Bangers', cursive;
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    color: #ff00ff;
+    text-shadow: 2px 0 #00ffff, -2px 0 #ffe66d;
+    animation: six-seven-fall 4s linear infinite;
+  }
+  @keyframes six-seven-fall {
+    0% { transform: translateY(-100vh) rotate(-15deg); opacity: 0; }
+    10% { opacity: 1; }
+    100% { transform: translateY(100vh) rotate(15deg); opacity: 0; }
+  }
+  #stage6 .glitch {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, #ff00ff 0 2px, transparent 2px 4px, #00ffff 4px 6px, transparent 6px 8px);
+    opacity: 0.1;
+    animation: glitch-shift 0.1s infinite;
+  }
+  @keyframes glitch-shift {
+    0% { transform: translate(0); } 20% { transform: translate(-2px, 1px); }
+    40% { transform: translate(2px, -1px); } 60% { transform: translate(-1px, -2px); }
+    80% { transform: translate(1px, 2px); } 100% { transform: translate(0); }
+  }
+  #stage6 h2 {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(2rem, 6vw, 4rem);
+    color: #ff00ff;
+    text-shadow: 3px 0 #00ffff, -3px 0 #ffff00;
+    animation: glitch-text 0.3s infinite;
+  }
+  @keyframes glitch-text {
+    0%, 100% { transform: translate(0); }
+    25% { transform: translate(-3px, 2px) skew(-2deg); }
+    50% { transform: translate(3px, -2px) skew(2deg); }
+    75% { transform: translate(-2px, -2px); }
+  }
+  .cursed-thing {
+    position: absolute;
+    font-size: clamp(2rem, 5vw, 4rem);
+    animation: float-cursed 3s infinite ease-in-out;
+  }
+  @keyframes float-cursed {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    50% { transform: translateY(-30px) rotate(180deg); }
+  }
+
+  /* Stage 7: YouTube algorithm boss */
+  #stage7 { background: #ff0000; }
+  #stage7 .yt-bg {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(135deg, #ff0000 0 100px, #cc0000 100px 200px);
+  }
+  .algorithm-boss {
+    width: 250px; height: 180px;
+    background: #fff;
+    border: 8px solid #000;
+    border-radius: 12px;
+    position: relative;
+    box-shadow: 0 0 40px #fff;
+  }
+  .algorithm-boss::before {
+    content: '▶'; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ff0000; font-size: 6rem;
+  }
+  .algorithm-boss::after {
+    content: 'SUBSCRIBE'; position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%);
+    color: #fff; font-family: 'Bangers', cursive; font-size: 2rem;
+    text-shadow: 3px 3px 0 #000; white-space: nowrap;
+  }
+
+  /* Stage 8: Universal Studios reveal */
+  #stage8 {
+    background: linear-gradient(180deg, #001a4d 0%, #0046b8 50%, #00a3ff 100%);
+  }
+  #stage8 .stars {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(2px 2px at 20% 30%, #fff, transparent),
+      radial-gradient(2px 2px at 60% 70%, #fff, transparent),
+      radial-gradient(1px 1px at 50% 50%, #fff, transparent),
+      radial-gradient(2px 2px at 80% 10%, #fff, transparent),
+      radial-gradient(1px 1px at 90% 60%, #fff, transparent),
+      radial-gradient(2px 2px at 33% 80%, #fff, transparent),
+      radial-gradient(1px 1px at 15% 65%, #fff, transparent);
+    background-size: 100% 100%;
+    animation: twinkle 3s infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  .ticket {
+    background: #fff;
+    color: #000;
+    padding: 30px 40px;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 6px #ffe66d, 0 0 0 12px #000;
+    max-width: 90%;
+    width: 500px;
+    text-align: center;
+    transform: scale(0) rotate(-15deg);
+    animation: ticket-reveal 1.2s ease forwards;
+  }
+  @keyframes ticket-reveal {
+    0% { transform: scale(0) rotate(-15deg); }
+    60% { transform: scale(1.1) rotate(2deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .ticket .label { font-family: 'Press Start 2P', monospace; font-size: 0.7rem; color: #888; letter-spacing: 2px; }
+  .ticket h2 {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    color: #0046b8;
+    line-height: 1;
+    margin: 10px 0;
+  }
+  .ticket .admit {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    color: #f72585;
+    text-shadow: 3px 3px 0 #000;
+    margin: 15px 0;
+  }
+  .ticket .name {
+    font-family: 'Bungee', sans-serif;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    color: #000;
+    margin: 10px 0;
+    padding: 15px;
+    background: #ffe66d;
+    border: 3px dashed #000;
+  }
+  .ticket .from {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(0.6rem, 1.5vw, 0.9rem);
+    color: #555;
+    margin-top: 20px;
+    line-height: 1.6;
+  }
+  .ticket .heart {
+    color: #f72585;
+    font-size: 1.5em;
+  }
+  .confetti-piece {
+    position: absolute;
+    width: 12px;
+    height: 18px;
+    pointer-events: none;
+    animation: confetti-fall linear forwards;
+  }
+  @keyframes confetti-fall {
+    0% { transform: translateY(-100vh) rotate(0); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* Generic instruction text */
+  .instructions {
+    position: absolute;
+    bottom: 15%;
+    left: 50%; transform: translateX(-50%);
+    background: #000;
+    color: #ffe66d;
+    padding: 15px 25px;
+    font-size: clamp(0.7rem, 2vw, 1rem);
+    border: 3px solid #ffe66d;
+    text-align: center;
+    max-width: 90%;
+  }
+  .big-text {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(2rem, 6vw, 4rem);
+    color: #ffe66d;
+    text-shadow: 4px 4px 0 #000;
+    text-align: center;
+    margin: 20px 0;
+  }
+  .next-btn {
+    margin-top: 30px;
+    background: #f72585;
+    color: #fff;
+  }
+
+  /* Tap-anywhere overlay during action stages */
+  .tap-zone {
+    position: absolute; inset: 0;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div id="game">
+
+  <!-- TITLE SCREEN -->
+  <div class="stage active" id="title">
+    <h1>HUNTER'S<br/>BIRTHDAY<br/>QUEST</h1>
+    <div class="subtitle">★ ROAD TO UNIVERSAL ★</div>
+    <div class="age">8</div>
+    <div class="cast">STARRING: <strong>HUNTER</strong><br/>SIDEKICK: <strong>BALD DAD</strong></div>
+    <button class="start-btn pulse" onclick="startGame()">PRESS START</button>
+  </div>
+
+  <!-- STAGE 1: ROBLOX SPAWN -->
+  <div class="stage" id="stage1">
+    <div class="hud">
+      <div class="stage-label">STAGE 1: SPAWN</div>
+      <div class="stage-counter">1 / 8</div>
+    </div>
+    <div class="clouds"></div>
+    <div class="ground"></div>
+    <div class="big-text" style="margin-bottom: 40px;">WELCOME, HUNTER</div>
+    <div class="character-row">
+      <div class="pixel-hunter">
+        <div class="name-tag">HUNTER_LVL_8</div>
+        <div class="chat-bubble" style="left: 70px; top: -50px;">DAD UR BALD</div>
+      </div>
+      <div class="pixel-dad">
+        <div class="name-tag" style="background:#ffe66d;">BALD_DAD_69</div>
+        <div class="chat-bubble" style="right: 70px; top: -50px; background: #ffe66d;">PIZZER TIME</div>
+      </div>
+    </div>
+    <div class="instructions">YOU SPAWNED IN THE BIRTHDAY SERVER</div>
+    <button class="start-btn next-btn" onclick="nextStage()">JOIN GAME →</button>
+  </div>
+
+  <!-- STAGE 2: SPIDER-MAN SWING -->
+  <div class="stage" id="stage2">
+    <div class="hud">
+      <div class="stage-label">STAGE 2: SWING</div>
+      <div class="stage-counter">2 / 8</div>
+    </div>
+    <div class="skyline"></div>
+    <div class="big-text">THWIP!</div>
+    <div class="spidey" id="spidey-char"></div>
+    <div class="instructions">TAP TO SWING ACROSS THE CITY</div>
+    <button class="start-btn next-btn" onclick="swingSpidey()">SHOOT WEB</button>
+  </div>
+
+  <!-- STAGE 3: MOONWALK DANCE -->
+  <div class="stage" id="stage3">
+    <div class="hud">
+      <div class="stage-label">STAGE 3: MOONWALK</div>
+      <div class="stage-counter">3 / 8</div>
+    </div>
+    <div class="spotlight"></div>
+    <div class="stage-floor"></div>
+    <div class="big-text" id="mj-prompt">HEE-HEE!</div>
+    <div class="mj" id="mj-char"></div>
+    <div class="instructions">TAP IN RHYTHM TO MOONWALK</div>
+    <button class="start-btn next-btn" onclick="moonwalkBeat()">DANCE!</button>
+  </div>
+
+  <!-- STAGE 4: CHICKEN NUGGET RAIN -->
+  <div class="stage" id="stage4">
+    <div class="hud">
+      <div class="stage-label">STAGE 4: NUGGET RAIN</div>
+      <div class="stage-counter">4 / 8</div>
+    </div>
+    <div class="score-display" id="nugget-score">NUGGETS: 0 / 8</div>
+    <div class="cup" id="cup"></div>
+    <div class="instructions" style="bottom: 25%;">DRAG / TAP TO MOVE THE CHOCOLATE MILK</div>
+    <button class="start-btn next-btn" id="nugget-skip" onclick="nextStage()" style="display:none;">CONTINUE →</button>
+  </div>
+
+  <!-- STAGE 5: KRATOS BOSS -->
+  <div class="stage" id="stage5">
+    <div class="hud">
+      <div class="stage-label">STAGE 5: BOY!</div>
+      <div class="stage-counter">5 / 8</div>
+    </div>
+    <div class="health-bar"><div class="health-fill" id="boss-hp" style="width: 100%;"></div></div>
+    <div class="big-text" id="boss-prompt">HUNTER & BALD DAD vs THE BOSS</div>
+    <div class="boss"></div>
+    <div class="duo">
+      <div class="kratos-hunter">HUNTER</div>
+      <div class="kratos-dad">BALD DAD</div>
+    </div>
+    <button class="mash-btn" id="mash-btn" onclick="mashBoss()">BOY!</button>
+  </div>
+
+  <!-- STAGE 6: CURSED SIMPSONS LEVEL -->
+  <div class="stage" id="stage6">
+    <div class="glitch"></div>
+    <div class="hud">
+      <div class="stage-label">STAGE ???</div>
+      <div class="stage-counter">6 / 8</div>
+    </div>
+    <h2>Ç̸̢͠U̶̪͝R̵̢͠S̷̳͠E̴̮͐D̶̜͝<br/>S̷̤̕P̴̮͠R̸̬͝I̶͔̕N̸͍͂G̴͚͠F̵͜I̴͜͠E̸̗͠L̵̪͠D̴̘͠</h2>
+    <div class="six-seven-rain" id="six-seven-rain"></div>
+    <div class="big-text" style="color: #ffe66d; margin-top: 30px; text-shadow: 4px 4px 0 #ff00ff;">6-7 6-7 6-7</div>
+    <div class="cursed-thing" style="top: 18%; left: 8%; font-size: clamp(3rem, 6vw, 5rem);">🟡</div>
+    <div class="cursed-thing" style="top: 22%; right: 10%; animation-delay: 0.4s; font-size: clamp(3rem, 6vw, 5rem);">🍩</div>
+    <div class="cursed-thing" style="bottom: 28%; left: 15%; animation-delay: 0.8s; font-size: clamp(3rem, 6vw, 5rem);">😬</div>
+    <div class="cursed-thing" style="bottom: 32%; right: 12%; animation-delay: 1.2s; font-size: clamp(3rem, 6vw, 5rem);">👁️</div>
+    <div class="cursed-thing" style="top: 50%; left: 50%; animation-delay: 0.6s; font-size: clamp(3rem, 7vw, 6rem);">💀</div>
+    <div class="instructions" style="background: #ffe66d; color: #000; border-color: #ff00ff;">D'OH! THE ALGORITHM IS COMING</div>
+    <button class="start-btn next-btn" onclick="nextStage()" style="background: #00ffff; color: #000;">ESCAPE →</button>
+  </div>
+
+  <!-- STAGE 7: YOUTUBE ALGORITHM BOSS -->
+  <div class="stage" id="stage7">
+    <div class="yt-bg"></div>
+    <div class="hud">
+      <div class="stage-label">STAGE 7: ALGORITHM</div>
+      <div class="stage-counter">7 / 8</div>
+    </div>
+    <div class="big-text">FINAL BOSS</div>
+    <div class="algorithm-boss"></div>
+    <div class="instructions" style="margin-top: 80px;">SMASH LIKE BUTTON TO DEFEAT</div>
+    <button class="start-btn next-btn" id="algo-btn" onclick="defeatAlgo()">👍 LIKE</button>
+  </div>
+
+  <!-- STAGE 8: UNIVERSAL STUDIOS REVEAL -->
+  <div class="stage" id="stage8">
+    <div class="stars"></div>
+    <div class="big-text" style="color: #ffe66d; font-size: clamp(1.5rem, 4vw, 3rem); margin-bottom: 20px;">YOU WIN!!!</div>
+    <div class="ticket" id="ticket">
+      <div class="label">★ ★ ★  REAL TICKET — DO NOT LOSE  ★ ★ ★</div>
+      <h2>UNIVERSAL STUDIOS<br/>HOLLYWOOD</h2>
+      <div class="admit">ADMIT ONE</div>
+      <div class="name">HUNTER<br/>+ BALD DAD</div>
+      <div class="from">
+        DATE: <strong>COMING SOON</strong><br/><br/>
+        FROM: DAD <span class="heart">♥</span><br/>
+        BEEN SAVING FOR THIS A WHILE.<br/>
+        IT'S REAL. WE GO.<br/><br/>
+        <span style="color:#888;">P.S. PIZZER WHEN WE GET BACK.</span>
+      </div>
+    </div>
+    <button class="start-btn next-btn" onclick="restartGame()" style="margin-top: 30px;">PLAY AGAIN</button>
+  </div>
+
+</div>
+
+<script>
+  let currentStage = 0;
+  const stages = ['title', 'stage1', 'stage2', 'stage3', 'stage4', 'stage5', 'stage6', 'stage7', 'stage8'];
+
+  function showStage(idx) {
+    stages.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('active', i === idx);
+    });
+    currentStage = idx;
+    if (stages[idx] === 'stage4') initNuggetGame();
+    if (stages[idx] === 'stage6') initSixSevenRain();
+    if (stages[idx] === 'stage8') burstConfetti();
+  }
+  function startGame() { showStage(1); }
+  function nextStage() { if (currentStage < stages.length - 1) showStage(currentStage + 1); }
+  function restartGame() { showStage(0); }
+
+  // STAGE 2: Spider-Man swing
+  let spideyTaps = 0;
+  function swingSpidey() {
+    spideyTaps++;
+    const spidey = document.getElementById('spidey-char');
+    spidey.style.transition = 'transform 0.5s cubic-bezier(.5,1.8,.5,.5)';
+    const x = (spideyTaps % 2 === 0 ? -1 : 1) * (Math.random() * 200 + 100);
+    const y = -(Math.random() * 80 + 40);
+    spidey.style.transform = `translate(${x}px, ${y}px) rotate(${spideyTaps * 30}deg)`;
+    if (spideyTaps >= 4) setTimeout(nextStage, 600);
+  }
+
+  // STAGE 3: MJ moonwalk
+  const mjPrompts = ['HEE-HEE!', 'OW!', 'SHAMONE!', 'CHA-MONE!'];
+  let mjTaps = 0;
+  function moonwalkBeat() {
+    mjTaps++;
+    const mj = document.getElementById('mj-char');
+    const prompt = document.getElementById('mj-prompt');
+    mj.style.transition = 'transform 0.4s';
+    mj.style.transform = `translateX(${-mjTaps * 30}px) skewX(-10deg)`;
+    prompt.textContent = mjPrompts[mjTaps % mjPrompts.length];
+    if (mjTaps >= 5) setTimeout(nextStage, 600);
+  }
+
+  // STAGE 4: Nugget rain
+  let nuggetCount = 0;
+  let nuggetGameRunning = false;
+  let nuggetCupX = 50;
+  function initNuggetGame() {
+    if (nuggetGameRunning) return;
+    nuggetGameRunning = true;
+    nuggetCount = 0;
+    document.getElementById('nugget-score').textContent = `NUGGETS: 0 / 8`;
+    document.getElementById('nugget-skip').style.display = 'none';
+
+    const stage = document.getElementById('stage4');
+    const cup = document.getElementById('cup');
+
+    function moveCup(e) {
+      const rect = stage.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      nuggetCupX = ((clientX - rect.left) / rect.width) * 100;
+      cup.style.left = `${Math.max(10, Math.min(90, nuggetCupX))}%`;
+    }
+    stage.addEventListener('mousemove', moveCup);
+    stage.addEventListener('touchmove', moveCup);
+    stage.addEventListener('click', moveCup);
+
+    function spawnNugget() {
+      if (!nuggetGameRunning) return;
+      const isNugget = Math.random() > 0.3;
+      const el = document.createElement('div');
+      el.className = isNugget ? 'nugget' : 'broccoli';
+      const x = Math.random() * 80 + 10;
+      el.style.left = `${x}%`;
+      el.style.top = `-50px`;
+      stage.appendChild(el);
+
+      const fallDuration = 2200 + Math.random() * 800;
+      el.animate([
+        { top: '-50px' },
+        { top: '85%' }
+      ], { duration: fallDuration, easing: 'linear' });
+
+      setTimeout(() => {
+        const cupRect = cup.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        const stageRect = stage.getBoundingClientRect();
+        const xCenter = elRect.left + elRect.width/2;
+        if (xCenter > cupRect.left && xCenter < cupRect.right && isNugget) {
+          nuggetCount++;
+          document.getElementById('nugget-score').textContent = `NUGGETS: ${nuggetCount} / 8`;
+          if (nuggetCount >= 8) {
+            nuggetGameRunning = false;
+            document.getElementById('nugget-skip').style.display = 'inline-block';
+            document.getElementById('nugget-score').textContent = `🍗 NICE! ${nuggetCount} NUGGETS COLLECTED 🥛`;
+          }
+        }
+        el.remove();
+      }, fallDuration);
+
+      if (nuggetGameRunning) setTimeout(spawnNugget, 600 + Math.random() * 400);
+    }
+    spawnNugget();
+  }
+
+  // STAGE 6: 6-7 rain
+  function initSixSevenRain() {
+    const rain = document.getElementById('six-seven-rain');
+    rain.innerHTML = '';
+    const phrases = ['6-7', '6-7', '6-7', '6-7-6-7', 'D\'OH', 'AY CARUMBA'];
+    for (let i = 0; i < 18; i++) {
+      const s = document.createElement('span');
+      s.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+      s.style.left = `${Math.random() * 95}%`;
+      s.style.animationDelay = `${Math.random() * 4}s`;
+      s.style.animationDuration = `${3 + Math.random() * 3}s`;
+      rain.appendChild(s);
+    }
+  }
+
+  // STAGE 5: Kratos boss
+  let bossHp = 100;
+  function mashBoss() {
+    bossHp -= 12;
+    document.getElementById('boss-hp').style.width = `${Math.max(0, bossHp)}%`;
+    const prompts = ['BOY!', 'BOY!!!', 'OPEN YOUR EYES, BOY.', 'WE ARE GOING.', 'DAD UR BALD!', 'KEEP GOING!', 'HIT HIM AGAIN!', '6-7!!!', 'PIZZER POWER!', 'YEAH BOY!'];
+    document.getElementById('boss-prompt').textContent = prompts[Math.floor(Math.random() * prompts.length)];
+    const boss = document.querySelector('#stage5 .boss');
+    boss.style.transition = 'transform 0.1s';
+    boss.style.transform = `translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px) scale(${1 - (100 - bossHp) / 200})`;
+    if (bossHp <= 0) {
+      document.getElementById('boss-prompt').textContent = 'VICTORY!';
+      boss.style.opacity = '0';
+      setTimeout(nextStage, 800);
+    }
+  }
+
+  // STAGE 7: Algorithm boss
+  let algoTaps = 0;
+  function defeatAlgo() {
+    algoTaps++;
+    const boss = document.querySelector('.algorithm-boss');
+    boss.style.transition = 'transform 0.1s';
+    boss.style.transform = `scale(${1 - algoTaps * 0.1}) rotate(${algoTaps * 15}deg)`;
+    if (algoTaps >= 6) {
+      boss.style.opacity = '0';
+      setTimeout(nextStage, 600);
+    }
+  }
+
+  // STAGE 8: confetti
+  function burstConfetti() {
+    const colors = ['#f72585', '#ffe66d', '#0046b8', '#00a3ff', '#ff6b35', '#7209b7'];
+    for (let i = 0; i < 80; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = `${Math.random() * 100}%`;
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDuration = `${2 + Math.random() * 3}s`;
+      piece.style.animationDelay = `${Math.random() * 2}s`;
+      document.getElementById('stage8').appendChild(piece);
+      setTimeout(() => piece.remove(), 6000);
+    }
+  }
+
+  // Keyboard for desktop
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'Enter') {
+      const active = document.querySelector('.stage.active');
+      if (!active) return;
+      const btn = active.querySelector('.start-btn:not([style*="display: none"]):not([style*="display:none"])') ||
+                  active.querySelector('.mash-btn');
+      if (btn) btn.click();
+    }
+  });
+</script>
+</body>
+</html>
