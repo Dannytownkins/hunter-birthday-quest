@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 <title>Hunter's 8th Birthday Quest</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2002,6 +2005,23 @@
     const spidey = document.getElementById('spidey-char');
     if (spidey) spidey.style.transform = '';
     document.getElementById('boss-prompt').innerHTML = 'HUNTER + BALD DAD<br/>VS<br/>THE TROLL';
+    bossMisses = 0;
+    // Defensive: hide all overlays
+    document.getElementById('cutscene').classList.remove('active');
+    document.getElementById('dinner-choice').classList.remove('active');
+    document.getElementById('game-over').classList.remove('active');
+    document.getElementById('round-banner').classList.remove('active');
+    cutsceneTargetIdx = null;
+    dinnerNextIdx = null;
+    gameOverPrevStage = null;
+    // Clean any residual sprites
+    document.querySelectorAll('.dodge-arena .cursed-falling, .hate-zone .dislike, .rhythm-note').forEach(e => e.remove());
+    // Reset visible boss states
+    const algoBossEl = document.querySelector('#stage7 .algorithm-boss');
+    if (algoBossEl) { algoBossEl.style.opacity = '1'; algoBossEl.style.transform = 'scale(1)'; }
+    document.getElementById('algo-next-btn').style.display = 'none';
+    document.getElementById('dodge-next-btn').style.display = 'none';
+    document.getElementById('nugget-skip').style.display = 'none';
     showStage(0);
   }
 
@@ -2415,20 +2435,22 @@
     spawnNugget();
   }
 
-  // STAGE 6: dodge game (multi-round)
+  // STAGE 6: dodge game with tap-to-destroy collectables (multi-round)
   let dodgeRunning = false;
   let dodgeLives = 3;
   let dodgeTime = 12;
   let dodgeRound = 1;
+  let dodgeScore = 0;
   let dodgeSpawnTimer = null;
   let dodgeTickTimer = null;
   function initDodgeGame(roundResume) {
     if (dodgeRunning) return;
     dodgeRunning = true;
     dodgeLives = 3;
+    dodgeScore = 0;
     dodgeTime = dodgeRound === 2 ? 15 : 12;
     if (!roundResume) { dodgeRound = 1; dodgeTime = 12; }
-    document.getElementById('dodge-lives').textContent = `R${dodgeRound} • HP:${dodgeLives}`;
+    document.getElementById('dodge-lives').textContent = `R${dodgeRound} • HP:${dodgeLives} • PTS:0`;
     document.getElementById('dodge-timer').textContent = `SURVIVE: ${dodgeTime}s`;
     document.getElementById('dodge-next-btn').style.display = 'none';
 
@@ -2450,15 +2472,34 @@
     arena.onclick = movePlayer;
 
     const symbols = ['🟡', '🍩', '🍺', '😬', '🟡', '🍩', '👁️', '💀', '🟡', '🍩', '🍺', '👹', '🍞', '🌀'];
+    const powSymbols = ['🍩', '🍺', '🟡', '⭐', '🥯'];
     function spawnCursed() {
       if (!dodgeRunning) return;
       const c = document.createElement('div');
-      c.className = 'cursed-falling';
-      c.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      // 35% chance to be a tappable POW (donut/star/duff) worth 5 pts
+      const isPow = Math.random() < 0.35;
+      c.className = isPow ? 'cursed-falling pow' : 'cursed-falling';
+      c.textContent = (isPow ? powSymbols : symbols)[Math.floor(Math.random() * (isPow ? powSymbols.length : symbols.length))];
       const x = Math.random() * 90 + 5;
       c.style.left = `${x}%`;
       c.style.top = `-50px`;
+      if (isPow) c.dataset.pow = '1';
       arena.appendChild(c);
+
+      if (isPow) {
+        c.style.pointerEvents = 'auto';
+        c.style.cursor = 'pointer';
+        c.onclick = (e) => {
+          e.stopPropagation();
+          if (c.dataset.popped) return;
+          c.dataset.popped = '1';
+          dodgeScore += 5;
+          document.getElementById('dodge-lives').textContent = `R${dodgeRound} • HP:${dodgeLives} • PTS:${dodgeScore}`;
+          playBeep(900 + dodgeScore * 10, 0.08, 'square', 0.18);
+          c.classList.add('hit');
+          setTimeout(() => c.remove(), 400);
+        };
+      }
 
       const arenaRect = arena.getBoundingClientRect();
       const fallDuration = 2200 + Math.random() * 800;
@@ -2482,12 +2523,19 @@
           cRect.top < playerRect.bottom &&
           cRect.right > playerRect.left + 8 &&
           cRect.left < playerRect.right - 8 &&
-          !c.classList.contains('hit')
+          !c.classList.contains('hit') && !c.dataset.popped
         ) {
           c.classList.add('hit');
-          dodgeLives--;
-          document.getElementById('dodge-lives').textContent = `R${dodgeRound} • HP:${dodgeLives}`;
-          playHit();
+          if (c.dataset.pow === '1') {
+            // Auto-collect POW on body hit: bonus points
+            dodgeScore += 3;
+            document.getElementById('dodge-lives').textContent = `R${dodgeRound} • HP:${dodgeLives} • PTS:${dodgeScore}`;
+            playBeep(880, 0.1, 'square', 0.18);
+          } else {
+            dodgeLives--;
+            document.getElementById('dodge-lives').textContent = `R${dodgeRound} • HP:${dodgeLives} • PTS:${dodgeScore}`;
+            playHit();
+          }
           setTimeout(() => c.remove(), 300);
           if (dodgeLives <= 0) {
             dodgeRunning = false;
@@ -2582,16 +2630,18 @@
     if (comboLoop) cancelAnimationFrame(comboLoop);
     comboLoop = null;
   }
+  let bossMisses = 0;
   function mashBoss() {
     if (!comboLoop) startComboLoop();
     // Combo zone is 40-60%
     const inZone = comboCursorPct >= 40 && comboCursorPct <= 60;
     const isPerfect = comboCursorPct >= 47 && comboCursorPct <= 53;
-    let dmg = 8;
-    let flashText = 'HIT!';
-    let flashColor = '#ffe66d';
+    let dmg = 0;
+    let flashText = 'MISS!';
+    let flashColor = '#ff4466';
     if (isPerfect) { dmg = 28; flashText = 'PERFECT BOY!'; flashColor = '#00ff66'; }
-    else if (inZone) { dmg = 18; flashText = 'GREAT!'; flashColor = '#00ffcc'; }
+    else if (inZone) { dmg = 16; flashText = 'GREAT!'; flashColor = '#00ffcc'; }
+    else { bossMisses++; }
     bossHp -= dmg;
 
     document.getElementById('boss-hp').style.width = `${Math.max(0, bossHp)}%`;
@@ -2617,6 +2667,24 @@
     if (isPerfect) playWinSound();
     else if (inZone) playSwing();
     else playPunch();
+
+    // Update prompt/HUD with miss count
+    if (!isPerfect && !inZone) {
+      const remaining = 5 - bossMisses;
+      if (remaining > 0) {
+        document.getElementById('boss-prompt').innerHTML = `MISS! TROLL COUNTERS IN ${remaining}`;
+      }
+    }
+
+    if (bossMisses >= 5) {
+      stopComboLoop();
+      document.getElementById('boss-prompt').innerHTML = 'TROLL COUNTERATTACK!';
+      showGameOver('THE TROLL HIT BACK! TIME YOUR TAPS!');
+      bossMisses = 0;
+      bossHp = 100;
+      document.getElementById('boss-hp').style.width = '100%';
+      return;
+    }
 
     if (bossHp <= 0) {
       stopComboLoop();
