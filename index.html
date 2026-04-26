@@ -568,6 +568,55 @@
     0% { left: -120px; transform: rotate(0); opacity: 1; }
     100% { left: 120%; transform: rotate(720deg); opacity: 0; }
   }
+  /* Comic-book burst (POW! / SLAM! / GROUNDED!) on a perfect Kratos hit */
+  .comic-burst {
+    position: absolute;
+    top: 30%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    z-index: 7;
+    pointer-events: none;
+    font-family: 'Bangers', cursive;
+    font-size: clamp(2.6rem, 8vw, 4.5rem);
+    color: #ffe66d;
+    text-shadow: 4px 4px 0 #c8102e, 7px 7px 0 #1a1a1a;
+    letter-spacing: 4px;
+    animation: comic-burst 0.55s ease-out forwards;
+    background:
+      radial-gradient(circle at 50% 50%, transparent 38%, transparent 38%);
+    padding: 16px 24px;
+  }
+  .comic-burst::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    background:
+      conic-gradient(from 0deg,
+        #ffe66d 0deg, transparent 12deg,
+        #ffe66d 24deg, transparent 36deg,
+        #ffe66d 48deg, transparent 60deg,
+        #ffe66d 72deg, transparent 84deg,
+        #ffe66d 96deg, transparent 108deg,
+        #ffe66d 120deg, transparent 132deg,
+        #ffe66d 144deg, transparent 156deg,
+        #ffe66d 168deg, transparent 180deg,
+        #ffe66d 192deg, transparent 204deg,
+        #ffe66d 216deg, transparent 228deg,
+        #ffe66d 240deg, transparent 252deg,
+        #ffe66d 264deg, transparent 276deg,
+        #ffe66d 288deg, transparent 300deg,
+        #ffe66d 312deg, transparent 324deg,
+        #ffe66d 336deg, transparent 348deg);
+    -webkit-mask: radial-gradient(circle, transparent 36%, #000 38%, #000 100%);
+    mask: radial-gradient(circle, transparent 36%, #000 38%, #000 100%);
+    z-index: -1;
+    border-radius: 50%;
+  }
+  @keyframes comic-burst {
+    0% { transform: translate(-50%, -50%) scale(0) rotate(-25deg); opacity: 0; }
+    25% { transform: translate(-50%, -50%) scale(1.25) rotate(8deg); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1) rotate(0); opacity: 0; }
+  }
+
   /* Frost shimmer flash on perfect Kratos hit */
   #stage5.frost-pulse::after {
     content: '';
@@ -1354,6 +1403,28 @@
     40% { transform: translate(6px, -4px); }
     60% { transform: translate(-4px, -3px); }
     80% { transform: translate(4px, 3px); }
+  }
+
+  /* Bartman power-up state — red flowing cape behind the player + glow */
+  .dodge-player.bartman::before {
+    content: '';
+    position: absolute;
+    left: 50%; top: 12px;
+    transform: translateX(-50%);
+    width: 64px; height: 60px;
+    background: linear-gradient(180deg, #dd1a1a 0%, #a80a0a 100%);
+    border: 3px solid #1a1a1a;
+    border-radius: 0 0 32px 32px;
+    z-index: -1;
+    animation: cape-flap 0.5s ease-in-out infinite alternate;
+    transform-origin: top center;
+  }
+  .dodge-player.bartman {
+    filter: drop-shadow(0 0 14px #ffe66d) drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+  }
+  @keyframes cape-flap {
+    0% { transform: translateX(-50%) rotate(-3deg) scaleY(1); }
+    100% { transform: translateX(-50%) rotate(3deg) scaleY(0.95); }
   }
 
   /* Bart "chomp" reaction when catching a donut — quick squash */
@@ -3374,16 +3445,25 @@
     dodgeRunning = true;
     dodgeLives = 4;
     dodgeScore = 0;
-    dodgeTime = dodgeRound === 2 ? 15 : 12;
+    if (dodgeRound === 3) dodgeTime = 8;
+    else if (dodgeRound === 2) dodgeTime = 15;
+    else dodgeTime = 12;
     if (!roundResume) { dodgeRound = 1; dodgeTime = 12; }
-    document.getElementById('dodge-lives').textContent = `R${dodgeRound} • HP:${dodgeLives} • PTS:0`;
-    document.getElementById('dodge-timer').textContent = `SURVIVE: ${dodgeTime}s`;
+    const isBartman = dodgeRound === 3;
+    document.getElementById('dodge-lives').textContent = isBartman
+      ? `BARTMAN • PTS:0`
+      : `R${dodgeRound} • HP:${dodgeLives} • PTS:0`;
+    document.getElementById('dodge-timer').textContent = isBartman
+      ? `🦸 BARTMAN: ${dodgeTime}s`
+      : `SURVIVE: ${dodgeTime}s`;
     document.getElementById('dodge-next-btn').style.display = 'none';
 
     const arena = document.getElementById('dodge-arena');
     const player = document.getElementById('dodge-player');
     arena.querySelectorAll('.cursed-falling').forEach(c => c.remove());
     player.style.left = '50%';
+    // Add/remove Bartman cape on the player
+    player.classList.toggle('bartman', isBartman);
 
     let playerXpct = 50;
     function movePlayer(e) {
@@ -3400,8 +3480,8 @@
     function spawnCursed() {
       if (!dodgeRunning) return;
       const c = document.createElement('div');
-      // 40% chance to be a tappable POW (donut/Krusty/slingshot) worth bonus points
-      const isPow = Math.random() < 0.4;
+      // BARTMAN MODE: every spawn is a POW (donut blitz). Otherwise 40% POW rate.
+      const isPow = isBartman ? true : Math.random() < 0.4;
       c.className = isPow ? 'cursed-falling pow' : 'cursed-falling';
       const pool = isPow ? POW_SPRITES : CURSED_SPRITES;
       c.innerHTML = pool[Math.floor(Math.random() * pool.length)];
@@ -3419,7 +3499,9 @@
           if (c.dataset.popped) return;
           c.dataset.popped = '1';
           dodgeScore += 5;
-          document.getElementById('dodge-lives').textContent = `R${dodgeRound} • HP:${dodgeLives} • PTS:${dodgeScore}`;
+          document.getElementById('dodge-lives').textContent = isBartman
+            ? `BARTMAN • PTS:${dodgeScore}`
+            : `R${dodgeRound} • HP:${dodgeLives} • PTS:${dodgeScore}`;
           playBeep(900 + dodgeScore * 10, 0.08, 'square', 0.18);
           c.classList.add('hit');
           buzz(20);
@@ -3461,7 +3543,9 @@
           if (c.dataset.pow === '1') {
             // Auto-collect POW on body hit: bonus points + Bart chomps it
             dodgeScore += 3;
-            document.getElementById('dodge-lives').textContent = `R${dodgeRound} • HP:${dodgeLives} • PTS:${dodgeScore}`;
+            document.getElementById('dodge-lives').textContent = isBartman
+              ? `BARTMAN • PTS:${dodgeScore}`
+              : `R${dodgeRound} • HP:${dodgeLives} • PTS:${dodgeScore}`;
             playBeep(880, 0.1, 'square', 0.18);
             const playerEl = document.getElementById('dodge-player');
             playerEl.classList.remove('chomp');
@@ -3470,6 +3554,14 @@
             const arenaRect = arena.getBoundingClientRect();
             const lx = ((cRect.left + cRect.width/2) - arenaRect.left) / arenaRect.width * 100;
             showScorePopup(arena, '+3 NOM!', '#f7e26b', lx, 88);
+          } else if (isBartman) {
+            // Bartman is invincible — incoming hits bounce off as bonus points
+            dodgeScore += 1;
+            document.getElementById('dodge-lives').textContent = `BARTMAN • PTS:${dodgeScore}`;
+            playSwing();
+            const arenaRect = arena.getBoundingClientRect();
+            const lx = ((cRect.left + cRect.width/2) - arenaRect.left) / arenaRect.width * 100;
+            showScorePopup(arena, 'BOUNCE!', '#dd1a1a', lx, 88);
           } else {
             dodgeLives--;
             document.getElementById('dodge-lives').textContent = `R${dodgeRound} • HP:${dodgeLives} • PTS:${dodgeScore}`;
@@ -3519,6 +3611,14 @@
           dodgeRound = 2;
           setTimeout(() => {
             showRoundBanner('ROUND 2!', 'CHAOS MODE — 15s TO ESCAPE', () => initDodgeGame(true));
+          }, 600);
+        } else if (dodgeRound < 3) {
+          // BARTMAN MODE — donuts only, invincible, 8s of pure power fantasy
+          document.getElementById('dodge-timer').textContent = `🌀 R2 CLEAR 🌀`;
+          playWinSound();
+          dodgeRound = 3;
+          setTimeout(() => {
+            showRoundBanner('BARTMAN MODE!!!', 'INVINCIBLE — DONUTS ONLY', () => initDodgeGame(true));
           }, 600);
         } else {
           document.getElementById('dodge-timer').textContent = `🌀 ESCAPED SPRINGFIELD 🌀`;
@@ -3610,7 +3710,7 @@
     ];
     document.getElementById('boss-prompt').innerHTML = prompts[Math.floor(Math.random() * prompts.length)];
 
-    // On a PERFECT hit: throw the Leviathan axe across screen + frost shimmer
+    // On a PERFECT hit: throw the Leviathan axe across screen + frost shimmer + comic POW
     if (isPerfect) {
       const axe = document.getElementById('axe-flash');
       if (axe) {
@@ -3624,6 +3724,13 @@
         void stageEl.offsetWidth;
         stageEl.classList.add('frost-pulse');
         setTimeout(() => stageEl.classList.remove('frost-pulse'), 500);
+        // Comic burst — random GoW-flavored callout
+        const bursts = ['POW!', 'SLAM!', 'GROUNDED!', 'BOOM!', 'AXE!', 'STRIKE!'];
+        const burst = document.createElement('div');
+        burst.className = 'comic-burst';
+        burst.textContent = bursts[Math.floor(Math.random() * bursts.length)];
+        stageEl.appendChild(burst);
+        setTimeout(() => burst.remove(), 600);
       }
     }
 
@@ -3809,19 +3916,36 @@
   }
 
   // STAGE 8: confetti
-  function burstConfetti() {
+  function burstConfetti(count, originX, originY) {
     const colors = ['#f72585', '#ffe66d', '#0046b8', '#00a3ff', '#ff6b35', '#7209b7'];
-    for (let i = 0; i < 80; i++) {
+    const n = count || 80;
+    for (let i = 0; i < n; i++) {
       const piece = document.createElement('div');
       piece.className = 'confetti-piece';
-      piece.style.left = `${Math.random() * 100}%`;
+      piece.style.left = originX != null ? `${originX}%` : `${Math.random() * 100}%`;
+      if (originY != null) piece.style.top = `${originY}%`;
       piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-      piece.style.animationDuration = `${2 + Math.random() * 3}s`;
-      piece.style.animationDelay = `${Math.random() * 2}s`;
+      piece.style.animationDuration = `${1.6 + Math.random() * 2.5}s`;
+      piece.style.animationDelay = `${Math.random() * 0.6}s`;
       document.getElementById('stage8').appendChild(piece);
-      setTimeout(() => piece.remove(), 6000);
+      setTimeout(() => piece.remove(), 5000);
     }
   }
+  // Tap anywhere on the finale stage to burst extra confetti from the tap point
+  (function setupFinaleTaps() {
+    const stage = document.getElementById('stage8');
+    if (!stage) return;
+    stage.addEventListener('click', (e) => {
+      // Don't double-fire when clicking buttons
+      if (e.target.closest('button')) return;
+      const rect = stage.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      burstConfetti(20, x, y);
+      playBeep(523 + Math.random() * 600, 0.08, 'square', 0.14);
+      buzz(15);
+    });
+  })();
 
   // Stage 1 — clicking Hunter or Dad cycles a fun chat line so the spawn screen is interactive instead of static.
   const STAGE1_LINES = {
