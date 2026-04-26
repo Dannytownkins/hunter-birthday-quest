@@ -1964,18 +1964,24 @@
   }
   function restartGame() {
     spideyHits = 0;
+    spideyRound = 1;
     spideyGameRunning = false;
     cleanupSpideyTarget();
     mjScore = 0;
+    mjRound = 1;
     mjGameRunning = false;
     nuggetCount = 0;
+    nuggetRound = 1;
     nuggetGameRunning = false;
     bossHp = 100;
     dodgeRunning = false;
+    dodgeRound = 1;
     if (dodgeTickTimer) clearInterval(dodgeTickTimer);
     if (dodgeSpawnTimer) clearTimeout(dodgeSpawnTimer);
     algoGameRunning = false;
+    algoRound = 1;
     if (algoSpawnTimer) clearTimeout(algoSpawnTimer);
+    window.dinnerPicked = false;
     document.getElementById('boss-hp').style.width = '100%';
     const boss = document.getElementById('boss-troll');
     if (boss) { boss.style.opacity = '1'; boss.style.transform = 'translate(-50%, -50%)'; }
