@@ -822,6 +822,58 @@
   }
   .dinner-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #000; }
   .dinner-btn.picked { background: #00ff66; }
+
+  /* Builder quiz UI */
+  .quiz-progress {
+    width: 100%; height: 10px;
+    background: rgba(255,255,255,0.18);
+    border: 2px solid #00ff66;
+    border-radius: 6px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .quiz-progress span {
+    display: block; height: 100%;
+    background: linear-gradient(90deg, #00ff66 0%, #ffe66d 100%);
+    width: 0%;
+    transition: width 0.35s ease;
+  }
+  .quiz-question {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
+    color: #ffe66d;
+    text-shadow: 3px 3px 0 #000;
+    text-align: center;
+    margin-top: 14px;
+    letter-spacing: 2px;
+    line-height: 1.2;
+  }
+  .quiz-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .quiz-options button {
+    background: #fff;
+    color: #000;
+    border: 3px solid #000;
+    border-radius: 6px;
+    padding: 14px 8px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(0.6rem, 1.7vw, 0.85rem);
+    line-height: 1.3;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 #000;
+    text-align: center;
+  }
+  .quiz-options button:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #000; }
+  .quiz-options button .quiz-emoji {
+    display: block;
+    font-size: 1.6rem;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
   /* 6-7 weighing-hands pose — horizontal arms with palms up, alternating bob */
   .six-seven-hunter {
     width: 200px;
@@ -2069,26 +2121,21 @@
 
 </div>
 
-<!-- NEXT GAME PICKER -->
+<!-- BUILDER QUIZ — multi-step questionnaire about Hunter's dream game -->
 <div class="cutscene" id="next-game-picker" style="background: linear-gradient(180deg, #001a4d 0%, #4a0e6e 100%);">
-  <div class="cutscene-banner" style="color: #00ff66; text-shadow: 4px 4px 0 #f72585, 8px 8px 0 #000;">PICK OUR NEXT GAME</div>
-  <div class="cutscene-panel" style="border-color: #00ff66;">
-    <div class="cutscene-bubble dad" data-delay="0">
-      <span class="cutscene-speaker">DAD:</span>real talk BOY — what we BUILDIN' next? you pick. we make it together this week.
+  <div class="cutscene-banner" id="quiz-banner" style="color: #00ff66; text-shadow: 4px 4px 0 #f72585, 8px 8px 0 #000;">DESIGN YOUR GAME</div>
+  <div class="cutscene-panel" id="quiz-panel" style="border-color: #00ff66;">
+    <div class="cutscene-bubble dad" id="quiz-intro" data-delay="0">
+      <span class="cutscene-speaker">DAD:</span>real talk BOY — answer 5 quick questions. that's the game we BUILD this week.
     </div>
-    <div class="dinner-options" style="grid-template-columns: 1fr;">
-      <button class="dinner-btn" onclick="pickNextGame(this, 'TACOS QUEST 🌮')">🌮 TACOS QUEST</button>
-      <button class="dinner-btn" onclick="pickNextGame(this, 'MINECRAFT KINGDOM ⛏️')">⛏️ MINECRAFT KINGDOM</button>
-      <button class="dinner-btn" onclick="pickNextGame(this, 'SUPER NUGGET BROS 🍗')">🍗 SUPER NUGGET BROS</button>
-      <button class="dinner-btn" onclick="pickNextGame(this, 'BALD DAD: ORIGINS 👨‍🦲')">👨‍🦲 BALD DAD: ORIGINS</button>
-      <button class="dinner-btn" onclick="pickNextGame(this, 'DRAGON BOSS 🐉')">🐉 DRAGON BOSS</button>
-      <button class="dinner-btn" onclick="pickNextGame(this, 'SPACE PIZZER 🚀')">🚀 SPACE PIZZER</button>
-    </div>
-    <div class="cutscene-bubble dad" id="nextgame-confirm" style="display:none;">
-      <span class="cutscene-speaker">DAD:</span><span id="nextgame-confirm-text"></span>
+    <div class="quiz-progress" id="quiz-progress"><span id="quiz-progress-fill"></span></div>
+    <div class="quiz-question" id="quiz-question"></div>
+    <div class="quiz-options" id="quiz-options"></div>
+    <div class="cutscene-bubble dad" id="quiz-summary" style="display:none;">
+      <span class="cutscene-speaker">DAD:</span><span id="quiz-summary-text"></span>
     </div>
   </div>
-  <button class="cutscene-continue" id="nextgame-continue" onclick="advanceFromNextGame()">PLAY AGAIN</button>
+  <button class="cutscene-continue" id="nextgame-continue" onclick="advanceFromNextGame()">LOCK IT IN, BOY →</button>
 </div>
 
 <!-- CUTSCENE OVERLAY -->
@@ -2922,31 +2969,138 @@
     }
   }
 
-  // Next game picker
+  // Builder quiz — five questions about Hunter's dream game.
+  const QUIZ = [
+    {
+      key: 'hero', q: "WHO'S THE HERO?",
+      options: [
+        { e: '🧒', t: 'HUNTER (LVL 8)' },
+        { e: '👨‍🦲', t: 'BALD DAD' },
+        { e: '👫', t: 'HUNTER + DAD' },
+        { e: '🐉', t: 'A DRAGON' },
+        { e: '🥷', t: 'A NINJA' },
+        { e: '🤖', t: 'ROBOT YOU' },
+      ],
+    },
+    {
+      key: 'world', q: 'WHERE DOES IT HAPPEN?',
+      options: [
+        { e: '🟦', t: 'ROBLOX' },
+        { e: '🚀', t: 'SPACE' },
+        { e: '🍕', t: 'PIZZER PLANET' },
+        { e: '🟡', t: 'SPRINGFIELD' },
+        { e: '⛰️', t: 'THE BIG HILL' },
+        { e: '🏰', t: 'A CASTLE' },
+      ],
+    },
+    {
+      key: 'villain', q: "WHO'S THE BIG BAD?",
+      options: [
+        { e: '👹', t: 'A TROLL' },
+        { e: '📺', t: 'THE ALGORITHM' },
+        { e: '🥦', t: 'BROCCOLI MAN' },
+        { e: '🧙', t: 'A WIZARD' },
+        { e: '👴', t: 'OLD MR. BURNS' },
+        { e: '🍗', t: 'GIANT NUGGET' },
+      ],
+    },
+    {
+      key: 'power', q: 'YOUR SUPER MOVE?',
+      options: [
+        { e: '👁️', t: 'LASER EYES' },
+        { e: '🦘', t: 'SUPER JUMP' },
+        { e: '🕸️', t: 'WEB SHOOTERS' },
+        { e: '🪓', t: 'AXE THROW' },
+        { e: '🏃', t: 'DAD CARRY' },
+        { e: '🍕', t: 'PIZZER POWER' },
+      ],
+    },
+    {
+      key: 'win', q: 'HOW DO YOU WIN?',
+      options: [
+        { e: '👑', t: 'BEAT THE BOSS' },
+        { e: '🍗', t: 'COLLECT 100 NUGGS' },
+        { e: '⛰️', t: 'ESCAPE THE HILL' },
+        { e: '📱', t: "FIND DAD'S PHONE" },
+        { e: '🍕', t: 'DELIVER PIZZER' },
+        { e: '🎟️', t: 'GET TO UNIVERSAL' },
+      ],
+    },
+  ];
+  let quizIdx = 0;
+  const quizAnswers = {};
+
   function showNextGamePicker() {
-    try {
-      stopBGM();
-      const overlay = document.getElementById('next-game-picker');
-      if (!overlay) { alert('next-game-picker missing — try refresh'); return; }
-      overlay.classList.add('active');
-      overlay.style.display = 'flex'; // belt & suspenders
-      const conf = document.getElementById('nextgame-confirm');
-      if (conf) conf.style.display = 'none';
-      const cont = document.getElementById('nextgame-continue');
-      if (cont) cont.classList.remove('ready');
-      document.querySelectorAll('#next-game-picker .dinner-btn').forEach(b => b.classList.remove('picked'));
-      try { playJingle([523, 659, 784, 1047], 'square', 0.16); } catch(e) {}
-    } catch (err) {
-      alert('error: ' + err.message);
-    }
+    stopBGM();
+    const overlay = document.getElementById('next-game-picker');
+    if (!overlay) return;
+    overlay.classList.add('active');
+    overlay.style.display = 'flex';
+    quizIdx = 0;
+    Object.keys(quizAnswers).forEach(k => delete quizAnswers[k]);
+    document.getElementById('quiz-summary').style.display = 'none';
+    document.getElementById('nextgame-continue').classList.remove('ready');
+    renderQuizStep();
+    try { playJingle([523, 659, 784, 1047], 'square', 0.16); } catch(e) {}
   }
-  function pickNextGame(btn, label) {
-    document.querySelectorAll('#next-game-picker .dinner-btn').forEach(b => b.classList.remove('picked'));
-    btn.classList.add('picked');
-    document.getElementById('nextgame-confirm-text').textContent = `LOCKED IN: "${label}". WE BUILD THIS NEXT, BOY.`;
-    document.getElementById('nextgame-confirm').style.display = 'block';
+  function renderQuizStep() {
+    const total = QUIZ.length;
+    const progress = document.getElementById('quiz-progress-fill');
+    if (progress) progress.style.width = `${(quizIdx / total) * 100}%`;
+    if (quizIdx >= total) {
+      finishQuiz();
+      return;
+    }
+    const step = QUIZ[quizIdx];
+    document.getElementById('quiz-question').textContent = `Q${quizIdx + 1} / ${total}: ${step.q}`;
+    const optionsEl = document.getElementById('quiz-options');
+    optionsEl.innerHTML = '';
+    step.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.innerHTML = `<span class="quiz-emoji">${opt.e}</span>${opt.t}`;
+      btn.onclick = () => answerQuiz(step.key, opt.t, opt.e, btn);
+      optionsEl.appendChild(btn);
+    });
+  }
+  function answerQuiz(key, label, emoji, btn) {
+    quizAnswers[key] = { label, emoji };
+    if (btn) {
+      btn.style.background = '#00ff66';
+      btn.style.transform = 'translate(2px, 2px)';
+      btn.style.boxShadow = '2px 2px 0 #000';
+    }
+    playBeep(523 + quizIdx * 110, 0.1, 'square', 0.18);
+    buzz(20);
+    setTimeout(() => {
+      quizIdx++;
+      renderQuizStep();
+    }, 320);
+  }
+  function finishQuiz() {
+    const a = quizAnswers;
+    document.getElementById('quiz-question').textContent = '';
+    document.getElementById('quiz-options').innerHTML = '';
+    document.getElementById('quiz-progress-fill').style.width = '100%';
+    const summary = `OUR NEXT GAME — "${a.hero?.label || '???'} ${a.power?.emoji || ''}` +
+      ` IN ${a.world?.label || '???'} ${a.world?.emoji || ''} VS ${a.villain?.label || '???'}` +
+      ` ${a.villain?.emoji || ''}". WIN BY: ${a.win?.label || '???'}. WE BUILD THIS, BOY. ❤️`;
+    document.getElementById('quiz-summary-text').textContent = summary;
+    document.getElementById('quiz-summary').style.display = 'block';
     document.getElementById('nextgame-continue').classList.add('ready');
     playWinSound();
+    // Confetti behind the panel
+    const overlay = document.getElementById('next-game-picker');
+    const colors = ['#f72585', '#ffe66d', '#0046b8', '#00ff66', '#ff6b35'];
+    for (let i = 0; i < 40; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = `${Math.random() * 100}%`;
+      piece.style.background = colors[i % colors.length];
+      piece.style.animationDuration = `${1.5 + Math.random() * 2.5}s`;
+      piece.style.animationDelay = `${Math.random() * 0.5}s`;
+      overlay.appendChild(piece);
+      setTimeout(() => piece.remove(), 5000);
+    }
   }
   function advanceFromNextGame() {
     if (!document.getElementById('nextgame-continue').classList.contains('ready')) return;
