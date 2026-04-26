@@ -1966,13 +1966,21 @@
 
   // Next game picker
   function showNextGamePicker() {
-    stopBGM();
-    const overlay = document.getElementById('next-game-picker');
-    overlay.classList.add('active');
-    document.getElementById('nextgame-confirm').style.display = 'none';
-    document.getElementById('nextgame-continue').classList.remove('ready');
-    document.querySelectorAll('#next-game-picker .dinner-btn').forEach(b => b.classList.remove('picked'));
-    playJingle([523, 659, 784, 1047], 'square', 0.16);
+    try {
+      stopBGM();
+      const overlay = document.getElementById('next-game-picker');
+      if (!overlay) { alert('next-game-picker missing — try refresh'); return; }
+      overlay.classList.add('active');
+      overlay.style.display = 'flex'; // belt & suspenders
+      const conf = document.getElementById('nextgame-confirm');
+      if (conf) conf.style.display = 'none';
+      const cont = document.getElementById('nextgame-continue');
+      if (cont) cont.classList.remove('ready');
+      document.querySelectorAll('#next-game-picker .dinner-btn').forEach(b => b.classList.remove('picked'));
+      try { playJingle([523, 659, 784, 1047], 'square', 0.16); } catch(e) {}
+    } catch (err) {
+      alert('error: ' + err.message);
+    }
   }
   function pickNextGame(label) {
     document.querySelectorAll('#next-game-picker .dinner-btn').forEach(b => b.classList.remove('picked'));
