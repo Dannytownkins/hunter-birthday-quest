@@ -106,24 +106,20 @@
     background: #fff;
     clip-path: polygon(10% 100%, 15% 60%, 25% 40%, 35% 60%, 45% 30%, 55% 50%, 65% 20%, 75% 50%, 85% 40%, 90% 100%);
   }
-  .pixel-hunter {
-    width: 60px; height: 60px;
-    background: #ff6b35;
-    border: 4px solid #000;
-    image-rendering: pixelated;
+  .rblx-char {
+    width: 90px;
     position: relative;
-    box-shadow: 0 0 0 4px #fff inset, 0 0 0 8px #000 inset;
-  }
-  .pixel-dad {
-    width: 60px; height: 60px;
-    background: #d4a574;
-    border: 4px solid #000;
     image-rendering: pixelated;
-    position: relative;
-    box-shadow: 0 0 0 4px #f4d4a4 inset, 0 0 0 8px #000 inset;
+    animation: rblx-bob 1.6s infinite ease-in-out;
   }
+  .rblx-char.dad-char { animation-delay: 0.4s; }
+  @keyframes rblx-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .rblx-char svg { width: 100%; height: auto; display: block; }
   .character-row {
-    display: flex; gap: 80px; align-items: center;
+    display: flex; gap: 60px; align-items: flex-end;
     position: relative;
     z-index: 5;
   }
@@ -155,31 +151,55 @@
   }
 
   /* Stage 2: Spider-Man swing */
-  #stage2 { background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); }
-  #stage2 .skyline {
-    position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
-    background:
-      linear-gradient(180deg, transparent 0%, transparent 60%, #0a0a0a 60%),
-      repeating-linear-gradient(90deg, #1a1a2e 0 40px, #2d2d4a 40px 80px, #1a1a2e 80px 200px, #2d2d4a 200px 280px);
-  }
-  #stage2 .skyline::before {
-    content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle, #ffe66d 1px, transparent 1px) 0 0 / 20px 30px;
-    opacity: 0.4;
-  }
-  .spidey {
-    width: 50px; height: 50px;
-    background: #e62429;
+  #stage2 { background: linear-gradient(180deg, #0a0e2e 0%, #1e1838 50%, #2d1b4e 100%); overflow: hidden; }
+  #stage2 .moon {
+    position: absolute; top: 8%; right: 12%;
+    width: 80px; height: 80px;
+    background: radial-gradient(circle, #ffe66d 30%, #ffcc44 70%);
     border-radius: 50%;
-    position: relative;
-    box-shadow: 0 0 20px #e62429;
-    border: 3px solid #1a1a2e;
+    box-shadow: 0 0 60px #ffe66d88;
   }
-  .spidey::after {
-    content: ''; position: absolute; inset: 5px;
-    border: 2px solid #1a1a2e; border-radius: 50%;
-    background: linear-gradient(45deg, transparent 48%, #1a1a2e 48%, #1a1a2e 52%, transparent 52%),
-                linear-gradient(135deg, transparent 48%, #1a1a2e 48%, #1a1a2e 52%, transparent 52%);
+  #stage2 .skyline {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 45%;
+    pointer-events: none;
+  }
+  #stage2 .skyline svg { width: 100%; height: 100%; }
+  #stage2 .web-line {
+    position: absolute; top: 0; left: 50%;
+    width: 4px;
+    background: linear-gradient(180deg, #fff 0%, #fff 50%, #ddd 100%);
+    transform-origin: top center;
+    z-index: 2;
+    transition: transform 0.05s linear, height 0.05s linear;
+    box-shadow: 0 0 3px #fff;
+  }
+  .spidey-svg {
+    position: relative;
+    width: 80px; height: 80px;
+    z-index: 3;
+    transition: transform 0.6s cubic-bezier(.35,1.6,.55,.5);
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.8));
+  }
+  #stage2 .target {
+    position: absolute;
+    width: 50px; height: 50px;
+    background: radial-gradient(circle, #ffe66d 30%, #f72585 70%);
+    border: 3px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 20px #ffe66d;
+    z-index: 1;
+    animation: target-pulse 1s infinite;
+  }
+  @keyframes target-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  #stage2 .swing-counter {
+    position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
+    background: #000; color: #ffe66d;
+    padding: 8px 16px; font-size: 0.8rem;
+    border: 2px solid #ffe66d;
+    z-index: 4;
   }
 
   /* Stage 3: MJ moonwalk */
@@ -197,24 +217,116 @@
     opacity: 0.5;
     pointer-events: none;
   }
-  .mj {
-    width: 60px; height: 80px;
-    background: #000;
-    position: relative;
+  .mj-character {
+    position: absolute;
+    bottom: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    z-index: 4;
+    transition: transform 0.2s;
+    filter: drop-shadow(0 8px 12px rgba(255,230,109,0.4));
+  }
+  .mj-character svg { width: 100%; height: auto; display: block; }
+  .mj-character.dance-left { transform: translateX(calc(-50% - 40px)) skewX(-8deg); }
+  .mj-character.dance-mid { transform: translateX(-50%) translateY(-10px); }
+  .mj-character.dance-right { transform: translateX(calc(-50% + 40px)) skewX(8deg); }
+  .mj-stage-hud {
+    position: absolute; top: 70px; left: 0; right: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    z-index: 5;
+  }
+  .mj-score {
+    background: #000; color: #ffe66d;
+    padding: 8px 16px; font-size: 0.8rem;
     border: 3px solid #ffe66d;
+    font-family: 'Press Start 2P', monospace;
   }
-  .mj::before {
-    content: ''; position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
-    width: 30px; height: 30px;
-    background: #d4a574;
-    border-radius: 50%;
-    border: 3px solid #000;
+  .mj-prompt {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    color: #ffe66d;
+    text-shadow: 4px 4px 0 #c8102e;
   }
-  .mj::after {
-    content: ''; position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
-    width: 36px; height: 18px;
-    background: #000;
-    border-radius: 18px 18px 0 0;
+  .rhythm-board {
+    position: absolute;
+    bottom: 0;
+    left: 50%; transform: translateX(-50%);
+    width: min(420px, 90vw);
+    height: 240px;
+    z-index: 6;
+    pointer-events: none;
+  }
+  .rhythm-lane {
+    position: absolute;
+    top: 0; bottom: 60px;
+    width: 33.33%;
+    border-right: 2px dashed rgba(255,230,109,0.3);
+  }
+  .rhythm-lane[data-lane="0"] { left: 0; border-left: 2px dashed rgba(255,230,109,0.3); }
+  .rhythm-lane[data-lane="1"] { left: 33.33%; }
+  .rhythm-lane[data-lane="2"] { left: 66.66%; }
+  .rhythm-hit-line {
+    position: absolute;
+    bottom: 64px; left: 0; right: 0;
+    height: 4px;
+    background: #ffe66d;
+    box-shadow: 0 0 12px #ffe66d, 0 0 24px #f72585;
+    z-index: 3;
+  }
+  .rhythm-buttons {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    display: flex; height: 60px;
+    pointer-events: auto;
+  }
+  .rhythm-btn {
+    flex: 1;
+    background: #1a0033;
+    color: #ffe66d;
+    border: 2px solid #ffe66d;
+    font-family: 'Bangers', cursive;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: background 0.05s;
+  }
+  .rhythm-btn:active, .rhythm-btn.active { background: #ffe66d; color: #1a0033; }
+  .rhythm-note {
+    position: absolute;
+    width: 80%; left: 10%;
+    height: 30px;
+    background: linear-gradient(180deg, #f72585 0%, #c8102e 100%);
+    border: 2px solid #fff;
+    border-radius: 6px;
+    box-shadow: 0 0 12px #f72585;
+    z-index: 2;
+  }
+  .rhythm-note.hit {
+    animation: note-burst 0.3s forwards;
+  }
+  .rhythm-note.miss {
+    animation: note-fade 0.3s forwards;
+  }
+  @keyframes note-burst {
+    to { transform: scale(2); opacity: 0; }
+  }
+  @keyframes note-fade {
+    to { opacity: 0; }
+  }
+  .judge-text {
+    position: absolute;
+    top: 40%;
+    left: 50%; transform: translateX(-50%);
+    font-family: 'Bangers', cursive;
+    font-size: clamp(2rem, 5vw, 3rem);
+    pointer-events: none;
+    animation: judge-pop 0.6s forwards;
+    z-index: 7;
+  }
+  @keyframes judge-pop {
+    0% { transform: translate(-50%, 0) scale(1.5); opacity: 0; }
+    20% { transform: translate(-50%, -10px) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -40px) scale(1); opacity: 0; }
   }
 
   /* Stage 4: Chicken nugget rain */
@@ -325,6 +437,48 @@
 
   /* Stage 6: Cursed Simpsons level */
   #stage6 { background: #ffe66d; overflow: hidden; }
+  .dodge-hud {
+    position: absolute; top: 70px; left: 0; right: 0;
+    display: flex; justify-content: space-between; padding: 0 30px;
+    z-index: 5;
+  }
+  .dodge-timer, .dodge-lives {
+    background: #000; color: #ffe66d;
+    padding: 6px 12px; font-size: 0.7rem;
+    border: 2px solid #ffe66d;
+    font-family: 'Press Start 2P', monospace;
+  }
+  .dodge-lives { color: #f72585; border-color: #f72585; }
+  .dodge-arena {
+    position: absolute;
+    top: 110px; left: 5%; right: 5%; bottom: 18%;
+    border: 3px dashed #ff00ff;
+    background: rgba(0,0,0,0.05);
+    overflow: hidden;
+    z-index: 2;
+  }
+  .dodge-player {
+    position: absolute;
+    width: 50px; height: 60px;
+    bottom: 10px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    transition: left 0.05s ease-out;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+  }
+  .dodge-arena .cursed-falling {
+    position: absolute;
+    font-size: 2.5rem;
+    z-index: 2;
+    will-change: transform, top;
+    pointer-events: none;
+  }
+  .dodge-arena .cursed-falling.hit {
+    animation: cursed-hit 0.3s forwards;
+  }
+  @keyframes cursed-hit {
+    to { transform: scale(2) rotate(180deg); opacity: 0; }
+  }
   .six-seven-rain {
     position: absolute; inset: 0;
     pointer-events: none;
@@ -377,28 +531,59 @@
   }
 
   /* Stage 7: YouTube algorithm boss */
-  #stage7 { background: #ff0000; }
+  #stage7 { background: #ff0000; overflow: hidden; }
   #stage7 .yt-bg {
     position: absolute; inset: 0;
     background: repeating-linear-gradient(135deg, #ff0000 0 100px, #cc0000 100px 200px);
   }
+  .algo-boss-container {
+    position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    z-index: 5;
+  }
   .algorithm-boss {
-    width: 250px; height: 180px;
+    width: 220px; height: 150px;
     background: #fff;
     border: 8px solid #000;
     border-radius: 12px;
     position: relative;
     box-shadow: 0 0 40px #fff;
+    transition: transform 0.15s, opacity 0.3s;
   }
   .algorithm-boss::before {
     content: '▶'; position: absolute; top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    color: #ff0000; font-size: 6rem;
+    color: #ff0000; font-size: 5rem;
   }
-  .algorithm-boss::after {
-    content: 'SUBSCRIBE'; position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%);
-    color: #fff; font-family: 'Bangers', cursive; font-size: 2rem;
-    text-shadow: 3px 3px 0 #000; white-space: nowrap;
+  .boss-hp-text {
+    background: #000; color: #ffe66d;
+    padding: 6px 14px; font-size: 0.7rem;
+    border: 2px solid #ffe66d;
+    font-family: 'Press Start 2P', monospace;
+  }
+  .hate-zone { position: absolute; inset: 0; pointer-events: none; }
+  .hate-zone .dislike {
+    position: absolute;
+    width: 60px; height: 60px;
+    background: #fff;
+    border: 3px solid #000;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    pointer-events: auto;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    z-index: 4;
+    transition: transform 0.1s;
+  }
+  .hate-zone .dislike:active { transform: scale(0.85); }
+  .hate-zone .dislike.popped {
+    pointer-events: none;
+    animation: dislike-pop 0.4s ease-out forwards;
+  }
+  @keyframes dislike-pop {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(2) rotate(180deg); opacity: 0; }
   }
 
   /* Stage 8: Universal Studios reveal */
@@ -542,13 +727,55 @@
     <div class="ground"></div>
     <div class="big-text" style="margin-bottom: 40px;">WELCOME, HUNTER</div>
     <div class="character-row">
-      <div class="pixel-hunter">
+      <div class="rblx-char hunter-char">
         <div class="name-tag">HUNTER_LVL_8</div>
-        <div class="chat-bubble" style="left: 70px; top: -50px;">DAD UR BALD</div>
+        <div class="chat-bubble" style="left: 50%; transform: translateX(-50%); top: -76px;">DAD UR BALD</div>
+        <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- head (block) -->
+          <rect x="14" y="0" width="32" height="32" fill="#f4d4a4" stroke="#000" stroke-width="2"/>
+          <!-- hat -->
+          <rect x="10" y="-2" width="40" height="10" fill="#0046b8" stroke="#000" stroke-width="2"/>
+          <!-- eyes -->
+          <rect x="20" y="14" width="4" height="6" fill="#000"/>
+          <rect x="36" y="14" width="4" height="6" fill="#000"/>
+          <!-- mouth (smile) -->
+          <path d="M 20 24 Q 30 30 40 24" stroke="#000" stroke-width="2" fill="none"/>
+          <!-- torso (orange t-shirt) -->
+          <rect x="8" y="32" width="44" height="36" fill="#ff6b35" stroke="#000" stroke-width="2"/>
+          <!-- arms -->
+          <rect x="0" y="34" width="8" height="32" fill="#f4d4a4" stroke="#000" stroke-width="2"/>
+          <rect x="52" y="34" width="8" height="32" fill="#f4d4a4" stroke="#000" stroke-width="2"/>
+          <!-- legs (jeans) -->
+          <rect x="14" y="68" width="14" height="30" fill="#1e3a8a" stroke="#000" stroke-width="2"/>
+          <rect x="32" y="68" width="14" height="30" fill="#1e3a8a" stroke="#000" stroke-width="2"/>
+        </svg>
       </div>
-      <div class="pixel-dad">
+      <div class="rblx-char dad-char">
         <div class="name-tag" style="background:#ffe66d;">BALD_DAD_69</div>
-        <div class="chat-bubble" style="right: 70px; top: -50px; background: #ffe66d;">PIZZER TIME</div>
+        <div class="chat-bubble" style="left: 50%; transform: translateX(-50%); top: -76px; background: #ffe66d;">PIZZER TIME</div>
+        <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- bald head with shine -->
+          <rect x="14" y="0" width="32" height="32" fill="#e8c89c" stroke="#000" stroke-width="2"/>
+          <!-- shine highlight -->
+          <ellipse cx="22" cy="6" rx="6" ry="2" fill="#fff" opacity="0.6"/>
+          <!-- eyes -->
+          <rect x="20" y="14" width="4" height="6" fill="#000"/>
+          <rect x="36" y="14" width="4" height="6" fill="#000"/>
+          <!-- beard scruff -->
+          <path d="M 16 22 Q 30 30 44 22 L 44 28 Q 30 34 16 28 Z" fill="#4a3a2a" opacity="0.7"/>
+          <!-- smile -->
+          <path d="M 22 26 Q 30 30 38 26" stroke="#000" stroke-width="2" fill="none"/>
+          <!-- torso (black t-shirt) -->
+          <rect x="8" y="32" width="44" height="36" fill="#1a1a1a" stroke="#000" stroke-width="2"/>
+          <!-- POWER text on shirt -->
+          <text x="30" y="54" text-anchor="middle" font-family="monospace" font-size="8" fill="#ffe66d" font-weight="bold">DAD</text>
+          <!-- arms -->
+          <rect x="0" y="34" width="8" height="32" fill="#e8c89c" stroke="#000" stroke-width="2"/>
+          <rect x="52" y="34" width="8" height="32" fill="#e8c89c" stroke="#000" stroke-width="2"/>
+          <!-- legs (jeans) -->
+          <rect x="14" y="68" width="14" height="30" fill="#3a3a3a" stroke="#000" stroke-width="2"/>
+          <rect x="32" y="68" width="14" height="30" fill="#3a3a3a" stroke="#000" stroke-width="2"/>
+        </svg>
       </div>
     </div>
     <div class="instructions">YOU SPAWNED IN THE BIRTHDAY SERVER</div>
@@ -558,17 +785,73 @@
   <!-- STAGE 2: SPIDER-MAN SWING -->
   <div class="stage" id="stage2">
     <div class="hud">
-      <div class="stage-label">STAGE 2: SWING</div>
+      <div class="stage-label">STAGE 2: WEBSLING</div>
       <div class="stage-counter">2 / 8</div>
     </div>
-    <div class="skyline"></div>
-    <div class="big-text">THWIP!</div>
-    <div class="spidey" id="spidey-char"></div>
-    <div class="instructions">TAP TO SWING ACROSS THE CITY</div>
-    <button class="start-btn next-btn" onclick="swingSpidey()">SHOOT WEB</button>
+    <div class="moon"></div>
+    <div class="skyline">
+      <svg viewBox="0 0 1000 400" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="200" width="80" height="200" fill="#0a0a18"/>
+        <rect x="80" y="120" width="100" height="280" fill="#15152e"/>
+        <rect x="180" y="180" width="60" height="220" fill="#0a0a18"/>
+        <rect x="240" y="80" width="140" height="320" fill="#1a1a35"/>
+        <rect x="380" y="140" width="80" height="260" fill="#0a0a18"/>
+        <rect x="460" y="60" width="120" height="340" fill="#15152e"/>
+        <rect x="580" y="160" width="90" height="240" fill="#0a0a18"/>
+        <rect x="670" y="100" width="110" height="300" fill="#1a1a35"/>
+        <rect x="780" y="180" width="80" height="220" fill="#15152e"/>
+        <rect x="860" y="120" width="140" height="280" fill="#0a0a18"/>
+        <!-- windows -->
+        <g fill="#ffe66d" opacity="0.7">
+          <rect x="100" y="140" width="6" height="6"/><rect x="120" y="140" width="6" height="6"/>
+          <rect x="140" y="160" width="6" height="6"/><rect x="100" y="180" width="6" height="6"/>
+          <rect x="260" y="100" width="8" height="8"/><rect x="290" y="100" width="8" height="8"/>
+          <rect x="320" y="140" width="8" height="8"/><rect x="350" y="180" width="8" height="8"/>
+          <rect x="490" y="80" width="8" height="8"/><rect x="520" y="120" width="8" height="8"/>
+          <rect x="550" y="160" width="8" height="8"/><rect x="490" y="200" width="8" height="8"/>
+          <rect x="700" y="120" width="6" height="6"/><rect x="720" y="160" width="6" height="6"/>
+          <rect x="740" y="200" width="6" height="6"/><rect x="760" y="240" width="6" height="6"/>
+          <rect x="880" y="140" width="8" height="8"/><rect x="920" y="180" width="8" height="8"/>
+          <rect x="960" y="220" width="8" height="8"/>
+        </g>
+      </svg>
+    </div>
+    <div class="web-line" id="web-line" style="height: 0;"></div>
+    <div class="swing-counter" id="swing-counter">SWINGS: 0 / 5</div>
+    <div class="spidey-svg" id="spidey-char">
+      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- web from wrists to top -->
+        <!-- body suit red -->
+        <ellipse cx="40" cy="48" rx="14" ry="20" fill="#c8102e"/>
+        <!-- legs blue -->
+        <rect x="32" y="60" width="6" height="18" fill="#1e3a8a" rx="2"/>
+        <rect x="42" y="60" width="6" height="18" fill="#1e3a8a" rx="2"/>
+        <!-- arms outstretched (web shooting) -->
+        <rect x="14" y="32" width="14" height="6" fill="#c8102e" rx="2" transform="rotate(-30 21 35)"/>
+        <rect x="52" y="32" width="14" height="6" fill="#c8102e" rx="2" transform="rotate(30 59 35)"/>
+        <!-- gloved hands -->
+        <circle cx="14" cy="22" r="4" fill="#c8102e"/>
+        <circle cx="66" cy="22" r="4" fill="#c8102e"/>
+        <!-- head -->
+        <circle cx="40" cy="26" r="13" fill="#c8102e"/>
+        <!-- mask eyes (big white almonds) -->
+        <ellipse cx="34" cy="24" rx="5" ry="3.5" fill="#fff" stroke="#000" stroke-width="0.8"/>
+        <ellipse cx="46" cy="24" rx="5" ry="3.5" fill="#fff" stroke="#000" stroke-width="0.8"/>
+        <!-- web pattern lines -->
+        <g stroke="#000" stroke-width="0.5" fill="none" opacity="0.6">
+          <line x1="40" y1="28" x2="40" y2="68"/>
+          <line x1="28" y1="40" x2="52" y2="40"/>
+          <line x1="30" y1="55" x2="50" y2="55"/>
+          <path d="M 30 35 Q 40 42 50 35"/>
+          <path d="M 28 50 Q 40 58 52 50"/>
+        </g>
+      </svg>
+    </div>
+    <div class="instructions">TAP TO SWING — HIT THE TARGETS!</div>
+    <button class="start-btn next-btn" id="swing-btn" onclick="swingSpidey()">THWIP!</button>
   </div>
 
-  <!-- STAGE 3: MOONWALK DANCE -->
+  <!-- STAGE 3: MOONWALK DANCE — RHYTHM GAME -->
   <div class="stage" id="stage3">
     <div class="hud">
       <div class="stage-label">STAGE 3: MOONWALK</div>
@@ -576,10 +859,53 @@
     </div>
     <div class="spotlight"></div>
     <div class="stage-floor"></div>
-    <div class="big-text" id="mj-prompt">HEE-HEE!</div>
-    <div class="mj" id="mj-char"></div>
-    <div class="instructions">TAP IN RHYTHM TO MOONWALK</div>
-    <button class="start-btn next-btn" onclick="moonwalkBeat()">DANCE!</button>
+    <div class="mj-stage-hud">
+      <div class="mj-score" id="mj-score">HITS: 0 / 8</div>
+      <div class="mj-prompt" id="mj-prompt">HEE-HEE!</div>
+    </div>
+    <div class="mj-character" id="mj-char">
+      <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
+        <!-- fedora -->
+        <ellipse cx="30" cy="6" rx="22" ry="3" fill="#000"/>
+        <rect x="16" y="-2" width="28" height="8" fill="#000" stroke="#000"/>
+        <!-- face -->
+        <ellipse cx="30" cy="14" rx="11" ry="13" fill="#a87454"/>
+        <!-- sunglasses -->
+        <rect x="18" y="10" width="24" height="5" fill="#000"/>
+        <!-- nose / mouth hint -->
+        <path d="M 26 22 Q 30 24 34 22" stroke="#000" stroke-width="1" fill="none"/>
+        <!-- red jacket -->
+        <rect x="14" y="28" width="32" height="34" fill="#c8102e" stroke="#000" stroke-width="1.5"/>
+        <!-- white shirt collar -->
+        <polygon points="22,28 30,38 38,28" fill="#fff" stroke="#000" stroke-width="1"/>
+        <!-- arms -->
+        <rect x="6" y="30" width="8" height="26" fill="#c8102e" stroke="#000" stroke-width="1.5" rx="2"/>
+        <rect x="46" y="30" width="8" height="26" fill="#c8102e" stroke="#000" stroke-width="1.5" rx="2"/>
+        <!-- gloved hand on left (single white glove) -->
+        <circle cx="10" cy="58" r="5" fill="#fff" stroke="#000" stroke-width="1"/>
+        <circle cx="50" cy="58" r="4" fill="#a87454" stroke="#000" stroke-width="1"/>
+        <!-- black pants -->
+        <rect x="16" y="62" width="12" height="28" fill="#000"/>
+        <rect x="32" y="62" width="12" height="28" fill="#000"/>
+        <!-- white socks -->
+        <rect x="16" y="86" width="12" height="6" fill="#fff" stroke="#000" stroke-width="1"/>
+        <rect x="32" y="86" width="12" height="6" fill="#fff" stroke="#000" stroke-width="1"/>
+        <!-- black shoes -->
+        <ellipse cx="22" cy="94" rx="8" ry="3" fill="#000"/>
+        <ellipse cx="38" cy="94" rx="8" ry="3" fill="#000"/>
+      </svg>
+    </div>
+    <div class="rhythm-board">
+      <div class="rhythm-lane" data-lane="0"></div>
+      <div class="rhythm-lane" data-lane="1"></div>
+      <div class="rhythm-lane" data-lane="2"></div>
+      <div class="rhythm-hit-line"></div>
+      <div class="rhythm-buttons">
+        <button class="rhythm-btn" data-lane="0" onclick="rhythmTap(0)">◀</button>
+        <button class="rhythm-btn" data-lane="1" onclick="rhythmTap(1)">●</button>
+        <button class="rhythm-btn" data-lane="2" onclick="rhythmTap(2)">▶</button>
+      </div>
+    </div>
   </div>
 
   <!-- STAGE 4: CHICKEN NUGGET RAIN -->
@@ -610,23 +936,32 @@
     <button class="mash-btn" id="mash-btn" onclick="mashBoss()">BOY!</button>
   </div>
 
-  <!-- STAGE 6: CURSED SIMPSONS LEVEL -->
+  <!-- STAGE 6: CURSED SIMPSONS LEVEL — DODGE GAME -->
   <div class="stage" id="stage6">
     <div class="glitch"></div>
     <div class="hud">
       <div class="stage-label">STAGE ???</div>
       <div class="stage-counter">6 / 8</div>
     </div>
-    <h2>Ç̸̢͠U̶̪͝R̵̢͠S̷̳͠E̴̮͐D̶̜͝<br/>S̷̤̕P̴̮͠R̸̬͝I̶͔̕N̸͍͂G̴͚͠F̵͜I̴͜͠E̸̗͠L̵̪͠D̴̘͠</h2>
     <div class="six-seven-rain" id="six-seven-rain"></div>
-    <div class="big-text" style="color: #ffe66d; margin-top: 30px; text-shadow: 4px 4px 0 #ff00ff;">6-7 6-7 6-7</div>
-    <div class="cursed-thing" style="top: 18%; left: 8%; font-size: clamp(3rem, 6vw, 5rem);">🟡</div>
-    <div class="cursed-thing" style="top: 22%; right: 10%; animation-delay: 0.4s; font-size: clamp(3rem, 6vw, 5rem);">🍩</div>
-    <div class="cursed-thing" style="bottom: 28%; left: 15%; animation-delay: 0.8s; font-size: clamp(3rem, 6vw, 5rem);">😬</div>
-    <div class="cursed-thing" style="bottom: 32%; right: 12%; animation-delay: 1.2s; font-size: clamp(3rem, 6vw, 5rem);">👁️</div>
-    <div class="cursed-thing" style="top: 50%; left: 50%; animation-delay: 0.6s; font-size: clamp(3rem, 7vw, 6rem);">💀</div>
-    <div class="instructions" style="background: #ffe66d; color: #000; border-color: #ff00ff;">D'OH! THE ALGORITHM IS COMING</div>
-    <button class="start-btn next-btn" onclick="nextStage()" style="background: #00ffff; color: #000;">ESCAPE →</button>
+    <div class="dodge-hud">
+      <div class="dodge-timer" id="dodge-timer">SURVIVE: 12s</div>
+      <div class="dodge-lives" id="dodge-lives">HP: 3</div>
+    </div>
+    <div class="dodge-arena" id="dodge-arena">
+      <div class="dodge-player" id="dodge-player">
+        <svg viewBox="0 0 40 50" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="0" width="20" height="20" fill="#ffe66d" stroke="#000" stroke-width="2"/>
+          <circle cx="16" cy="10" r="2" fill="#000"/>
+          <circle cx="24" cy="10" r="2" fill="#000"/>
+          <path d="M 14 14 Q 20 18 26 14" stroke="#000" stroke-width="1.5" fill="none"/>
+          <rect x="12" y="20" width="16" height="22" fill="#ff6b35" stroke="#000" stroke-width="2"/>
+          <text x="20" y="35" text-anchor="middle" font-family="monospace" font-size="6" fill="#fff" font-weight="bold">8</text>
+        </svg>
+      </div>
+    </div>
+    <div class="instructions" style="background: #ffe66d; color: #000; border-color: #ff00ff; bottom: 6%;">DRAG TO DODGE — DON'T LET THE CURSED HIT YOU</div>
+    <button class="start-btn next-btn" id="dodge-next-btn" onclick="nextStage()" style="display:none; background: #00ffff; color: #000; position: absolute; bottom: 6%; left: 50%; transform: translateX(-50%); z-index: 10;">ESCAPE →</button>
   </div>
 
   <!-- STAGE 7: YOUTUBE ALGORITHM BOSS -->
@@ -636,10 +971,13 @@
       <div class="stage-label">STAGE 7: ALGORITHM</div>
       <div class="stage-counter">7 / 8</div>
     </div>
-    <div class="big-text">FINAL BOSS</div>
-    <div class="algorithm-boss"></div>
-    <div class="instructions" style="margin-top: 80px;">SMASH LIKE BUTTON TO DEFEAT</div>
-    <button class="start-btn next-btn" id="algo-btn" onclick="defeatAlgo()">👍 LIKE</button>
+    <div class="algo-boss-container" id="algo-boss-container">
+      <div class="algorithm-boss"></div>
+      <div class="boss-hp-text" id="algo-hp-text">ALGORITHM HP: 100%</div>
+    </div>
+    <div class="hate-zone" id="hate-zone"></div>
+    <div class="instructions" style="bottom: 8%;">TAP THE FALLING DISLIKES BEFORE THEY HIT THE BOSS!</div>
+    <button class="start-btn next-btn" id="algo-next-btn" onclick="nextStage()" style="display:none; position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%); z-index: 10;">VICTORY → NEXT</button>
   </div>
 
   <!-- STAGE 8: UNIVERSAL STUDIOS REVEAL -->
@@ -668,43 +1006,272 @@
   let currentStage = 0;
   const stages = ['title', 'stage1', 'stage2', 'stage3', 'stage4', 'stage5', 'stage6', 'stage7', 'stage8'];
 
+  // --- Audio ---
+  let audioCtx = null;
+  function getCtx() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  function playBeep(freq = 440, duration = 0.1, type = 'square', vol = 0.15) {
+    const ctx = getCtx();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration);
+  }
+  function playWinSound() {
+    const notes = [523, 659, 784, 1047];
+    notes.forEach((f, i) => setTimeout(() => playBeep(f, 0.15, 'square', 0.18), i * 80));
+  }
+  function playHit() { playBeep(180, 0.06, 'sawtooth', 0.18); }
+  function playSwing() { playBeep(880, 0.08, 'triangle', 0.12); }
+  function playPunch() { playBeep(120, 0.08, 'sawtooth', 0.2); }
+
   function showStage(idx) {
     stages.forEach((id, i) => {
       const el = document.getElementById(id);
       if (el) el.classList.toggle('active', i === idx);
     });
     currentStage = idx;
+    if (stages[idx] === 'stage3') initMJRhythm();
     if (stages[idx] === 'stage4') initNuggetGame();
-    if (stages[idx] === 'stage6') initSixSevenRain();
-    if (stages[idx] === 'stage8') burstConfetti();
+    if (stages[idx] === 'stage6') { initSixSevenRain(); initDodgeGame(); }
+    if (stages[idx] === 'stage7') initAlgoBoss();
+    if (stages[idx] === 'stage8') { burstConfetti(); playWinSound(); }
   }
   function startGame() { showStage(1); }
   function nextStage() { if (currentStage < stages.length - 1) showStage(currentStage + 1); }
-  function restartGame() { showStage(0); }
-
-  // STAGE 2: Spider-Man swing
-  let spideyTaps = 0;
-  function swingSpidey() {
-    spideyTaps++;
+  function restartGame() {
+    spideyTaps = 0;
+    mjTaps = 0;
+    nuggetCount = 0;
+    nuggetGameRunning = false;
+    bossHp = 100;
+    algoTaps = 0;
+    document.getElementById('boss-hp').style.width = '100%';
+    const boss = document.querySelector('#stage5 .boss');
+    if (boss) { boss.style.opacity = '1'; boss.style.transform = ''; }
+    const algoBoss = document.querySelector('.algorithm-boss');
+    if (algoBoss) { algoBoss.style.opacity = '1'; algoBoss.style.transform = ''; }
+    const mj = document.getElementById('mj-char');
+    if (mj) mj.style.transform = '';
     const spidey = document.getElementById('spidey-char');
-    spidey.style.transition = 'transform 0.5s cubic-bezier(.5,1.8,.5,.5)';
-    const x = (spideyTaps % 2 === 0 ? -1 : 1) * (Math.random() * 200 + 100);
-    const y = -(Math.random() * 80 + 40);
-    spidey.style.transform = `translate(${x}px, ${y}px) rotate(${spideyTaps * 30}deg)`;
-    if (spideyTaps >= 4) setTimeout(nextStage, 600);
+    if (spidey) spidey.style.transform = '';
+    document.getElementById('boss-prompt').textContent = 'HUNTER & BALD DAD vs THE BOSS';
+    showStage(0);
   }
 
-  // STAGE 3: MJ moonwalk
-  const mjPrompts = ['HEE-HEE!', 'OW!', 'SHAMONE!', 'CHA-MONE!'];
-  let mjTaps = 0;
-  function moonwalkBeat() {
-    mjTaps++;
-    const mj = document.getElementById('mj-char');
-    const prompt = document.getElementById('mj-prompt');
-    mj.style.transition = 'transform 0.4s';
-    mj.style.transform = `translateX(${-mjTaps * 30}px) skewX(-10deg)`;
-    prompt.textContent = mjPrompts[mjTaps % mjPrompts.length];
-    if (mjTaps >= 5) setTimeout(nextStage, 600);
+  // STAGE 2: Spider-Man swing — real physics + targets
+  let spideyTaps = 0;
+  let spideyTargets = [];
+  function ensureSpideyTargets() {
+    const stage = document.getElementById('stage2');
+    if (!stage) return;
+    spideyTargets.forEach(t => t.remove());
+    spideyTargets = [];
+    const positions = [
+      { left: '20%', top: '35%' },
+      { left: '70%', top: '50%' },
+      { left: '40%', top: '25%' },
+      { left: '80%', top: '40%' },
+      { left: '15%', top: '55%' },
+    ];
+    positions.forEach((p, i) => {
+      const t = document.createElement('div');
+      t.className = 'target';
+      t.style.left = p.left;
+      t.style.top = p.top;
+      t.dataset.idx = i;
+      stage.appendChild(t);
+      spideyTargets.push(t);
+    });
+  }
+  function swingSpidey() {
+    if (spideyTaps === 0) ensureSpideyTargets();
+    spideyTaps++;
+    const spidey = document.getElementById('spidey-char');
+    const webLine = document.getElementById('web-line');
+    const stage = document.getElementById('stage2');
+    const stageRect = stage.getBoundingClientRect();
+
+    // Pick the next target
+    const target = spideyTargets[spideyTaps - 1];
+    if (!target) return;
+    const targetRect = target.getBoundingClientRect();
+    const targetX = targetRect.left + targetRect.width / 2 - stageRect.left;
+    const targetY = targetRect.top + targetRect.height / 2 - stageRect.top;
+
+    // Compute relative offset from current spidey position (centered)
+    const spideyRect = spidey.getBoundingClientRect();
+    const baseX = stageRect.width / 2;
+    const baseY = stageRect.height / 2;
+    const offX = targetX - baseX;
+    const offY = targetY - baseY;
+
+    // Animate web line shooting up from spidey to top of stage
+    const webX = targetX;
+    const webHeight = targetY;
+    webLine.style.transform = `translateX(${webX - stageRect.width / 2}px)`;
+    webLine.style.height = `${webHeight}px`;
+    webLine.style.opacity = '1';
+
+    spidey.style.transform = `translate(${offX}px, ${offY}px) rotate(${spideyTaps % 2 === 0 ? 15 : -15}deg)`;
+
+    // Hit feedback on the target
+    target.style.transition = 'transform 0.3s, opacity 0.3s';
+    target.style.transform = 'scale(2.5)';
+    target.style.opacity = '0';
+    target.style.background = '#fff';
+
+    document.getElementById('swing-counter').textContent = `SWINGS: ${spideyTaps} / 5`;
+
+    if (spideyTaps >= 5) {
+      setTimeout(() => {
+        document.getElementById('swing-counter').textContent = `🕷️ NICE SWINGING, KID! 🕸️`;
+        webLine.style.opacity = '0';
+      }, 400);
+      setTimeout(nextStage, 1400);
+    }
+  }
+
+  // STAGE 3: MJ rhythm game
+  const mjPrompts = ['HEE-HEE!', 'OW!', 'SHAMONE!', 'CHA-MONE!', 'YEAH!'];
+  let mjScore = 0;
+  let mjMissed = 0;
+  let mjGameRunning = false;
+  let mjSpawnTimer = null;
+  let mjActiveNotes = [];
+  function initMJRhythm() {
+    if (mjGameRunning) return;
+    mjGameRunning = true;
+    mjScore = 0;
+    mjMissed = 0;
+    mjActiveNotes = [];
+    document.getElementById('mj-score').textContent = `HITS: 0 / 8`;
+    document.getElementById('mj-prompt').textContent = 'HEE-HEE!';
+
+    // Clear leftover notes
+    document.querySelectorAll('.rhythm-note').forEach(n => n.remove());
+
+    function spawnNote() {
+      if (!mjGameRunning) return;
+      const lane = Math.floor(Math.random() * 3);
+      const board = document.querySelector('.rhythm-board');
+      const laneDiv = document.querySelector(`.rhythm-lane[data-lane="${lane}"]`);
+      if (!laneDiv) return;
+      const note = document.createElement('div');
+      note.className = 'rhythm-note';
+      note.dataset.lane = lane;
+      note.style.top = '0px';
+      laneDiv.appendChild(note);
+
+      const boardRect = board.getBoundingClientRect();
+      const distance = boardRect.height - 64; // distance to hit line
+      const fallDuration = 1800;
+      const startTs = performance.now();
+      note.dataset.start = startTs;
+      note.dataset.duration = fallDuration;
+
+      mjActiveNotes.push(note);
+
+      function step(ts) {
+        if (!mjGameRunning || !note.parentNode) return;
+        const elapsed = ts - startTs;
+        const t = elapsed / fallDuration;
+        if (t >= 1.05) {
+          // missed
+          if (!note.classList.contains('hit')) {
+            note.classList.add('miss');
+            mjMissed++;
+            playHit();
+            showJudge('MISS', '#888');
+            setTimeout(() => note.remove(), 300);
+            mjActiveNotes = mjActiveNotes.filter(n => n !== note);
+          }
+          return;
+        }
+        note.style.top = `${t * distance}px`;
+        requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+
+      if (mjGameRunning && mjScore + mjMissed < 12) {
+        mjSpawnTimer = setTimeout(spawnNote, 800 + Math.random() * 200);
+      }
+    }
+    spawnNote();
+  }
+  function rhythmTap(lane) {
+    if (!mjGameRunning) return;
+    const btn = document.querySelector(`.rhythm-btn[data-lane="${lane}"]`);
+    if (btn) {
+      btn.classList.add('active');
+      setTimeout(() => btn.classList.remove('active'), 100);
+    }
+    // Find the closest active note in this lane near the hit line
+    const board = document.querySelector('.rhythm-board');
+    const boardRect = board.getBoundingClientRect();
+    const targetTop = boardRect.height - 64; // hit line offset from top of board
+
+    let bestNote = null;
+    let bestDelta = Infinity;
+    mjActiveNotes.forEach(n => {
+      if (n.classList.contains('hit') || n.classList.contains('miss')) return;
+      if (parseInt(n.dataset.lane) !== lane) return;
+      const top = parseFloat(n.style.top || '0');
+      const delta = Math.abs(top - targetTop);
+      if (delta < bestDelta) { bestDelta = delta; bestNote = n; }
+    });
+
+    if (bestNote && bestDelta < 80) {
+      bestNote.classList.add('hit');
+      mjScore++;
+      const judge = bestDelta < 25 ? 'PERFECT!' : bestDelta < 50 ? 'GREAT' : 'GOOD';
+      const color = bestDelta < 25 ? '#ffe66d' : bestDelta < 50 ? '#00ff66' : '#00ffff';
+      showJudge(judge, color);
+      playSwing();
+      // Animate MJ
+      const mj = document.getElementById('mj-char');
+      mj.classList.remove('dance-left', 'dance-mid', 'dance-right');
+      const danceClass = lane === 0 ? 'dance-left' : lane === 1 ? 'dance-mid' : 'dance-right';
+      mj.classList.add(danceClass);
+      setTimeout(() => mj.classList.remove(danceClass), 250);
+      // Update prompt
+      document.getElementById('mj-prompt').textContent = mjPrompts[mjScore % mjPrompts.length];
+      document.getElementById('mj-score').textContent = `HITS: ${mjScore} / 8`;
+      setTimeout(() => bestNote.remove(), 300);
+      mjActiveNotes = mjActiveNotes.filter(n => n !== bestNote);
+
+      if (mjScore >= 8) {
+        mjGameRunning = false;
+        if (mjSpawnTimer) clearTimeout(mjSpawnTimer);
+        document.getElementById('mj-prompt').textContent = 'NICE MOONWALK!';
+        playWinSound();
+        setTimeout(nextStage, 1200);
+      }
+    } else {
+      showJudge('MISS', '#888');
+      playHit();
+    }
+  }
+  function showJudge(text, color) {
+    const stage = document.getElementById('stage3');
+    const j = document.createElement('div');
+    j.className = 'judge-text';
+    j.textContent = text;
+    j.style.color = color;
+    j.style.textShadow = `2px 2px 0 #000`;
+    stage.appendChild(j);
+    setTimeout(() => j.remove(), 700);
   }
 
   // STAGE 4: Nugget rain
@@ -769,6 +1336,108 @@
     spawnNugget();
   }
 
+  // STAGE 6: dodge game
+  let dodgeRunning = false;
+  let dodgeLives = 3;
+  let dodgeTime = 12;
+  let dodgeSpawnTimer = null;
+  let dodgeTickTimer = null;
+  function initDodgeGame() {
+    if (dodgeRunning) return;
+    dodgeRunning = true;
+    dodgeLives = 3;
+    dodgeTime = 12;
+    document.getElementById('dodge-lives').textContent = `HP: ${dodgeLives}`;
+    document.getElementById('dodge-timer').textContent = `SURVIVE: ${dodgeTime}s`;
+    document.getElementById('dodge-next-btn').style.display = 'none';
+
+    const arena = document.getElementById('dodge-arena');
+    const player = document.getElementById('dodge-player');
+    arena.querySelectorAll('.cursed-falling').forEach(c => c.remove());
+    player.style.left = '50%';
+
+    let playerXpct = 50;
+    function movePlayer(e) {
+      const rect = arena.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const x = ((clientX - rect.left) / rect.width) * 100;
+      playerXpct = Math.max(8, Math.min(92, x));
+      player.style.left = `${playerXpct}%`;
+    }
+    arena.onpointermove = movePlayer;
+    arena.ontouchmove = movePlayer;
+    arena.onclick = movePlayer;
+
+    const symbols = ['🟡', '🍩', '😬', '👁️', '💀', '🟪', '👹', '🍞'];
+    function spawnCursed() {
+      if (!dodgeRunning) return;
+      const c = document.createElement('div');
+      c.className = 'cursed-falling';
+      c.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      const x = Math.random() * 90 + 5;
+      c.style.left = `${x}%`;
+      c.style.top = `-50px`;
+      arena.appendChild(c);
+
+      const arenaRect = arena.getBoundingClientRect();
+      const fallDuration = 2200 + Math.random() * 800;
+      const startTop = -50;
+      const endTop = arenaRect.height + 20;
+
+      let startTs = null;
+      function step(ts) {
+        if (!dodgeRunning) { c.remove(); return; }
+        if (!startTs) startTs = ts;
+        const t = (ts - startTs) / fallDuration;
+        if (t >= 1) { c.remove(); return; }
+        const top = startTop + (endTop - startTop) * t;
+        c.style.top = `${top}px`;
+
+        // collision check
+        const playerRect = player.getBoundingClientRect();
+        const cRect = c.getBoundingClientRect();
+        if (
+          cRect.bottom > playerRect.top &&
+          cRect.top < playerRect.bottom &&
+          cRect.right > playerRect.left + 8 &&
+          cRect.left < playerRect.right - 8 &&
+          !c.classList.contains('hit')
+        ) {
+          c.classList.add('hit');
+          dodgeLives--;
+          document.getElementById('dodge-lives').textContent = `HP: ${dodgeLives}`;
+          playHit();
+          if (dodgeLives <= 0) {
+            // soft fail — let them continue but flash
+            dodgeLives = 1;
+            document.getElementById('dodge-lives').textContent = `HP: ${dodgeLives}`;
+          }
+          setTimeout(() => c.remove(), 300);
+          return;
+        }
+        requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+
+      if (dodgeRunning) dodgeSpawnTimer = setTimeout(spawnCursed, 500 + Math.random() * 400);
+    }
+    spawnCursed();
+
+    dodgeTickTimer = setInterval(() => {
+      if (!dodgeRunning) return;
+      dodgeTime--;
+      document.getElementById('dodge-timer').textContent = `SURVIVE: ${dodgeTime}s`;
+      if (dodgeTime <= 0) {
+        dodgeRunning = false;
+        clearInterval(dodgeTickTimer);
+        if (dodgeSpawnTimer) clearTimeout(dodgeSpawnTimer);
+        document.getElementById('dodge-timer').textContent = `🌀 ESCAPED 🌀`;
+        document.getElementById('dodge-next-btn').style.display = 'inline-block';
+        playWinSound();
+      }
+    }, 1000);
+  }
+
   // STAGE 6: 6-7 rain
   function initSixSevenRain() {
     const rain = document.getElementById('six-seven-rain');
@@ -801,17 +1470,84 @@
     }
   }
 
-  // STAGE 7: Algorithm boss
-  let algoTaps = 0;
-  function defeatAlgo() {
-    algoTaps++;
-    const boss = document.querySelector('.algorithm-boss');
-    boss.style.transition = 'transform 0.1s';
-    boss.style.transform = `scale(${1 - algoTaps * 0.1}) rotate(${algoTaps * 15}deg)`;
-    if (algoTaps >= 6) {
-      boss.style.opacity = '0';
-      setTimeout(nextStage, 600);
+  // STAGE 7: Algorithm boss — falling dislikes game
+  let algoHp = 100;
+  let algoGameRunning = false;
+  let algoSpawnTimer = null;
+  function initAlgoBoss() {
+    if (algoGameRunning) return;
+    algoGameRunning = true;
+    algoHp = 100;
+    document.getElementById('algo-hp-text').textContent = `ALGORITHM HP: ${algoHp}%`;
+    document.getElementById('algo-next-btn').style.display = 'none';
+    const boss = document.querySelector('#stage7 .algorithm-boss');
+    boss.style.opacity = '1';
+    boss.style.transform = 'scale(1)';
+
+    const zone = document.getElementById('hate-zone');
+    zone.innerHTML = '';
+
+    const symbols = ['👎', '😡', '💔', '🤬', '🚫'];
+
+    function spawnDislike() {
+      if (!algoGameRunning) return;
+      const stage = document.getElementById('stage7');
+      const stageRect = stage.getBoundingClientRect();
+      const d = document.createElement('div');
+      d.className = 'dislike';
+      d.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      const x = Math.random() * 80 + 10;
+      d.style.left = `${x}%`;
+      d.style.top = `100%`;
+      d.style.animation = `rise-fall ${2 + Math.random()}s linear forwards`;
+
+      const fallDuration = 2200 + Math.random() * 800;
+      d.animate([
+        { top: `${stageRect.height + 60}px`, transform: 'rotate(0deg)' },
+        { top: `${stageRect.height * 0.25}px`, transform: 'rotate(720deg)' }
+      ], { duration: fallDuration, easing: 'linear', fill: 'forwards' });
+
+      zone.appendChild(d);
+
+      d.addEventListener('click', () => {
+        if (d.classList.contains('popped')) return;
+        d.classList.add('popped');
+        algoHp = Math.max(0, algoHp - 8);
+        document.getElementById('algo-hp-text').textContent = `ALGORITHM HP: ${algoHp}%`;
+        boss.style.transform = `scale(${1 - (100 - algoHp) / 200}) rotate(${(100 - algoHp) * 1.5}deg)`;
+        playBeep(660 + algoHp * 4, 0.08);
+        setTimeout(() => d.remove(), 500);
+        if (algoHp <= 0) defeatAlgoFinal();
+      });
+
+      // If reaches the boss, "heal" it slightly to punish missing
+      setTimeout(() => {
+        if (!d.classList.contains('popped') && d.parentNode) {
+          d.style.opacity = '0';
+          d.style.transform = 'scale(0.5)';
+          // small punishment: regenerate boss a tiny bit, but cap so the game still ends
+          if (algoHp < 100 && algoHp > 0) {
+            algoHp = Math.min(100, algoHp + 3);
+            document.getElementById('algo-hp-text').textContent = `ALGORITHM HP: ${algoHp}%`;
+          }
+          setTimeout(() => d.remove(), 300);
+        }
+      }, fallDuration);
+
+      if (algoGameRunning) {
+        algoSpawnTimer = setTimeout(spawnDislike, 700 + Math.random() * 500);
+      }
     }
+    spawnDislike();
+  }
+  function defeatAlgoFinal() {
+    algoGameRunning = false;
+    if (algoSpawnTimer) clearTimeout(algoSpawnTimer);
+    const boss = document.querySelector('#stage7 .algorithm-boss');
+    boss.style.opacity = '0';
+    document.getElementById('algo-hp-text').textContent = `🔥 ALGORITHM DEFEATED 🔥`;
+    document.getElementById('algo-next-btn').style.display = 'inline-block';
+    playWinSound();
   }
 
   // STAGE 8: confetti
