@@ -2663,8 +2663,8 @@
     comboCursorPct = 0;
     comboCursorDir = 1;
     function tick() {
-      // ramp speed as boss HP drops: 0.9 → 1.4 → 2.0
-      const speed = bossHp > 66 ? 0.9 : bossHp > 33 ? 1.4 : 2.0;
+      // round 1 super slow, round 2 (low hp) faster
+      const speed = bossHp > 50 ? 0.55 : 1.1;
       comboCursorPct += comboCursorDir * speed;
       if (comboCursorPct >= 100) { comboCursorPct = 100; comboCursorDir = -1; }
       if (comboCursorPct <= 0) { comboCursorPct = 0; comboCursorDir = 1; }
@@ -2679,10 +2679,9 @@
   }
   let bossMisses = 0;
   function getComboZone() {
-    // Easy at full HP, narrow as boss takes damage
-    if (bossHp > 66) return { left: 30, right: 70, pLeft: 42, pRight: 58 };
-    if (bossHp > 33) return { left: 36, right: 64, pLeft: 45, pRight: 55 };
-    return { left: 42, right: 58, pLeft: 48, pRight: 52 };
+    // Round 1 = MUCH easier. Round 2 (low hp) tightens.
+    if (bossHp > 50) return { left: 20, right: 80, pLeft: 40, pRight: 60 };
+    return { left: 32, right: 68, pLeft: 45, pRight: 55 };
   }
   function syncComboZoneVisual() {
     const z = getComboZone();
@@ -2738,7 +2737,7 @@
       }
     }
 
-    if (bossMisses >= 5) {
+    if (bossMisses >= 7) {
       stopComboLoop();
       document.getElementById('boss-prompt').innerHTML = 'TROLL COUNTERATTACK!';
       showGameOver('THE TROLL HIT BACK! TIME YOUR TAPS!');
