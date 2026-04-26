@@ -806,10 +806,11 @@
   .combo-zone {
     position: absolute;
     top: 0; bottom: 0;
-    left: 40%;
-    width: 20%;
+    left: 30%;
+    width: 40%;
     background: linear-gradient(180deg, #00ff66 0%, #00aa44 100%);
     box-shadow: 0 0 12px #00ff66;
+    transition: left 0.3s ease, width 0.3s ease;
   }
   .combo-cursor {
     position: absolute;
@@ -2654,6 +2655,10 @@
   let comboLoop = null;
   function startComboLoop() {
     if (comboLoop) return;
+    bossHp = 100;
+    bossMisses = 0;
+    syncComboZoneVisual();
+    document.getElementById('boss-hp').style.width = '100%';
     const cursor = document.getElementById('combo-cursor');
     comboCursorPct = 0;
     comboCursorDir = 1;
@@ -2673,11 +2678,25 @@
     comboLoop = null;
   }
   let bossMisses = 0;
+  function getComboZone() {
+    // Easy at full HP, narrow as boss takes damage
+    if (bossHp > 66) return { left: 30, right: 70, pLeft: 42, pRight: 58 };
+    if (bossHp > 33) return { left: 36, right: 64, pLeft: 45, pRight: 55 };
+    return { left: 42, right: 58, pLeft: 48, pRight: 52 };
+  }
+  function syncComboZoneVisual() {
+    const z = getComboZone();
+    const el = document.querySelector('.combo-zone');
+    if (el) {
+      el.style.left = `${z.left}%`;
+      el.style.width = `${z.right - z.left}%`;
+    }
+  }
   function mashBoss() {
     if (!comboLoop) startComboLoop();
-    // Combo zone is 40-60%
-    const inZone = comboCursorPct >= 40 && comboCursorPct <= 60;
-    const isPerfect = comboCursorPct >= 47 && comboCursorPct <= 53;
+    const zone = getComboZone();
+    const inZone = comboCursorPct >= zone.left && comboCursorPct <= zone.right;
+    const isPerfect = comboCursorPct >= zone.pLeft && comboCursorPct <= zone.pRight;
     let dmg = 0;
     let flashText = 'MISS!';
     let flashColor = '#ff4466';
@@ -2685,6 +2704,7 @@
     else if (inZone) { dmg = 16; flashText = 'GREAT!'; flashColor = '#00ffcc'; }
     else { bossMisses++; }
     bossHp -= dmg;
+    syncComboZoneVisual();
 
     document.getElementById('boss-hp').style.width = `${Math.max(0, bossHp)}%`;
     const prompts = ['BOY!', 'BOY!!!', 'OPEN YOUR EYES, BOY.', 'WE ARE GOING.', 'DAD UR BALD!', 'KEEP GOING!', 'HIT HIM AGAIN!', '6-7!!!', 'PIZZER POWER!', 'YEAH BOY!'];
