@@ -1610,22 +1610,32 @@
     notes.forEach((n, i) => setTimeout(() => playBeep(n, 0.12, type, vol), i * 90));
   }
 
-  // MJ voice clips
-  const MJ_VOICE_FILES = ['audio/hee-hee.mp3', 'audio/ow.mp3', 'audio/shamone.mp3', 'audio/woo.mp3'];
-  const MJ_VOICE_AUDIOS = MJ_VOICE_FILES.map(src => {
-    const a = new Audio(src);
-    a.preload = 'auto';
-    a.volume = 0.7;
-    return a;
-  });
+  // MJ-style synth yelps (no TTS — just 8-bit chirps)
   function playMJVoice() {
-    const a = MJ_VOICE_AUDIOS[Math.floor(Math.random() * MJ_VOICE_AUDIOS.length)];
-    try {
-      const clone = a.cloneNode();
-      clone.volume = 0.7;
-      clone.play().catch(()=>{});
-    } catch (e) {}
+    const ctx = getCtx();
+    if (!ctx) return;
+    // Random yelp pattern: pitch-up sweep with quick decay
+    const variants = [
+      { start: 900, end: 1500, dur: 0.12 },   // HEE
+      { start: 700, end: 1200, dur: 0.1 },    // HOO
+      { start: 1100, end: 1700, dur: 0.09 },  // YIP
+      { start: 800, end: 1400, dur: 0.11 },   // OW
+    ];
+    const v = variants[Math.floor(Math.random() * variants.length)];
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(v.start, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(v.end, ctx.currentTime + v.dur * 0.6);
+    osc.frequency.exponentialRampToValueAtTime(v.start * 0.7, ctx.currentTime + v.dur);
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + v.dur);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + v.dur);
   }
+  // Keep the audio files we generated but unused for now (in case Dan wants them back)
+  const MJ_VOICE_AUDIOS = []; // disabled
 
   // Per-stage looping BGM
   let bgmLoop = null;
