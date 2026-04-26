@@ -182,17 +182,72 @@
   }
   #stage2 .target {
     position: absolute;
-    width: 50px; height: 50px;
+    width: 70px; height: 70px;
     background: radial-gradient(circle, #ffe66d 30%, #f72585 70%);
-    border: 3px solid #fff;
+    border: 4px solid #fff;
     border-radius: 50%;
-    box-shadow: 0 0 20px #ffe66d;
-    z-index: 1;
-    animation: target-pulse 1s infinite;
+    box-shadow: 0 0 24px #ffe66d, 0 0 40px #f72585;
+    z-index: 4;
+    cursor: pointer;
+    pointer-events: auto;
+    transform: translate(-50%, -50%);
   }
-  @keyframes target-pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
+  #stage2 .target::before {
+    content: '🕸️';
+    position: absolute;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem;
+  }
+  #stage2 .target::after {
+    /* expand hit area */
+    content: '';
+    position: absolute; inset: -20px;
+  }
+  #stage2 .target-ring {
+    position: absolute;
+    border: 5px solid #ffe66d;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 3;
+    box-shadow: 0 0 16px #ffe66d;
+  }
+  #stage2 .miss-flash {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    color: #ff4466;
+    font-family: 'Bangers', cursive;
+    font-size: 2rem;
+    text-shadow: 3px 3px 0 #000;
+    pointer-events: none;
+    z-index: 5;
+    animation: judge-pop 0.6s forwards;
+  }
+  #stage2 .hit-flash {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    color: #ffe66d;
+    font-family: 'Bangers', cursive;
+    font-size: 2.4rem;
+    text-shadow: 3px 3px 0 #c8102e, 6px 6px 0 #000;
+    pointer-events: none;
+    z-index: 5;
+    animation: judge-pop 0.7s forwards;
+  }
+  .phase-banner {
+    position: absolute;
+    top: 110px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #c8102e;
+    color: #fff;
+    padding: 6px 14px;
+    border: 3px solid #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.7rem;
+    z-index: 5;
+    box-shadow: 0 0 12px #c8102e;
   }
   #stage2 .swing-counter {
     position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
@@ -382,20 +437,7 @@
     animation: flicker 0.5s infinite;
   }
   @keyframes flicker { 0%, 100% { opacity: 0.6; } 50% { opacity: 0.4; } }
-  .boss {
-    width: 200px; height: 200px;
-    background: radial-gradient(circle at 30% 30%, #fff 8px, #000 10px, #000 20px, #5e0000 22px);
-    border-radius: 50%;
-    border: 6px solid #000;
-    box-shadow: 0 0 60px #ff0000;
-    position: relative;
-  }
-  .boss::after {
-    content: 'GRRR'; position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%);
-    color: #ff6b35; font-size: 1.5rem; font-family: 'Bangers', cursive;
-    text-shadow: 3px 3px 0 #000;
-    white-space: nowrap;
-  }
+  /* dead .boss CSS removed in v4 */
   .health-bar {
     position: absolute; top: 80px; left: 10%; right: 10%; height: 30px;
     background: #000; border: 3px solid #ffe66d;
@@ -651,17 +693,23 @@
   .hate-zone { position: absolute; inset: 0; pointer-events: none; }
   .hate-zone .dislike {
     position: absolute;
-    width: 60px; height: 60px;
+    width: 90px; height: 90px;
     background: #fff;
-    border: 3px solid #000;
-    border-radius: 8px;
+    border: 4px solid #000;
+    border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 2rem;
+    font-size: 3rem;
     pointer-events: auto;
     cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.5);
     z-index: 4;
     transition: transform 0.1s;
+    /* expand hit area beyond visual */
+  }
+  .hate-zone .dislike::before {
+    content: '';
+    position: absolute;
+    inset: -15px;
   }
   .hate-zone .dislike:active { transform: scale(0.85); }
   .hate-zone .dislike.popped {
@@ -831,10 +879,8 @@
 
   <!-- TITLE SCREEN -->
   <div class="stage active" id="title">
-    <h1>HUNTER'S<br/>BIRTHDAY<br/>QUEST</h1>
-    <div class="subtitle">★ ROAD TO UNIVERSAL ★</div>
+    <h1>HUNTER'S<br/>QUEST</h1>
     <div class="age">8</div>
-    <div class="cast">STARRING: <strong>HUNTER</strong><br/>SIDEKICK: <strong>BALD DAD</strong></div>
     <button class="start-btn pulse" onclick="startGame()">PRESS START</button>
   </div>
 
@@ -846,8 +892,8 @@
     </div>
     <div class="clouds"></div>
     <div class="ground"></div>
-    <div class="big-text" style="margin-bottom: 40px;">WELCOME, HUNTER</div>
-    <div class="character-row">
+    <div class="big-text" style="position: absolute; top: 25%; left: 0; right: 0; z-index: 4;">WELCOME, HUNTER</div>
+    <div class="character-row" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 5;">
       <div class="rblx-char hunter-char">
         <div class="name-tag">HUNTER_LVL_8</div>
         <div class="chat-bubble" style="left: 50%; transform: translateX(-50%); top: -76px;">DAD UR BALD</div>
@@ -899,8 +945,8 @@
         </svg>
       </div>
     </div>
-    <div class="instructions">YOU SPAWNED IN THE BIRTHDAY SERVER</div>
-    <button class="start-btn next-btn" onclick="nextStage()">JOIN GAME →</button>
+    <div class="instructions" style="bottom: 18%;">YOU SPAWNED IN THE BIRTHDAY SERVER</div>
+    <button class="start-btn next-btn" onclick="nextStage()" style="position: absolute; bottom: 6%; left: 50%; transform: translateX(-50%); z-index: 10;">JOIN GAME →</button>
   </div>
 
   <!-- STAGE 2: SPIDER-MAN SWING -->
@@ -968,8 +1014,8 @@
         </g>
       </svg>
     </div>
-    <div class="instructions">TAP TO SWING — HIT THE TARGETS!</div>
-    <button class="start-btn next-btn" id="swing-btn" onclick="swingSpidey()">THWIP!</button>
+    <div class="phase-banner" id="spidey-phase">PHASE 1: WARMUP</div>
+    <div class="instructions" style="bottom: 6%;">TAP THE TARGETS BEFORE THE RING CLOSES!</div>
   </div>
 
   <!-- STAGE 3: MOONWALK DANCE — RHYTHM GAME -->
@@ -1172,7 +1218,7 @@
       <div class="admit">ADMIT ONE</div>
       <div class="name">HUNTER<br/>+ BALD DAD</div>
       <div class="from">
-        DATE: <strong>COMING SOON</strong><br/><br/>
+        DATE: <strong>MAY 7TH</strong><br/><br/>
         FROM: DAD <span class="heart">♥</span><br/>
         BEEN SAVING FOR THIS A WHILE.<br/>
         IT'S REAL. WE GO.<br/><br/>
@@ -1224,6 +1270,8 @@
       if (el) el.classList.toggle('active', i === idx);
     });
     currentStage = idx;
+    if (stages[idx] === 'stage2') initSpideyGame();
+    else { spideyGameRunning = false; cleanupSpideyTarget(); }
     if (stages[idx] === 'stage3') initMJRhythm();
     if (stages[idx] === 'stage4') initNuggetGame();
     if (stages[idx] === 'stage5') startComboLoop();
@@ -1235,15 +1283,22 @@
   function startGame() { showStage(1); }
   function nextStage() { if (currentStage < stages.length - 1) showStage(currentStage + 1); }
   function restartGame() {
-    spideyTaps = 0;
-    mjTaps = 0;
+    spideyHits = 0;
+    spideyGameRunning = false;
+    cleanupSpideyTarget();
+    mjScore = 0;
+    mjGameRunning = false;
     nuggetCount = 0;
     nuggetGameRunning = false;
     bossHp = 100;
-    algoTaps = 0;
+    dodgeRunning = false;
+    if (dodgeTickTimer) clearInterval(dodgeTickTimer);
+    if (dodgeSpawnTimer) clearTimeout(dodgeSpawnTimer);
+    algoGameRunning = false;
+    if (algoSpawnTimer) clearTimeout(algoSpawnTimer);
     document.getElementById('boss-hp').style.width = '100%';
-    const boss = document.querySelector('#stage5 .boss');
-    if (boss) { boss.style.opacity = '1'; boss.style.transform = ''; }
+    const boss = document.getElementById('boss-troll');
+    if (boss) { boss.style.opacity = '1'; boss.style.transform = 'translate(-50%, -50%)'; }
     const algoBoss = document.querySelector('.algorithm-boss');
     if (algoBoss) { algoBoss.style.opacity = '1'; algoBoss.style.transform = ''; }
     const mj = document.getElementById('mj-char');
@@ -1254,77 +1309,146 @@
     showStage(0);
   }
 
-  // STAGE 2: Spider-Man swing — real physics + targets
-  let spideyTaps = 0;
-  let spideyTargets = [];
-  function ensureSpideyTargets() {
+  // STAGE 2: Spider-Man timing game
+  let spideyHits = 0;
+  let spideyGameRunning = false;
+  let spideyCurrentTarget = null;
+  let spideyCurrentRing = null;
+  let spideyCurrentTimer = null;
+  function initSpideyGame() {
+    if (spideyGameRunning) return;
+    spideyGameRunning = true;
+    spideyHits = 0;
+    document.getElementById('swing-counter').textContent = `SWINGS: 0 / 6`;
+    document.getElementById('web-line').style.opacity = '0';
+    document.getElementById('web-line').style.height = '0';
+    const spidey = document.getElementById('spidey-char');
+    spidey.style.transform = '';
+    document.getElementById('spidey-phase').textContent = 'PHASE 1: WARMUP';
+    spawnSpideyTarget();
+  }
+  function getSpideyWindow() {
+    if (spideyHits < 2) return 1600;
+    if (spideyHits < 4) return 1100;
+    return 800;
+  }
+  function getSpideyPhaseText() {
+    if (spideyHits < 2) return 'PHASE 1: WARMUP';
+    if (spideyHits < 4) return 'PHASE 2: GETTING FAST';
+    return 'PHASE 3: NO MERCY';
+  }
+  function spawnSpideyTarget() {
+    if (!spideyGameRunning) return;
+    cleanupSpideyTarget();
     const stage = document.getElementById('stage2');
     if (!stage) return;
-    spideyTargets.forEach(t => t.remove());
-    spideyTargets = [];
-    const positions = [
-      { left: '20%', top: '35%' },
-      { left: '70%', top: '50%' },
-      { left: '40%', top: '25%' },
-      { left: '80%', top: '40%' },
-      { left: '15%', top: '55%' },
-    ];
-    positions.forEach((p, i) => {
-      const t = document.createElement('div');
-      t.className = 'target';
-      t.style.left = p.left;
-      t.style.top = p.top;
-      t.dataset.idx = i;
-      stage.appendChild(t);
-      spideyTargets.push(t);
-    });
-  }
-  function swingSpidey() {
-    if (spideyTaps === 0) ensureSpideyTargets();
-    spideyTaps++;
-    const spidey = document.getElementById('spidey-char');
-    const webLine = document.getElementById('web-line');
-    const stage = document.getElementById('stage2');
     const stageRect = stage.getBoundingClientRect();
+    // pick a position (avoid edges + the bottom skyline area)
+    const x = 15 + Math.random() * 70;
+    const y = 25 + Math.random() * 35;
+    const target = document.createElement('div');
+    target.className = 'target';
+    target.style.left = `${x}%`;
+    target.style.top = `${y}%`;
+    stage.appendChild(target);
 
-    // Pick the next target
-    const target = spideyTargets[spideyTaps - 1];
-    if (!target) return;
-    const targetRect = target.getBoundingClientRect();
-    const targetX = targetRect.left + targetRect.width / 2 - stageRect.left;
-    const targetY = targetRect.top + targetRect.height / 2 - stageRect.top;
+    const ring = document.createElement('div');
+    ring.className = 'target-ring';
+    ring.style.left = `${x}%`;
+    ring.style.top = `${y}%`;
+    const startSize = 180;
+    const endSize = 76;
+    const window_ = getSpideyWindow();
+    ring.style.width = `${startSize}px`;
+    ring.style.height = `${startSize}px`;
+    ring.style.transition = `width ${window_}ms linear, height ${window_}ms linear, opacity 0.3s`;
+    stage.appendChild(ring);
 
-    // Compute relative offset from current spidey position (centered)
-    const spideyRect = spidey.getBoundingClientRect();
-    const baseX = stageRect.width / 2;
-    const baseY = stageRect.height / 2;
-    const offX = targetX - baseX;
-    const offY = targetY - baseY;
+    spideyCurrentTarget = target;
+    spideyCurrentRing = ring;
 
-    // Animate web line shooting up from spidey to top of stage
-    const webX = targetX;
-    const webHeight = targetY;
-    webLine.style.transform = `translateX(${webX - stageRect.width / 2}px)`;
-    webLine.style.height = `${webHeight}px`;
-    webLine.style.opacity = '1';
+    // start ring shrink
+    requestAnimationFrame(() => {
+      ring.style.width = `${endSize}px`;
+      ring.style.height = `${endSize}px`;
+    });
 
-    spidey.style.transform = `translate(${offX}px, ${offY}px) rotate(${spideyTaps % 2 === 0 ? 15 : -15}deg)`;
+    // Set up tap handler
+    target.onclick = function(e) {
+      e.stopPropagation();
+      if (target.dataset.popped) return;
+      target.dataset.popped = '1';
+      spideyHits++;
+      // Animate spidey + web to that position
+      const tx = (x / 100) * stageRect.width;
+      const ty = (y / 100) * stageRect.height;
+      const offX = tx - stageRect.width / 2;
+      const offY = ty - stageRect.height / 2;
+      const webLine = document.getElementById('web-line');
+      webLine.style.opacity = '1';
+      webLine.style.transform = `translateX(${tx - stageRect.width / 2}px)`;
+      webLine.style.height = `${ty}px`;
+      const spidey = document.getElementById('spidey-char');
+      spidey.style.transition = 'transform 0.5s cubic-bezier(.35,1.6,.55,.5)';
+      spidey.style.transform = `translate(${offX}px, ${offY}px) rotate(${spideyHits % 2 === 0 ? 15 : -15}deg)`;
 
-    // Hit feedback on the target
-    target.style.transition = 'transform 0.3s, opacity 0.3s';
-    target.style.transform = 'scale(2.5)';
-    target.style.opacity = '0';
-    target.style.background = '#fff';
+      // Hit text
+      const flash = document.createElement('div');
+      flash.className = 'hit-flash';
+      const flashTexts = ['THWIP!', 'NICE!', 'GOTCHA!', 'CRACK!', 'WEB UP!', 'YEAH!'];
+      flash.textContent = flashTexts[Math.floor(Math.random() * flashTexts.length)];
+      flash.style.left = `${x}%`;
+      flash.style.top = `${y - 5}%`;
+      stage.appendChild(flash);
+      setTimeout(() => flash.remove(), 700);
 
-    document.getElementById('swing-counter').textContent = `SWINGS: ${spideyTaps} / 5`;
+      // pop target & ring
+      target.style.transition = 'transform 0.3s, opacity 0.3s';
+      target.style.transform = 'translate(-50%, -50%) scale(2.5)';
+      target.style.opacity = '0';
+      ring.style.opacity = '0';
+      playSwing();
 
-    if (spideyTaps >= 5) {
-      setTimeout(() => {
+      document.getElementById('swing-counter').textContent = `SWINGS: ${spideyHits} / 6`;
+      document.getElementById('spidey-phase').textContent = getSpideyPhaseText();
+
+      if (spideyHits >= 6) {
+        spideyGameRunning = false;
+        cleanupSpideyTarget();
         document.getElementById('swing-counter').textContent = `🕷️ NICE SWINGING, KID! 🕸️`;
-        webLine.style.opacity = '0';
-      }, 400);
-      setTimeout(nextStage, 1400);
-    }
+        document.getElementById('web-line').style.opacity = '0';
+        playWinSound();
+        setTimeout(nextStage, 1400);
+        return;
+      }
+      // schedule next
+      setTimeout(spawnSpideyTarget, 350);
+    };
+
+    // Fail timer — if window passes without click
+    spideyCurrentTimer = setTimeout(() => {
+      if (target.dataset.popped) return;
+      target.dataset.popped = 'miss';
+      const flash = document.createElement('div');
+      flash.className = 'miss-flash';
+      flash.textContent = 'MISS!';
+      flash.style.left = `${x}%`;
+      flash.style.top = `${y - 5}%`;
+      stage.appendChild(flash);
+      setTimeout(() => flash.remove(), 700);
+      ring.style.opacity = '0';
+      target.style.opacity = '0';
+      playHit();
+      // respawn after short delay
+      setTimeout(spawnSpideyTarget, 500);
+    }, window_ + 80);
+  }
+  function cleanupSpideyTarget() {
+    if (spideyCurrentTimer) clearTimeout(spideyCurrentTimer);
+    spideyCurrentTimer = null;
+    if (spideyCurrentTarget) { spideyCurrentTarget.remove(); spideyCurrentTarget = null; }
+    if (spideyCurrentRing) { spideyCurrentRing.remove(); spideyCurrentRing = null; }
+    document.querySelectorAll('#stage2 .target, #stage2 .target-ring').forEach(el => el.remove());
   }
 
   // STAGE 3: MJ rhythm game
