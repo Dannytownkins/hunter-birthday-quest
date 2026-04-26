@@ -683,15 +683,29 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding: max(28px, env(safe-area-inset-top)) 14px 100px;
+    padding: max(28px, env(safe-area-inset-top)) 14px 140px;
     cursor: pointer;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
+  /* Solid background strip behind the fixed continue button so the last bubble doesn't peek through it */
   .cutscene-continue {
-    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    position: fixed;
+    left: 50%;
+    bottom: max(18px, env(safe-area-inset-bottom));
+    transform: translateX(-50%);
     z-index: 1001;
   }
+  .cutscene::after {
+    content: '';
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: 100px;
+    background: linear-gradient(180deg, transparent 0%, rgba(26,10,58,0.85) 30%, rgba(26,10,58,0.95) 100%);
+    pointer-events: none;
+    z-index: 1000;
+  }
+  .cutscene:not(.active)::after { display: none; }
   .cutscene.active { display: flex; animation: cutscene-fade 0.4s ease; }
   @keyframes cutscene-fade {
     from { opacity: 0; }
@@ -2703,15 +2717,15 @@
       ]
     },
     stage3: {
-      banner: '...INTERMISSION',
+      banner: 'CHAPTER 2: 6-7 INTERMISSION',
       cast: ['hunter', 'dad'],
       lines: [
-        { who: 'narrator', text: '*hunter just stops walking and starts dancing*' },
+        { who: 'narrator', text: '*hunter just stops swinging and starts dancing*' },
         { who: 'hunter', text: 'SIIIIIX...' },
         { who: 'hunter', text: 'SEVEEEEEEN!!!' },
         { who: 'dad', text: '...' },
-        { who: 'dad', text: 'we are LITERALLY in the middle of a quest BOY' },
-        { who: 'dad', text: 'ok now do the moonwalk' }
+        { who: 'dad', text: 'we are LITERALLY in the middle of a quest, BOY' },
+        { who: 'dad', text: 'ok fine. do the moonwalk first.' }
       ],
       sixseven: true,
     },
@@ -2757,7 +2771,7 @@
       ]
     },
     stage7: {
-      banner: 'CHAPTER 6: THE LAIR',
+      banner: 'CHAPTER 6: BRAIN ROT',
       backdrop: 'tvroom',
       cast: ['hunter', 'dad'],
       lines: [
