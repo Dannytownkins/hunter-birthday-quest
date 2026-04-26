@@ -633,9 +633,15 @@
     display: none;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 20px;
+    justify-content: flex-start;
+    padding: max(28px, env(safe-area-inset-top)) 14px 100px;
     cursor: pointer;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cutscene-continue {
+    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    z-index: 1001;
   }
   .cutscene.active { display: flex; animation: cutscene-fade 0.4s ease; }
   @keyframes cutscene-fade {
@@ -648,9 +654,20 @@
     color: #ffe66d;
     text-shadow: 4px 4px 0 #f72585, 8px 8px 0 #000;
     letter-spacing: 4px;
-    margin-bottom: 30px;
+    margin-bottom: 24px;
     animation: cutscene-banner 0.5s ease;
+    z-index: 2;
   }
+  /* Optional cinematic backdrop for cutscenes (silhouettes / scenes behind the dialogue panel) */
+  .cutscene-backdrop {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 55%;
+    pointer-events: none;
+    opacity: 0.85;
+    z-index: 0;
+  }
+  .cutscene-backdrop svg { width: 100%; height: 100%; display: block; }
+  .cutscene-panel { position: relative; z-index: 2; }
   @keyframes cutscene-banner {
     from { transform: scale(0) rotate(-15deg); }
     to { transform: scale(1) rotate(-3deg); }
@@ -1346,6 +1363,17 @@
     50% { transform: scaleY(0.85) scaleX(1.1); }
     100% { transform: scaleY(1) scaleX(1); }
   }
+  /* Idle breathe — every character SVG gently lifts/falls so they feel alive instead of frozen */
+  .rblx-char svg, .kratos-fighter svg, .dodge-player svg, .mj-character svg {
+    animation: idle-breathe 2.6s ease-in-out infinite;
+  }
+  @keyframes idle-breathe {
+    0%, 100% { transform: translateY(0) scale(1, 1); }
+    50% { transform: translateY(-2px) scale(1.01, 0.99); }
+  }
+  /* Stagger so the duo doesn't bob in sync */
+  .duo .kratos-fighter:nth-child(2) svg { animation-delay: 0.6s; }
+  .character-row .rblx-char:nth-child(2) svg { animation-delay: 0.4s; }
 
   /* Shared "STAGE CLEAR!" celebration that pops between every stage win and the next cutscene */
   .stage-clear {
@@ -2180,7 +2208,20 @@
   const STAGE_BGM = {
     stage1: { notes: [262, 330, 392, 330, 262, 330, 523, 392], type: 'triangle', step: 250, vol: 0.06 },
     stage2: { notes: [220, 220, 277, 220, 165, 165, 220, 165], type: 'sawtooth', step: 200, vol: 0.06 },
-    stage3: { notes: [196, 196, 262, 233, 196, 262, 233, 196], type: 'square', step: 220, vol: 0.06 },
+    // Stage 3 — "Billie Jean" feel. F# minor pattern. Bass walks F#-A-C#-A while a
+    // sparser lead echoes the verse-melody cadence on top.
+    stage3: {
+      notes: [
+        0, 0, 0, 0, 0, 0, 0, 0,
+        440, 440, 440, 440, 392, 370, 392, 440,   // "Billie Jean is not my lov-er"
+        0, 0, 0, 0, 0, 0, 0, 0,
+        440, 440, 440, 392, 370, 0, 0, 0,
+      ],
+      type: 'square',
+      step: 180,
+      vol: 0.05,
+      bass: { notes: [185, 0, 220, 0, 277, 0, 220, 0], type: 'triangle', step: 220, vol: 0.09 },
+    },
     stage4: { notes: [262, 330, 392, 523, 392, 330, 262, 196], type: 'triangle', step: 200, vol: 0.06 },
     stage5: { notes: [98, 98, 116, 98, 87, 98, 116, 130], type: 'sawtooth', step: 240, vol: 0.07 },
     // Stage 6 — 8-bit Simpsons-style melody. C Lydian (C D E F# G A B), bouncy.
@@ -2455,6 +2496,128 @@
     <rect x="32" y="68" width="14" height="30" fill="#3a3a3a" stroke="#000" stroke-width="2"/>
   </svg>`;
 
+  // Cinematic backdrops for cutscenes — silhouette scenes behind the dialogue.
+  const BACKDROP_HILL = `<svg viewBox="0 0 1000 500" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="hillsky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fcb46a"/>
+        <stop offset="0.5" stop-color="#f47a4a"/>
+        <stop offset="1" stop-color="#7a2c5a"/>
+      </linearGradient>
+    </defs>
+    <rect width="1000" height="500" fill="url(#hillsky)"/>
+    <!-- sun -->
+    <circle cx="780" cy="320" r="60" fill="#ffe66d"/>
+    <!-- THE HILL — really steep -->
+    <path d="M 0 500 L 0 460 Q 250 410 500 240 Q 700 110 1000 60 L 1000 500 Z" fill="#1a1a1a"/>
+    <!-- school in distance, tiny -->
+    <g transform="translate(60 380)" opacity="0.65">
+      <rect x="0" y="0" width="60" height="40" fill="#1a1a1a" stroke="#1a1a1a" stroke-width="1"/>
+      <polygon points="0,0 30,-12 60,0" fill="#1a1a1a"/>
+      <rect x="22" y="22" width="14" height="18" fill="#fcb46a"/>
+    </g>
+    <!-- Hunter & Dad climbing the hill, mid-slope -->
+    <g transform="translate(440 234)">
+      <!-- dad -->
+      <rect x="20" y="-32" width="14" height="14" fill="#1a1a1a"/>
+      <rect x="14" y="-18" width="26" height="22" fill="#1a1a1a"/>
+      <rect x="18" y="4" width="6" height="14" fill="#1a1a1a"/>
+      <rect x="30" y="4" width="6" height="14" fill="#1a1a1a"/>
+      <!-- hunter (a step behind) -->
+      <g transform="translate(-30 12)">
+        <rect x="20" y="-22" width="10" height="10" fill="#1a1a1a"/>
+        <rect x="16" y="-12" width="18" height="14" fill="#1a1a1a"/>
+        <rect x="20" y="2" width="4" height="10" fill="#1a1a1a"/>
+        <rect x="26" y="2" width="4" height="10" fill="#1a1a1a"/>
+      </g>
+    </g>
+  </svg>`;
+
+  const BACKDROP_TVROOM = `<svg viewBox="0 0 1000 500" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="tvglow" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stop-color="#9ad8ff"/>
+        <stop offset="1" stop-color="#1a2438"/>
+      </radialGradient>
+    </defs>
+    <rect width="1000" height="500" fill="#1a1428"/>
+    <!-- floor -->
+    <rect y="380" width="1000" height="120" fill="#2a1f3a"/>
+    <!-- TV stand -->
+    <rect x="350" y="340" width="300" height="40" fill="#3a2c4a"/>
+    <!-- TV -->
+    <rect x="320" y="120" width="360" height="220" fill="#0a0a18" stroke="#000" stroke-width="6" rx="8"/>
+    <rect x="340" y="140" width="320" height="180" fill="url(#tvglow)"/>
+    <!-- "YouToob" red bar on screen -->
+    <rect x="340" y="140" width="320" height="22" fill="#dd1a1a"/>
+    <text x="500" y="156" text-anchor="middle" font-family="'Bangers', monospace" font-size="14" fill="#fff">YouToob</text>
+    <!-- video block -->
+    <rect x="362" y="178" width="120" height="68" fill="#2a3858"/>
+    <polygon points="412,196 412,228 442,212" fill="#fff"/>
+    <!-- the COVETED phone, glowing on the floor near dad -->
+    <g transform="translate(160 360)">
+      <rect x="-14" y="-26" width="28" height="50" rx="4" fill="#0a0a18" stroke="#000" stroke-width="2"/>
+      <rect x="-10" y="-22" width="20" height="40" fill="#5ad8ff"/>
+      <ellipse cx="0" cy="0" rx="40" ry="6" fill="#5ad8ff" opacity="0.4"/>
+    </g>
+    <!-- silhouettes -->
+    <g transform="translate(140 320)">
+      <!-- dad reaching for phone -->
+      <rect x="0" y="-26" width="14" height="14" fill="#1a1a1a"/>
+      <rect x="-4" y="-12" width="22" height="22" fill="#1a1a1a"/>
+      <rect x="0" y="10" width="6" height="14" fill="#1a1a1a"/>
+      <rect x="10" y="10" width="6" height="14" fill="#1a1a1a"/>
+    </g>
+    <g transform="translate(660 320)">
+      <!-- hunter staring at TV -->
+      <rect x="0" y="-22" width="12" height="12" fill="#1a1a1a"/>
+      <rect x="-2" y="-10" width="18" height="20" fill="#1a1a1a"/>
+      <rect x="2" y="10" width="4" height="12" fill="#1a1a1a"/>
+      <rect x="10" y="10" width="4" height="12" fill="#1a1a1a"/>
+    </g>
+  </svg>`;
+
+  const BACKDROP_SPRINGFIELD = `<svg viewBox="0 0 1000 500" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1000" height="500" fill="#74cce5"/>
+    <!-- distant hills -->
+    <path d="M 0 500 L 0 360 Q 250 300 500 340 Q 750 290 1000 350 L 1000 500 Z" fill="#7faa55"/>
+    <!-- nuclear cooling tower -->
+    <g transform="translate(120 240)">
+      <path d="M 0 130 Q -10 60 14 0 L 70 0 Q 94 60 84 130 Z" fill="#cfd8d6" stroke="#1a1a1a" stroke-width="3"/>
+      <ellipse cx="42" cy="-2" rx="40" ry="7" fill="#cfd8d6" stroke="#1a1a1a" stroke-width="3"/>
+      <ellipse cx="20" cy="-26" rx="18" ry="9" fill="#fff"/>
+      <ellipse cx="50" cy="-32" rx="22" ry="11" fill="#fff"/>
+    </g>
+    <!-- simpson house -->
+    <g transform="translate(480 290)">
+      <polygon points="0,40 60,0 120,40" fill="#dd6633" stroke="#1a1a1a" stroke-width="3"/>
+      <rect x="6" y="40" width="108" height="80" fill="#f4b6b8" stroke="#1a1a1a" stroke-width="3"/>
+      <rect x="48" y="84" width="24" height="36" fill="#7a3a1f" stroke="#1a1a1a" stroke-width="2.5"/>
+    </g>
+  </svg>`;
+
+  const BACKDROP_NORSE = `<svg viewBox="0 0 1000 500" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="norsesky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#060a1c"/>
+        <stop offset="1" stop-color="#1c2a4a"/>
+      </linearGradient>
+    </defs>
+    <rect width="1000" height="500" fill="url(#norsesky)"/>
+    <!-- snowy mountains -->
+    <polygon points="0,500 0,280 120,160 220,260 320,140 460,300 580,200 720,300 840,180 1000,280 1000,500" fill="#1c2645"/>
+    <polygon points="0,500 0,360 140,280 260,330 380,260 520,340 640,300 780,360 900,300 1000,360 1000,500" fill="#0e1730"/>
+    <!-- snow caps -->
+    <polygon points="100,170 120,160 140,170 130,182 110,182" fill="#e8eef5"/>
+    <polygon points="300,150 320,140 340,150 330,162 310,162" fill="#e8eef5"/>
+    <polygon points="700,190 720,180 740,190 730,202 710,202" fill="#e8eef5"/>
+    <!-- runes glowing -->
+    <g stroke="#ffae42" stroke-width="3" fill="none" opacity="0.7">
+      <path d="M 480 240 L 484 270 L 480 290 M 472 250 L 492 250"/>
+      <path d="M 540 250 L 544 280 L 552 270 L 552 295"/>
+    </g>
+  </svg>`;
+
   const CUTSCENES = {
     stage2: {
       banner: 'CHAPTER 1: SUIT UP',
@@ -2463,6 +2626,8 @@
         { who: 'dad', text: 'yo BOY. lemme show you the city.' },
         { who: 'dad', text: '*tosses a SPIDER-MAN MASK at hunter*' },
         { who: 'hunter', text: 'wait DAD WHA—' },
+        { who: 'hunter', text: 'do i still have to walk up the HILL after?' },
+        { who: 'dad', text: 'always, BOY. always the hill.' },
         { who: 'narrator', text: 'no time. SWING.' }
       ]
     },
@@ -2492,34 +2657,49 @@
     },
     stage5: {
       banner: 'CHAPTER 4: A TROLL APPEARS',
+      backdrop: 'norse',
       cast: ['hunter', 'dad'],
       lines: [
         { who: 'narrator', text: '*the ground shakes. snow falls.*' },
         { who: 'hunter', text: 'DAD WHAT WAS THAT' },
         { who: 'dad', text: '...the troll. close your fist, BOY.' },
-        { who: 'dad', text: 'tap when the cursor hits the GREEN.' },
-        { who: 'dad', text: 'hit perfect — i throw the axe.' }
+        { who: 'hunter', text: 'im scared dad' },
+        { who: 'dad', text: 'do not be sorry. BE BETTER.' },
+        { who: 'hunter', text: 'thats not the same thing dad' },
+        { who: 'dad', text: 'i know. close your fist anyway.' },
+        { who: 'dad', text: 'tap GREEN. perfect = i throw the axe.' }
       ]
     },
     stage6: {
       banner: 'CHAPTER 5: SPRINGFIELD',
+      backdrop: 'springfield',
       cast: ['hunter', 'dad'],
       lines: [
         { who: 'narrator', text: 'a portal opens. they fall in.' },
         { who: 'narrator', text: 'everything is yellow.' },
         { who: 'hunter', text: 'AY CARUMBA' },
-        { who: 'dad', text: 'D\'OH! it\'s SPRINGFIELD' },
-        { who: 'dad', text: 'don\'t let the donuts hit you, BOY.' }
+        { who: 'dad', text: 'D\'OH! it\'s SPRINGFIELD, BOY.' },
+        { who: 'hunter', text: 'is that a KRUSTY BURGER???' },
+        { who: 'dad', text: 'no SQUISHEES. no DUFF. only DONUTS.' },
+        { who: 'hunter', text: 'BARTMAN MODE!!!' },
+        { who: 'dad', text: 'tap the donuts. dodge everything else.' }
       ]
     },
     stage7: {
       banner: 'CHAPTER 6: THE LAIR',
+      backdrop: 'tvroom',
       cast: ['hunter', 'dad'],
       lines: [
-        { who: 'narrator', text: 'they reach the SOURCE of all the cursed.' },
-        { who: 'dad', text: 'this is where it ends, BOY.' },
-        { who: 'hunter', text: 'the algorithm???' },
-        { who: 'dad', text: 'smash every dislike. don\'t let it heal.' }
+        { who: 'narrator', text: 'back home. tv on in his room. dad on the couch.' },
+        { who: 'hunter', text: 'DAD' },
+        { who: 'hunter', text: 'DAAAAAD' },
+        { who: 'dad', text: '...what BOY' },
+        { who: 'hunter', text: 'i need ur phone' },
+        { who: 'dad', text: 'for the remote.' },
+        { who: 'hunter', text: 'YEAH' },
+        { who: 'dad', text: 'fourth time today, BOY. fourth.' },
+        { who: 'narrator', text: '*hunter hits play. brain rot floods in.*' },
+        { who: 'dad', text: 'tap every recommended. don\'t let it heal.' }
       ]
     },
     stage8: {
@@ -2536,6 +2716,14 @@
 
   let cutsceneTargetIdx = null;
 
+  // Map of named backdrops to SVG strings
+  const BACKDROPS = {
+    hill: typeof BACKDROP_HILL !== 'undefined' ? BACKDROP_HILL : '',
+    tvroom: typeof BACKDROP_TVROOM !== 'undefined' ? BACKDROP_TVROOM : '',
+    springfield: typeof BACKDROP_SPRINGFIELD !== 'undefined' ? BACKDROP_SPRINGFIELD : '',
+    norse: typeof BACKDROP_NORSE !== 'undefined' ? BACKDROP_NORSE : '',
+  };
+
   function showCutscene(targetIdx) {
     stopBGM();
     cutsceneTargetIdx = targetIdx;
@@ -2545,6 +2733,16 @@
 
     document.getElementById('cutscene-banner').textContent = data.banner;
     const panel = document.getElementById('cutscene-panel');
+    // Render optional backdrop
+    let backdropEl = document.getElementById('cutscene-backdrop');
+    if (!backdropEl) {
+      backdropEl = document.createElement('div');
+      backdropEl.id = 'cutscene-backdrop';
+      backdropEl.className = 'cutscene-backdrop';
+      document.getElementById('cutscene').insertBefore(backdropEl, document.getElementById('cutscene-banner'));
+    }
+    backdropEl.innerHTML = data.backdrop && BACKDROPS[data.backdrop] ? BACKDROPS[data.backdrop] : '';
+    backdropEl.style.display = data.backdrop ? 'block' : 'none';
 
     // Build cast row
     let html = '<div class="cutscene-cast">';
