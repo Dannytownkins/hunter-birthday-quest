@@ -2328,7 +2328,9 @@
 
     function spawnNugget() {
       if (!nuggetGameRunning) return;
-      const isNugget = Math.random() > 0.3;
+      // Round 2: more broccoli (40% vs 30%), faster fall
+      const broccoliChance = nuggetRound === 2 ? 0.4 : 0.3;
+      const isNugget = Math.random() > broccoliChance;
       const el = document.createElement('div');
       el.className = isNugget ? 'nugget' : 'broccoli';
       const x = Math.random() * 80 + 10;
@@ -2336,7 +2338,8 @@
       el.style.top = `-50px`;
       stage.appendChild(el);
 
-      const fallDuration = 2200 + Math.random() * 800;
+      const baseFall = 2200 + Math.random() * 800;
+      const fallDuration = nuggetRound === 2 ? baseFall * 0.65 : baseFall;
       el.animate([
         { top: '-50px' },
         { top: '85%' }
@@ -2350,13 +2353,22 @@
         if (inCup) {
           if (isNugget) {
             nuggetCount++;
-            document.getElementById('nugget-score').textContent = `NUGGETS: ${nuggetCount} / 8`;
+            document.getElementById('nugget-score').textContent = `R${nuggetRound} • NUGGETS: ${nuggetCount}/8`;
             playBeep(660 + nuggetCount * 30, 0.1, 'triangle', 0.18);  // CHIME on catch
             if (nuggetCount >= 8) {
               nuggetGameRunning = false;
-              document.getElementById('nugget-skip').style.display = 'inline-block';
-              document.getElementById('nugget-score').textContent = `🍗 NICE! ${nuggetCount} NUGGETS COLLECTED 🥛`;
-              playWinSound();
+              if (nuggetRound < 2) {
+                document.getElementById('nugget-score').textContent = `🍗 R1 CLEAR! 🥛`;
+                playWinSound();
+                nuggetRound = 2;
+                setTimeout(() => {
+                  showRoundBanner('ROUND 2!', 'MORE BROCCOLI — STAY ALERT', () => initNuggetGame(true));
+                }, 600);
+              } else {
+                document.getElementById('nugget-skip').style.display = 'inline-block';
+                document.getElementById('nugget-score').textContent = `🍗 NICE! ${nuggetCount} NUGGETS COLLECTED 🥛`;
+                playWinSound();
+              }
             }
           } else {
             // BROCCOLI caught = FAIL
@@ -2412,7 +2424,7 @@
     arena.ontouchmove = movePlayer;
     arena.onclick = movePlayer;
 
-    const symbols = ['🟡', '🍩', '😬', '👁️', '💀', '🟪', '👹', '🍞'];
+    const symbols = ['🟡', '🍩', '🍺', '😬', '🟡', '🍩', '👁️', '💀', '🟡', '🍩', '🍺', '👹', '🍞', '🌀'];
     function spawnCursed() {
       if (!dodgeRunning) return;
       const c = document.createElement('div');
@@ -2585,17 +2597,19 @@
     }
   }
 
-  // STAGE 7: Algorithm boss — falling dislikes game
+  // STAGE 7: Algorithm boss — falling dislikes game (multi-round)
   let algoHp = 100;
   let algoMisses = 0;
+  let algoRound = 1;
   let algoGameRunning = false;
   let algoSpawnTimer = null;
-  function initAlgoBoss() {
+  function initAlgoBoss(roundResume) {
     if (algoGameRunning) return;
     algoGameRunning = true;
     algoHp = 100;
     algoMisses = 0;
-    document.getElementById('algo-hp-text').textContent = `ALGORITHM HP: ${algoHp}% • MISS: 0/8`;
+    if (!roundResume) algoRound = 1;
+    document.getElementById('algo-hp-text').textContent = `R${algoRound} • ALGORITHM HP: ${algoHp}% • MISS: 0/8`;
     document.getElementById('algo-next-btn').style.display = 'none';
     const boss = document.querySelector('#stage7 .algorithm-boss');
     boss.style.opacity = '1';
@@ -2630,7 +2644,7 @@
         if (d.classList.contains('popped')) return;
         d.classList.add('popped');
         algoHp = Math.max(0, algoHp - 8);
-        document.getElementById('algo-hp-text').textContent = `ALGORITHM HP: ${algoHp}% • MISS: ${algoMisses}/8`;
+        document.getElementById('algo-hp-text').textContent = `R${algoRound} • HP: ${algoHp}% • MISS: ${algoMisses}/8`;
         boss.style.transform = `scale(${1 - (100 - algoHp) / 200}) rotate(${(100 - algoHp) * 1.5}deg)`;
         playBeep(660 + algoHp * 4, 0.08);
         setTimeout(() => d.remove(), 500);
@@ -2646,7 +2660,7 @@
           if (algoHp < 100 && algoHp > 0) {
             algoHp = Math.min(100, algoHp + 3);
           }
-          document.getElementById('algo-hp-text').textContent = `ALGORITHM HP: ${algoHp}% • MISS: ${algoMisses}/8`;
+          document.getElementById('algo-hp-text').textContent = `R${algoRound} • HP: ${algoHp}% • MISS: ${algoMisses}/8`;
           setTimeout(() => d.remove(), 300);
           if (algoMisses >= 8) {
             algoGameRunning = false;
@@ -2657,7 +2671,8 @@
       }, fallDuration);
 
       if (algoGameRunning) {
-        const gap = algoHp > 66 ? 1100 : algoHp > 33 ? 750 : 500;
+        let gap = algoHp > 66 ? 1100 : algoHp > 33 ? 750 : 500;
+        if (algoRound === 2) gap = Math.max(280, gap * 0.6);
         algoSpawnTimer = setTimeout(spawnDislike, gap + Math.random() * 200);
       }
     }
@@ -2668,9 +2683,22 @@
     if (algoSpawnTimer) clearTimeout(algoSpawnTimer);
     const boss = document.querySelector('#stage7 .algorithm-boss');
     boss.style.opacity = '0';
-    document.getElementById('algo-hp-text').textContent = `🔥 ALGORITHM DEFEATED 🔥`;
-    document.getElementById('algo-next-btn').style.display = 'inline-block';
-    playWinSound();
+    document.querySelectorAll('.hate-zone .dislike').forEach(d => d.remove());
+    if (algoRound < 2) {
+      document.getElementById('algo-hp-text').textContent = `🔥 R1 CLEAR — IT RESPAWNS! 🔥`;
+      playWinSound();
+      algoRound = 2;
+      setTimeout(() => {
+        showRoundBanner('ROUND 2!', 'IT CAME BACK STRONGER!', () => {
+          if (boss) { boss.style.opacity = '1'; boss.style.transform = 'scale(1)'; }
+          initAlgoBoss(true);
+        });
+      }, 600);
+    } else {
+      document.getElementById('algo-hp-text').textContent = `🔥 ALGORITHM DEFEATED 🔥`;
+      document.getElementById('algo-next-btn').style.display = 'inline-block';
+      playWinSound();
+    }
   }
 
   // STAGE 8: confetti
