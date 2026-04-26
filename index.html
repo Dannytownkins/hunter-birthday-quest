@@ -1406,6 +1406,15 @@
     0% { transform: translateY(-100vh) rotate(0); opacity: 1; }
     100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
   }
+  /* Burst variant — confetti explodes outward from a tap point and then falls under gravity */
+  .confetti-piece.burst {
+    animation: confetti-burst 1.6s ease-out forwards;
+  }
+  @keyframes confetti-burst {
+    0%   { transform: translate(0, 0) rotate(0); opacity: 1; }
+    25%  { transform: translate(calc(var(--dx) * 0.6), calc(var(--dy) * 0.6 - 60px)) rotate(180deg); opacity: 1; }
+    100% { transform: translate(var(--dx), calc(50vh + var(--dy))) rotate(720deg); opacity: 0; }
+  }
 
   /* Generic instruction text */
   .instructions {
@@ -4084,14 +4093,13 @@
   }
 
   // STAGE 8: confetti
-  function burstConfetti(count, originX, originY) {
+  function burstConfetti(count) {
     const colors = ['#f72585', '#ffe66d', '#0046b8', '#00a3ff', '#ff6b35', '#7209b7'];
     const n = count || 80;
     for (let i = 0; i < n; i++) {
       const piece = document.createElement('div');
       piece.className = 'confetti-piece';
-      piece.style.left = originX != null ? `${originX}%` : `${Math.random() * 100}%`;
-      if (originY != null) piece.style.top = `${originY}%`;
+      piece.style.left = `${Math.random() * 100}%`;
       piece.style.background = colors[Math.floor(Math.random() * colors.length)];
       piece.style.animationDuration = `${1.6 + Math.random() * 2.5}s`;
       piece.style.animationDelay = `${Math.random() * 0.6}s`;
@@ -4099,17 +4107,31 @@
       setTimeout(() => piece.remove(), 5000);
     }
   }
-  // Tap anywhere on the finale stage to burst extra confetti from the tap point
+  // Tap anywhere on the finale stage to burst extra confetti from the actual tap point.
+  // Uses the .burst variant which explodes outward (--dx/--dy spread) before falling.
   (function setupFinaleTaps() {
     const stage = document.getElementById('stage8');
     if (!stage) return;
+    const colors = ['#f72585', '#ffe66d', '#0046b8', '#00a3ff', '#ff6b35', '#7209b7'];
     stage.addEventListener('click', (e) => {
-      // Don't double-fire when clicking buttons
       if (e.target.closest('button')) return;
       const rect = stage.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      burstConfetti(20, x, y);
+      const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+      const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+      for (let i = 0; i < 20; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece burst';
+        piece.style.left = `${xPct}%`;
+        piece.style.top = `${yPct}%`;
+        piece.style.background = colors[i % colors.length];
+        const angle = (i / 20) * Math.PI * 2 + Math.random() * 0.4;
+        const distance = 60 + Math.random() * 120;
+        piece.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
+        piece.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
+        piece.style.animationDelay = `${Math.random() * 0.05}s`;
+        stage.appendChild(piece);
+        setTimeout(() => piece.remove(), 1800);
+      }
       playBeep(523 + Math.random() * 600, 0.08, 'square', 0.14);
       buzz(15);
     });
@@ -4205,6 +4227,17 @@
     stopBGM();
   }
   buildStageSelect();
+
+  // Mobile Safari only unlocks the AudioContext on a real user gesture. PRESS START handles it,
+  // but stage-select buttons + the HOME button might be the first thing tapped — prime audio
+  // on the very first pointerdown anywhere so we never lose sound.
+  function primeAudioOnce() {
+    getCtx();
+    document.removeEventListener('pointerdown', primeAudioOnce);
+    document.removeEventListener('touchstart', primeAudioOnce);
+  }
+  document.addEventListener('pointerdown', primeAudioOnce, { once: true, passive: true });
+  document.addEventListener('touchstart', primeAudioOnce, { once: true, passive: true });
 
   // Keyboard for desktop
   document.addEventListener('keydown', (e) => {
