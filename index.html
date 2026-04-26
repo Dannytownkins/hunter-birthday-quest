@@ -439,6 +439,48 @@
   @keyframes flicker { 0%, 100% { opacity: 0.6; } 50% { opacity: 0.4; } }
   /* dead .boss CSS removed in v4 */
 
+  /* ROUND BANNER (v7) */
+  .round-banner {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 998;
+    pointer-events: none;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+  }
+  .round-banner.active { display: flex; animation: round-banner-fade 1.6s forwards; }
+  @keyframes round-banner-fade {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  .round-banner-text {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    color: #ffe66d;
+    text-shadow: 4px 4px 0 #f72585, 8px 8px 0 #000;
+    letter-spacing: 6px;
+    text-align: center;
+    line-height: 1.1;
+    animation: round-banner-pop 0.6s ease;
+  }
+  @keyframes round-banner-pop {
+    0% { transform: scale(0) rotate(-12deg); }
+    60% { transform: scale(1.2) rotate(2deg); }
+    100% { transform: scale(1) rotate(-2deg); }
+  }
+  .round-banner-sub {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(0.7rem, 2vw, 1rem);
+    color: #fff;
+    margin-top: 12px;
+    text-shadow: 2px 2px 0 #000;
+  }
+
   /* CUTSCENES (v5) */
   .cutscene {
     position: fixed;
@@ -1492,6 +1534,14 @@
   <button class="cutscene-continue" id="dinner-continue" onclick="advanceFromDinner()">TAP TO CONTINUE →</button>
 </div>
 
+<!-- ROUND BANNER -->
+<div class="round-banner" id="round-banner">
+  <div>
+    <div class="round-banner-text" id="round-banner-text">ROUND 2!</div>
+    <div class="round-banner-sub" id="round-banner-sub">BONUS — HARDER!</div>
+  </div>
+</div>
+
 <!-- GAME OVER OVERLAY -->
 <div class="cutscene" id="game-over" style="background: linear-gradient(160deg, #2d0000 0%, #5e0000 100%);">
   <div class="cutscene-banner" style="color: #ff4466; text-shadow: 4px 4px 0 #000;">OOF.</div>
@@ -1540,9 +1590,39 @@
   function playSwing() { playBeep(880, 0.08, 'triangle', 0.12); }
   function playPunch() { playBeep(120, 0.08, 'sawtooth', 0.2); }
 
+  // Round banner
+  function showRoundBanner(text, sub, cb) {
+    const banner = document.getElementById('round-banner');
+    document.getElementById('round-banner-text').textContent = text;
+    document.getElementById('round-banner-sub').textContent = sub || '';
+    banner.classList.remove('active');
+    void banner.offsetWidth;
+    banner.classList.add('active');
+    playBeep(440, 0.15, 'square', 0.18);
+    setTimeout(() => playBeep(660, 0.2, 'square', 0.18), 200);
+    setTimeout(() => { banner.classList.remove('active'); if (cb) cb(); }, 1700);
+  }
+
   // Stage entry jingles
   function playJingle(notes, type = 'square', vol = 0.16) {
     notes.forEach((n, i) => setTimeout(() => playBeep(n, 0.12, type, vol), i * 90));
+  }
+
+  // MJ voice clips
+  const MJ_VOICE_FILES = ['audio/hee-hee.mp3', 'audio/ow.mp3', 'audio/shamone.mp3', 'audio/woo.mp3'];
+  const MJ_VOICE_AUDIOS = MJ_VOICE_FILES.map(src => {
+    const a = new Audio(src);
+    a.preload = 'auto';
+    a.volume = 0.7;
+    return a;
+  });
+  function playMJVoice() {
+    const a = MJ_VOICE_AUDIOS[Math.floor(Math.random() * MJ_VOICE_AUDIOS.length)];
+    try {
+      const clone = a.cloneNode();
+      clone.volume = 0.7;
+      clone.play().catch(()=>{});
+    } catch (e) {}
   }
 
   // Per-stage looping BGM
@@ -1554,7 +1634,7 @@
     stage3: { notes: [196, 196, 262, 233, 196, 262, 233, 196], type: 'square', step: 220, vol: 0.06 },
     stage4: { notes: [262, 330, 392, 523, 392, 330, 262, 196], type: 'triangle', step: 200, vol: 0.06 },
     stage5: { notes: [98, 98, 116, 98, 87, 98, 116, 130], type: 'sawtooth', step: 240, vol: 0.07 },
-    stage6: { notes: [311, 277, 247, 277, 311, 277, 207, 277], type: 'square', step: 230, vol: 0.06 },
+    stage6: { notes: [523, 659, 784, 932, 880, 784, 698, 587, 523, 659, 784, 932, 880, 784, 659, 523], type: 'square', step: 200, vol: 0.07 },
     stage7: { notes: [175, 175, 175, 165, 175, 175, 156, 175], type: 'sawtooth', step: 180, vol: 0.07 },
     stage8: { notes: [523, 659, 784, 1047, 784, 659, 523, 1047], type: 'triangle', step: 260, vol: 0.07 },
   };
@@ -1900,19 +1980,21 @@
     showStage(0);
   }
 
-  // STAGE 2: Spider-Man timing game
+  // STAGE 2: Spider-Man timing game (multi-round)
   let spideyHits = 0;
   let spideyMisses = 0;
+  let spideyRound = 1;
   let spideyGameRunning = false;
   let spideyCurrentTarget = null;
   let spideyCurrentRing = null;
   let spideyCurrentTimer = null;
-  function initSpideyGame() {
+  function initSpideyGame(roundResume) {
     if (spideyGameRunning) return;
     spideyGameRunning = true;
     spideyHits = 0;
     spideyMisses = 0;
-    document.getElementById('swing-counter').textContent = `SWINGS: 0 / 6 • MISS: 0/3`;
+    if (!roundResume) spideyRound = 1;
+    document.getElementById('swing-counter').textContent = `R${spideyRound} • SWINGS: 0/6 • MISS: 0/3`;
     document.getElementById('web-line').style.opacity = '0';
     document.getElementById('web-line').style.height = '0';
     const spidey = document.getElementById('spidey-char');
@@ -1921,14 +2003,18 @@
     spawnSpideyTarget();
   }
   function getSpideyWindow() {
-    if (spideyHits < 2) return 2200;
-    if (spideyHits < 4) return 1500;
-    return 950;
+    const base = spideyHits < 2 ? 2200 : spideyHits < 4 ? 1500 : 950;
+    return spideyRound === 2 ? Math.max(450, base * 0.6) : base;
   }
   function getSpideyPhaseText() {
-    if (spideyHits < 2) return 'PHASE 1: WARMUP';
-    if (spideyHits < 4) return 'PHASE 2: GETTING FAST';
-    return 'PHASE 3: NO MERCY';
+    if (spideyRound === 2) {
+      if (spideyHits < 2) return 'R2 • BONUS WARMUP';
+      if (spideyHits < 4) return 'R2 • SPEED RUN';
+      return 'R2 • NO MERCY';
+    }
+    if (spideyHits < 2) return 'R1 • WARMUP';
+    if (spideyHits < 4) return 'R1 • GETTING FAST';
+    return 'R1 • NO MERCY';
   }
   function spawnSpideyTarget() {
     if (!spideyGameRunning) return;
@@ -2002,16 +2088,25 @@
       ring.style.opacity = '0';
       playSwing();
 
-      document.getElementById('swing-counter').textContent = `SWINGS: ${spideyHits} / 6 • MISS: ${spideyMisses}/3`;
+      document.getElementById('swing-counter').textContent = `R${spideyRound} • SWINGS: ${spideyHits}/6 • MISS: ${spideyMisses}/3`;
       document.getElementById('spidey-phase').textContent = getSpideyPhaseText();
 
       if (spideyHits >= 6) {
         spideyGameRunning = false;
         cleanupSpideyTarget();
-        document.getElementById('swing-counter').textContent = `🕷️ NICE SWINGING, KID! 🕸️`;
         document.getElementById('web-line').style.opacity = '0';
-        playWinSound();
-        setTimeout(nextStage, 1400);
+        if (spideyRound < 2) {
+          document.getElementById('swing-counter').textContent = `🕷️ ROUND 1 CLEAR! 🕸️`;
+          playWinSound();
+          spideyRound = 2;
+          setTimeout(() => {
+            showRoundBanner('ROUND 2!', 'TIGHTER WINDOWS — GO!', () => initSpideyGame(true));
+          }, 600);
+        } else {
+          document.getElementById('swing-counter').textContent = `🕷️ NICE SWINGING, KID! 🕸️`;
+          playWinSound();
+          setTimeout(nextStage, 1400);
+        }
         return;
       }
       // schedule next
@@ -2033,7 +2128,7 @@
       ring.style.opacity = '0';
       target.style.opacity = '0';
       playHit();
-      document.getElementById('swing-counter').textContent = `SWINGS: ${spideyHits} / 6 • MISS: ${spideyMisses}/3`;
+      document.getElementById('swing-counter').textContent = `R${spideyRound} • SWINGS: ${spideyHits}/6 • MISS: ${spideyMisses}/3`;
       if (spideyMisses >= 3) {
         spideyGameRunning = false;
         cleanupSpideyTarget();
@@ -2052,20 +2147,22 @@
     document.querySelectorAll('#stage2 .target, #stage2 .target-ring').forEach(el => el.remove());
   }
 
-  // STAGE 3: MJ rhythm game
+  // STAGE 3: MJ rhythm game (multi-round)
   const mjPrompts = ['HEE-HEE!', 'OW!', 'SHAMONE!', 'CHA-MONE!', 'YEAH!'];
   let mjScore = 0;
   let mjMissed = 0;
+  let mjRound = 1;
   let mjGameRunning = false;
   let mjSpawnTimer = null;
   let mjActiveNotes = [];
-  function initMJRhythm() {
+  function initMJRhythm(roundResume) {
     if (mjGameRunning) return;
     mjGameRunning = true;
     mjScore = 0;
     mjMissed = 0;
+    if (!roundResume) mjRound = 1;
     mjActiveNotes = [];
-    document.getElementById('mj-score').textContent = `HITS: 0 / 8`;
+    document.getElementById('mj-score').textContent = `R${mjRound} • HITS: 0/8`;
     document.getElementById('mj-prompt').textContent = 'HEE-HEE!';
 
     // Clear leftover notes
@@ -2086,7 +2183,8 @@
       const boardRect = board.getBoundingClientRect();
       const distance = boardRect.height - 64;
       // sub-level: speed up as you hit more
-      const fallDuration = mjScore < 3 ? 2400 : mjScore < 5 ? 1700 : 1300;
+      const baseFall = mjScore < 3 ? 2400 : mjScore < 5 ? 1700 : 1300;
+      const fallDuration = mjRound === 2 ? Math.max(700, baseFall * 0.65) : baseFall;
       const startTs = performance.now();
       note.dataset.start = startTs;
       note.dataset.duration = fallDuration;
@@ -2120,8 +2218,9 @@
       }
       requestAnimationFrame(step);
 
-      if (mjGameRunning && mjScore + mjMissed < 14) {
-        const gap = mjScore < 3 ? 1100 : mjScore < 5 ? 800 : 600;
+      if (mjGameRunning && mjScore + mjMissed < 16) {
+        const baseGap = mjScore < 3 ? 1100 : mjScore < 5 ? 800 : 600;
+        const gap = mjRound === 2 ? baseGap * 0.65 : baseGap;
         mjSpawnTimer = setTimeout(spawnNote, gap + Math.random() * 150);
       }
     }
@@ -2155,7 +2254,7 @@
       const judge = bestDelta < 25 ? 'PERFECT!' : bestDelta < 50 ? 'GREAT' : 'GOOD';
       const color = bestDelta < 25 ? '#ffe66d' : bestDelta < 50 ? '#00ff66' : '#00ffff';
       showJudge(judge, color);
-      playSwing();
+      playMJVoice();
       // Animate MJ
       const mj = document.getElementById('mj-char');
       mj.classList.remove('dance-left', 'dance-mid', 'dance-right');
@@ -2164,16 +2263,26 @@
       setTimeout(() => mj.classList.remove(danceClass), 250);
       // Update prompt
       document.getElementById('mj-prompt').textContent = mjPrompts[mjScore % mjPrompts.length];
-      document.getElementById('mj-score').textContent = `HITS: ${mjScore} / 8`;
+      document.getElementById('mj-score').textContent = `R${mjRound} • HITS: ${mjScore}/8`;
       setTimeout(() => bestNote.remove(), 300);
       mjActiveNotes = mjActiveNotes.filter(n => n !== bestNote);
 
       if (mjScore >= 8) {
         mjGameRunning = false;
         if (mjSpawnTimer) clearTimeout(mjSpawnTimer);
-        document.getElementById('mj-prompt').textContent = 'NICE MOONWALK!';
-        playWinSound();
-        setTimeout(nextStage, 1200);
+        document.querySelectorAll('.rhythm-note').forEach(n => n.remove());
+        if (mjRound < 2) {
+          document.getElementById('mj-prompt').textContent = 'ROUND 1 CLEAR!';
+          playWinSound();
+          mjRound = 2;
+          setTimeout(() => {
+            showRoundBanner('ROUND 2!', 'FASTER NOTES — DON\'T MISS!', () => initMJRhythm(true));
+          }, 600);
+        } else {
+          document.getElementById('mj-prompt').textContent = 'NICE MOONWALK!';
+          playWinSound();
+          setTimeout(nextStage, 1200);
+        }
       }
     } else {
       showJudge('MISS', '#888');
@@ -2191,15 +2300,17 @@
     setTimeout(() => j.remove(), 700);
   }
 
-  // STAGE 4: Nugget rain
+  // STAGE 4: Nugget rain (multi-round)
   let nuggetCount = 0;
+  let nuggetRound = 1;
   let nuggetGameRunning = false;
   let nuggetCupX = 50;
-  function initNuggetGame() {
+  function initNuggetGame(roundResume) {
     if (nuggetGameRunning) return;
     nuggetGameRunning = true;
     nuggetCount = 0;
-    document.getElementById('nugget-score').textContent = `NUGGETS: 0 / 8`;
+    if (!roundResume) nuggetRound = 1;
+    document.getElementById('nugget-score').textContent = `R${nuggetRound} • NUGGETS: 0/8`;
     document.getElementById('nugget-skip').style.display = 'none';
 
     const stage = document.getElementById('stage4');
@@ -2267,18 +2378,20 @@
     spawnNugget();
   }
 
-  // STAGE 6: dodge game
+  // STAGE 6: dodge game (multi-round)
   let dodgeRunning = false;
   let dodgeLives = 3;
   let dodgeTime = 12;
+  let dodgeRound = 1;
   let dodgeSpawnTimer = null;
   let dodgeTickTimer = null;
-  function initDodgeGame() {
+  function initDodgeGame(roundResume) {
     if (dodgeRunning) return;
     dodgeRunning = true;
     dodgeLives = 3;
-    dodgeTime = 12;
-    document.getElementById('dodge-lives').textContent = `HP: ${dodgeLives}`;
+    dodgeTime = dodgeRound === 2 ? 15 : 12;
+    if (!roundResume) { dodgeRound = 1; dodgeTime = 12; }
+    document.getElementById('dodge-lives').textContent = `R${dodgeRound} • HP:${dodgeLives}`;
     document.getElementById('dodge-timer').textContent = `SURVIVE: ${dodgeTime}s`;
     document.getElementById('dodge-next-btn').style.display = 'none';
 
@@ -2336,7 +2449,7 @@
         ) {
           c.classList.add('hit');
           dodgeLives--;
-          document.getElementById('dodge-lives').textContent = `HP: ${dodgeLives}`;
+          document.getElementById('dodge-lives').textContent = `R${dodgeRound} • HP:${dodgeLives}`;
           playHit();
           setTimeout(() => c.remove(), 300);
           if (dodgeLives <= 0) {
@@ -2353,8 +2466,10 @@
       requestAnimationFrame(step);
 
       if (dodgeRunning) {
-        const elapsed = 12 - dodgeTime;
-        const gap = elapsed < 4 ? 850 : elapsed < 8 ? 500 : 300;
+        const totalTime = dodgeRound === 2 ? 15 : 12;
+        const elapsed = totalTime - dodgeTime;
+        let gap = elapsed < 4 ? 850 : elapsed < 8 ? 500 : 300;
+        if (dodgeRound === 2) gap = Math.max(150, gap * 0.55);
         dodgeSpawnTimer = setTimeout(spawnCursed, gap + Math.random() * 200);
       }
     }
@@ -2368,9 +2483,20 @@
         dodgeRunning = false;
         clearInterval(dodgeTickTimer);
         if (dodgeSpawnTimer) clearTimeout(dodgeSpawnTimer);
-        document.getElementById('dodge-timer').textContent = `🌀 ESCAPED 🌀`;
-        document.getElementById('dodge-next-btn').style.display = 'inline-block';
-        playWinSound();
+        // Clear leftover cursed
+        document.querySelectorAll('.dodge-arena .cursed-falling').forEach(c => c.remove());
+        if (dodgeRound < 2) {
+          document.getElementById('dodge-timer').textContent = `🌀 R1 CLEAR 🌀`;
+          playWinSound();
+          dodgeRound = 2;
+          setTimeout(() => {
+            showRoundBanner('ROUND 2!', 'CHAOS MODE — 15s TO ESCAPE', () => initDodgeGame(true));
+          }, 600);
+        } else {
+          document.getElementById('dodge-timer').textContent = `🌀 ESCAPED 🌀`;
+          document.getElementById('dodge-next-btn').style.display = 'inline-block';
+          playWinSound();
+        }
       }
     }, 1000);
   }
