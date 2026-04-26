@@ -228,20 +228,25 @@
     pointer-events: none;
   }
   #stage2 .skyline svg { width: 100%; height: 100%; }
-  #stage2 .web-line {
-    position: absolute; top: 0; left: 50%;
-    width: 4px;
-    background: linear-gradient(180deg, #fff 0%, #fff 50%, #ddd 100%);
-    transform-origin: top center;
+  /* Web line is now an SVG <line> covering the whole stage so it can connect any two points */
+  #stage2 .web-line-svg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
     z-index: 2;
-    transition: transform 0.05s linear, height 0.05s linear;
-    box-shadow: 0 0 3px #fff;
+    opacity: 0;
+    transition: opacity 0.25s ease;
   }
+  #stage2 .web-line-svg.firing { opacity: 1; }
+  #stage2 .web-line-svg line { stroke: #fff; stroke-width: 4; filter: drop-shadow(0 0 4px #fff); }
+  /* Spidey is now absolute-positioned in % so we can swing him to any target */
   .spidey-svg {
-    position: relative;
+    position: absolute;
+    left: 50%; top: 35%;
+    transform: translate(-50%, -50%);
     width: 80px; height: 80px;
     z-index: 3;
-    transition: transform 0.6s cubic-bezier(.35,1.6,.55,.5);
+    transition: left 0.55s cubic-bezier(.35,1.4,.55,.6), top 0.55s cubic-bezier(.35,1.4,.55,.6), transform 0.55s cubic-bezier(.35,1.4,.55,.6);
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.8));
   }
   #stage2 .target {
@@ -460,18 +465,27 @@
   }
   .nugget svg, .broccoli svg { width: 100%; height: 100%; display: block; }
   .cup {
-    position: absolute; bottom: 5%; left: 50%; transform: translateX(-50%);
-    width: 100px; height: 120px;
-    background: linear-gradient(180deg, #8b5e3c 0%, #5e3e2c 100%);
-    border: 4px solid #000;
-    border-radius: 0 0 30px 30px;
+    position: absolute; bottom: 4%; left: 50%; transform: translateX(-50%);
+    width: 96px; height: 140px;
+    pointer-events: none;
+    filter: drop-shadow(0 6px 8px rgba(0,0,0,0.35));
+    z-index: 2;
   }
-  .cup::before {
-    content: ''; position: absolute; top: -10px; left: -10px; right: -10px;
-    height: 20px;
-    background: #fff;
-    border: 4px solid #000;
+  .cup svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  /* Splash droplet that flies up briefly when a nugget lands in the milk */
+  .milk-splash {
+    position: absolute;
+    width: 10px; height: 10px;
+    background: #7f5733;
+    border: 2px solid #1a1a1a;
     border-radius: 50%;
+    pointer-events: none;
+    z-index: 5;
+    animation: splash-up 0.5s ease-out forwards;
+  }
+  @keyframes splash-up {
+    0% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx, 0px)), -60px) scale(0.4); opacity: 0; }
   }
   .score-display {
     position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
@@ -480,16 +494,93 @@
     border: 3px solid #ffe66d;
   }
 
-  /* Stage 5: Kratos boss */
-  #stage5 { background: linear-gradient(180deg, #2d0000 0%, #5e0000 50%, #8b0000 100%); }
+  /* Stage 5: Kratos + Atreus vs Troll — Norse God of War vibe */
+  #stage5 { background: linear-gradient(180deg, #060a1c 0%, #14213d 45%, #1c2a4a 100%); overflow: hidden; }
   #stage5::before {
     content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at 50% 80%, #ff6b35 0%, transparent 40%);
+    background:
+      radial-gradient(2px 2px at 18% 12%, #fff 60%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 38% 6%, #fff 60%, transparent 100%),
+      radial-gradient(2px 2px at 62% 14%, #fff 60%, transparent 100%),
+      radial-gradient(1px 1px at 80% 8%, #fff 60%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 92% 18%, #fff 60%, transparent 100%);
     opacity: 0.6;
-    animation: flicker 0.5s infinite;
+    pointer-events: none;
   }
-  @keyframes flicker { 0%, 100% { opacity: 0.6; } 50% { opacity: 0.4; } }
-  /* dead .boss CSS removed in v4 */
+  #stage5 .norse-mountains {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 38%;
+    pointer-events: none;
+    z-index: 1;
+  }
+  #stage5 .norse-mountains svg { width: 100%; height: 100%; display: block; }
+  /* Faint Norse runes in the background */
+  #stage5 .norse-runes {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 15% 35%, #ffae42 0 1px, transparent 2px),
+      radial-gradient(circle at 85% 30%, #ffae42 0 1px, transparent 2px),
+      radial-gradient(circle at 25% 55%, #ffae42 0 1px, transparent 2px),
+      radial-gradient(circle at 75% 60%, #ffae42 0 1px, transparent 2px);
+    background-size: 100% 100%;
+    pointer-events: none;
+    opacity: 0.35;
+    animation: rune-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes rune-pulse {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 0.5; }
+  }
+  /* Snowfall (uses pseudo elements + animated background) */
+  #stage5 .snow {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 10% 10%, #fff 0 1.5px, transparent 2px),
+      radial-gradient(circle at 30% 25%, #fff 0 1px, transparent 2px),
+      radial-gradient(circle at 55% 5%, #fff 0 1.5px, transparent 2px),
+      radial-gradient(circle at 70% 40%, #fff 0 1px, transparent 2px),
+      radial-gradient(circle at 85% 18%, #fff 0 1.5px, transparent 2px),
+      radial-gradient(circle at 22% 60%, #fff 0 1px, transparent 2px),
+      radial-gradient(circle at 50% 70%, #fff 0 1.5px, transparent 2px),
+      radial-gradient(circle at 78% 80%, #fff 0 1px, transparent 2px);
+    background-size: 100% 100%;
+    pointer-events: none;
+    opacity: 0.7;
+    animation: snowfall 9s linear infinite;
+  }
+  @keyframes snowfall {
+    0% { background-position: 0 -100vh; }
+    100% { background-position: 0 100vh; }
+  }
+  .axe-flash {
+    position: absolute;
+    top: 35%; left: -120px;
+    width: 80px; height: 80px;
+    z-index: 8;
+    opacity: 0;
+    pointer-events: none;
+    filter: drop-shadow(0 0 18px #a8d8e8);
+  }
+  .axe-flash.fire {
+    animation: axe-throw 0.55s ease-out forwards;
+  }
+  @keyframes axe-throw {
+    0% { left: -120px; transform: rotate(0); opacity: 1; }
+    100% { left: 120%; transform: rotate(720deg); opacity: 0; }
+  }
+  /* Frost shimmer flash on perfect Kratos hit */
+  #stage5.frost-pulse::after {
+    content: '';
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 50%, rgba(168,216,232,0.55) 0%, transparent 60%);
+    animation: frost-pulse 0.45s ease-out;
+  }
+  @keyframes frost-pulse {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    100% { opacity: 0; }
+  }
 
   /* ROUND BANNER (v7) */
   .round-banner {
@@ -977,66 +1068,67 @@
     10% { opacity: 1; }
     100% { transform: translateY(100vh) rotate(15deg); opacity: 0; }
   }
-  /* Stage 7: YouTube algorithm boss */
-  #stage7 { background: #ff0000; overflow: hidden; }
+  /* Stage 7: YouTube algorithm boss — phone-shaped boss with a face that gets angrier */
+  #stage7 { background: #1a0410; overflow: hidden; }
   #stage7 .yt-bg {
     position: absolute; inset: 0;
-    background: repeating-linear-gradient(135deg, #ff0000 0 100px, #cc0000 100px 200px);
+    background:
+      repeating-linear-gradient(135deg, rgba(255,0,0,0.08) 0 80px, rgba(0,0,0,0.0) 80px 160px),
+      linear-gradient(180deg, #2a0612 0%, #1a0410 70%, #0a020a 100%);
   }
   .algo-boss-container {
-    position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
-    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
     z-index: 5;
   }
   .algorithm-boss {
-    width: 220px; height: 150px;
-    background: #fff;
-    border: 8px solid #000;
-    border-radius: 12px;
+    width: 200px; height: 280px;
     position: relative;
-    box-shadow: 0 0 40px #fff;
     transition: transform 0.15s, opacity 0.3s;
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.7));
   }
-  .algorithm-boss::before {
-    content: '▶'; position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    color: #ff0000; font-size: 5rem;
-  }
+  .algorithm-boss svg { width: 100%; height: 100%; display: block; }
   .boss-hp-text {
     background: #000; color: #ffe66d;
     padding: 6px 14px; font-size: 0.7rem;
     border: 2px solid #ffe66d;
     font-family: 'Press Start 2P', monospace;
+    z-index: 6;
   }
   .hate-zone { position: absolute; inset: 0; pointer-events: none; }
   .hate-zone .dislike {
     position: absolute;
-    width: 90px; height: 90px;
-    background: #fff;
-    border: 4px solid #000;
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 3rem;
+    width: 92px;
+    transform-origin: center;
     pointer-events: auto;
     cursor: pointer;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.5);
     z-index: 4;
-    transition: transform 0.1s;
-    /* expand hit area beyond visual */
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.5));
   }
+  .hate-zone .dislike svg { width: 100%; height: auto; display: block; }
+  /* expand hit area for kid fingers */
   .hate-zone .dislike::before {
     content: '';
     position: absolute;
-    inset: -15px;
+    inset: -18px;
   }
-  .hate-zone .dislike:active { transform: scale(0.85); }
+  .hate-zone .dislike:active { transform: scale(0.9); }
   .hate-zone .dislike.popped {
     pointer-events: none;
     animation: dislike-pop 0.4s ease-out forwards;
   }
   @keyframes dislike-pop {
     0% { transform: scale(1); opacity: 1; }
-    100% { transform: scale(2) rotate(180deg); opacity: 0; }
+    100% { transform: scale(1.8) rotate(140deg); opacity: 0; }
+  }
+  /* Boss face anger states — get progressively shakier and redder as HP drops */
+  .algorithm-boss.angry-1 svg { filter: drop-shadow(0 0 6px #dd1a1a); transform: scale(0.95); }
+  .algorithm-boss.angry-2 svg { filter: drop-shadow(0 0 14px #dd1a1a); transform: scale(0.9); }
+  .algorithm-boss.angry-3 svg { filter: drop-shadow(0 0 24px #ff4422); transform: scale(0.85); }
+  .algorithm-boss.angry-3 { animation: boss-rage 0.45s linear infinite; }
+  @keyframes boss-rage {
+    0%, 100% { transform: rotate(-1deg); }
+    50% { transform: rotate(1deg); }
   }
 
   /* Stage 8: Universal Studios reveal */
@@ -1146,6 +1238,31 @@
     color: #f72585;
     font-size: 1.5em;
   }
+  .finale-followup {
+    text-align: center;
+    margin-top: 22px;
+    max-width: 90%;
+  }
+  .finale-followup .finale-q {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(0.7rem, 1.7vw, 0.95rem);
+    color: #ffe66d;
+    text-shadow: 2px 2px 0 #000;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .finale-followup .finale-a {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(1.3rem, 4vw, 2rem);
+    color: #fff;
+    text-shadow: 3px 3px 0 #f72585, 5px 5px 0 #000;
+    letter-spacing: 2px;
+    line-height: 1.2;
+  }
+  .finale-followup .finale-a em {
+    font-style: normal;
+    color: #ffe66d;
+  }
   .confetti-piece {
     position: absolute;
     width: 12px;
@@ -1228,6 +1345,73 @@
     0% { transform: scaleY(1) scaleX(1); }
     50% { transform: scaleY(0.85) scaleX(1.1); }
     100% { transform: scaleY(1) scaleX(1); }
+  }
+
+  /* Shared "STAGE CLEAR!" celebration that pops between every stage win and the next cutscene */
+  .stage-clear {
+    position: fixed; inset: 0;
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 1000;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.85) 100%);
+    backdrop-filter: blur(4px);
+    pointer-events: none;
+  }
+  .stage-clear.active {
+    display: flex;
+    animation: stage-clear-fade 1.8s forwards;
+  }
+  @keyframes stage-clear-fade {
+    0% { opacity: 0; }
+    15% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  .stage-clear-card {
+    text-align: center;
+    transform: scale(0);
+    animation: stage-clear-pop 1.6s ease forwards;
+  }
+  @keyframes stage-clear-pop {
+    0% { transform: scale(0) rotate(-12deg); }
+    35% { transform: scale(1.15) rotate(3deg); }
+    55% { transform: scale(1) rotate(-1deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .stage-clear-stars {
+    display: flex; justify-content: center; gap: 14px;
+    margin-bottom: 20px;
+  }
+  .stage-clear-stars span {
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    color: #ffe66d;
+    text-shadow: 4px 4px 0 #f72585, 6px 6px 0 #000;
+    transform: scale(0);
+    animation: star-pop 0.5s ease forwards;
+  }
+  .stage-clear-stars span:nth-child(1) { animation-delay: 0.25s; }
+  .stage-clear-stars span:nth-child(2) { animation-delay: 0.45s; }
+  .stage-clear-stars span:nth-child(3) { animation-delay: 0.65s; }
+  @keyframes star-pop {
+    0% { transform: scale(0) rotate(-180deg); }
+    60% { transform: scale(1.4) rotate(20deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .stage-clear-title {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(2.5rem, 9vw, 5rem);
+    color: #ffe66d;
+    text-shadow: 4px 4px 0 #f72585, 8px 8px 0 #000;
+    letter-spacing: 4px;
+    line-height: 1;
+  }
+  .stage-clear-sub {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(0.7rem, 2vw, 1rem);
+    color: #fff;
+    text-shadow: 2px 2px 0 #000;
+    margin-top: 18px;
+    letter-spacing: 2px;
   }
 </style>
 </head>
@@ -1343,7 +1527,9 @@
         </g>
       </svg>
     </div>
-    <div class="web-line" id="web-line" style="height: 0;"></div>
+    <svg class="web-line-svg" id="web-line-svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+      <line id="web-line" x1="50" y1="0" x2="50" y2="0"/>
+    </svg>
     <div class="swing-counter" id="swing-counter">SWINGS: 0 / 5</div>
     <div class="spidey-svg" id="spidey-char">
       <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
@@ -1442,73 +1628,147 @@
       <div class="stage-counter">4 / 8</div>
     </div>
     <div class="score-display" id="nugget-score">NUGGETS: 0 / 8</div>
-    <div class="cup" id="cup"></div>
-    <div class="instructions" style="bottom: 25%;">DRAG / TAP TO MOVE THE CHOCOLATE MILK</div>
+    <div class="cup" id="cup">
+      <svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
+        <!-- straw stripes (base white + alternating red bands) -->
+        <rect x="55" y="-6" width="8" height="46" fill="#fff" stroke="#1a1a1a" stroke-width="2.5" rx="1"/>
+        <g fill="#dd1a1a">
+          <rect x="55" y="-6" width="8" height="6"/>
+          <rect x="55" y="6" width="8" height="6"/>
+          <rect x="55" y="18" width="8" height="6"/>
+          <rect x="55" y="30" width="8" height="6"/>
+        </g>
+        <!-- glass body -->
+        <path d="M 18 16 L 22 130 Q 22 134 26 134 L 74 134 Q 78 134 78 130 L 82 16 Z"
+              fill="rgba(255,255,255,0.18)" stroke="#1a1a1a" stroke-width="3"/>
+        <!-- chocolate milk inside (slightly inset) -->
+        <path d="M 22 28 L 25 128 Q 25 130 27 130 L 73 130 Q 75 130 75 128 L 78 28 Z"
+              fill="#7f5733"/>
+        <!-- foam line on top of milk -->
+        <ellipse cx="50" cy="28" rx="28" ry="4" fill="#c8a888"/>
+        <ellipse cx="50" cy="28" rx="22" ry="2" fill="#dcc4a8"/>
+        <!-- glass highlights -->
+        <line x1="28" y1="40" x2="30" y2="120" stroke="#fff" stroke-width="2" opacity="0.55"/>
+        <line x1="34" y1="50" x2="34" y2="100" stroke="#fff" stroke-width="1.5" opacity="0.35"/>
+        <!-- "CHOCKY MILK" label -->
+        <rect x="28" y="74" width="44" height="22" fill="#f7e26b" stroke="#1a1a1a" stroke-width="2" rx="3"/>
+        <text x="50" y="88" text-anchor="middle" font-family="'Bangers', monospace" font-size="11" fill="#1a1a1a" font-weight="bold">CHOCKY</text>
+      </svg>
+    </div>
+    <div class="instructions" style="bottom: 25%;">DRAG / TAP TO MOVE THE CHOCKY MILK</div>
     <button class="start-btn next-btn" id="nugget-skip" onclick="nextStage()" style="display:none;">CONTINUE →</button>
   </div>
 
-  <!-- STAGE 5: KRATOS BOSS -->
+  <!-- STAGE 5: KRATOS + ATREUS VS TROLL (God of War feel) -->
   <div class="stage" id="stage5">
+    <div class="snow" id="stage5-snow"></div>
+    <div class="norse-runes"></div>
+    <div class="norse-mountains">
+      <svg viewBox="0 0 1000 240" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="0,240 0,140 120,40 220,120 320,30 460,150 580,60 720,160 840,50 1000,150 1000,240" fill="#1c2645" stroke="#0c1428" stroke-width="2"/>
+        <polygon points="0,240 0,180 140,120 260,170 380,110 520,180 640,140 780,200 900,140 1000,200 1000,240" fill="#0e1730"/>
+        <!-- snow caps -->
+        <polygon points="100,55 120,40 140,55 130,70 110,70" fill="#e8eef5" opacity="0.85"/>
+        <polygon points="300,45 320,30 340,45 330,60 310,60" fill="#e8eef5" opacity="0.85"/>
+        <polygon points="700,75 720,60 740,75 730,90 710,90" fill="#e8eef5" opacity="0.85"/>
+        <polygon points="820,65 840,50 860,65 850,80 830,80" fill="#e8eef5" opacity="0.85"/>
+      </svg>
+    </div>
     <div class="hud">
       <div class="stage-label">STAGE 5: BOY!</div>
       <div class="stage-counter">5 / 8</div>
     </div>
     <div class="health-bar"><div class="health-fill" id="boss-hp" style="width: 100%;"></div></div>
     <div class="boss-prompt-wrap">
-      <div class="big-text" id="boss-prompt">HUNTER + BALD DAD<br/>VS<br/>THE TROLL</div>
+      <div class="big-text" id="boss-prompt">ATREUS + KRATOS<br/>VS<br/>THE TROLL</div>
     </div>
     <div class="boss-svg" id="boss-troll">
-      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+        <!-- stone club (held in right hand) -->
+        <g transform="translate(170 110) rotate(20)">
+          <rect x="-6" y="-6" width="12" height="80" fill="#5b4a36" stroke="#1a1a1a" stroke-width="2.5"/>
+          <ellipse cx="0" cy="-12" rx="22" ry="18" fill="#7a6a4a" stroke="#1a1a1a" stroke-width="3"/>
+          <circle cx="-8" cy="-16" r="3" fill="#3a3026"/>
+          <circle cx="6" cy="-8" r="2.5" fill="#3a3026"/>
+          <circle cx="10" cy="-18" r="2" fill="#3a3026"/>
+        </g>
         <!-- body -->
-        <ellipse cx="100" cy="120" rx="70" ry="60" fill="#3a4a2a" stroke="#000" stroke-width="3"/>
-        <!-- head -->
-        <ellipse cx="100" cy="60" rx="50" ry="42" fill="#4a5a3a" stroke="#000" stroke-width="3"/>
-        <!-- horns -->
-        <polygon points="65,30 70,8 80,30" fill="#5a3a1a" stroke="#000" stroke-width="2"/>
-        <polygon points="135,30 130,8 120,30" fill="#5a3a1a" stroke="#000" stroke-width="2"/>
-        <!-- eyes (red glow) -->
-        <circle cx="82" cy="58" r="9" fill="#ff0000"/>
-        <circle cx="82" cy="58" r="4" fill="#000"/>
-        <circle cx="118" cy="58" r="9" fill="#ff0000"/>
-        <circle cx="118" cy="58" r="4" fill="#000"/>
-        <!-- snarl mouth with fangs -->
-        <path d="M 70 80 Q 100 95 130 80 L 130 90 L 120 88 L 115 96 L 108 88 L 100 92 L 92 88 L 85 96 L 80 88 L 70 90 Z" fill="#000"/>
-        <polygon points="85,88 89,98 92,88" fill="#fff"/>
-        <polygon points="108,88 112,98 115,88" fill="#fff"/>
-        <!-- chest scar -->
-        <path d="M 80 110 L 120 130 M 85 130 L 115 110" stroke="#8b0000" stroke-width="3"/>
-        <!-- arms holding -->
-        <ellipse cx="35" cy="110" rx="22" ry="28" fill="#3a4a2a" stroke="#000" stroke-width="3" transform="rotate(-15 35 110)"/>
-        <ellipse cx="165" cy="110" rx="22" ry="28" fill="#3a4a2a" stroke="#000" stroke-width="3" transform="rotate(15 165 110)"/>
+        <ellipse cx="110" cy="135" rx="78" ry="62" fill="#6b6555" stroke="#1a1a1a" stroke-width="3"/>
+        <!-- mossy patches -->
+        <ellipse cx="80" cy="120" rx="20" ry="10" fill="#3d6e2a" opacity="0.7"/>
+        <ellipse cx="140" cy="160" rx="22" ry="11" fill="#3d6e2a" opacity="0.7"/>
+        <!-- head: stone troll, broad and lumpy -->
+        <ellipse cx="110" cy="68" rx="56" ry="46" fill="#7a7464" stroke="#1a1a1a" stroke-width="3"/>
+        <!-- runes carved into the skin -->
+        <g stroke="#ffae42" stroke-width="2" fill="none" opacity="0.85">
+          <path d="M 78 64 L 82 78 L 78 88 M 70 70 L 86 70"/>
+          <path d="M 134 60 L 138 74 L 144 70 L 144 82"/>
+        </g>
+        <!-- horns: jagged stone -->
+        <polygon points="68,30 76,4 88,32" fill="#3a3026" stroke="#1a1a1a" stroke-width="2.5"/>
+        <polygon points="152,30 144,4 132,32" fill="#3a3026" stroke="#1a1a1a" stroke-width="2.5"/>
+        <!-- glowing eyes -->
+        <circle cx="90" cy="64" r="10" fill="#ffae42"/>
+        <circle cx="90" cy="64" r="4" fill="#1a1a1a"/>
+        <circle cx="130" cy="64" r="10" fill="#ffae42"/>
+        <circle cx="130" cy="64" r="4" fill="#1a1a1a"/>
+        <!-- snarl with stone fangs -->
+        <path d="M 76 88 Q 110 104 144 88 L 144 100 L 132 96 L 126 108 L 118 96 L 110 102 L 102 96 L 94 108 L 88 96 L 76 100 Z" fill="#1a1a1a"/>
+        <polygon points="92,96 96,110 100,96" fill="#e8eef5"/>
+        <polygon points="120,96 124,110 128,96" fill="#e8eef5"/>
+        <!-- left arm (free) -->
+        <ellipse cx="40" cy="120" rx="22" ry="30" fill="#6b6555" stroke="#1a1a1a" stroke-width="3" transform="rotate(-20 40 120)"/>
       </svg>
     </div>
     <div class="duo">
-      <div class="kratos-fighter">
+      <div class="kratos-fighter atreus">
         <svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
-          <!-- hunter mini -->
-          <rect x="20" y="0" width="20" height="20" fill="#f4d4a4" stroke="#000" stroke-width="2"/>
-          <rect x="16" y="-2" width="28" height="8" fill="#0046b8" stroke="#000" stroke-width="2"/>
-          <rect x="24" y="10" width="3" height="3" fill="#000"/>
-          <rect x="33" y="10" width="3" height="3" fill="#000"/>
-          <rect x="14" y="20" width="32" height="28" fill="#ff6b35" stroke="#000" stroke-width="2"/>
-          <rect x="20" y="48" width="9" height="22" fill="#1e3a8a" stroke="#000" stroke-width="2"/>
-          <rect x="31" y="48" width="9" height="22" fill="#1e3a8a" stroke="#000" stroke-width="2"/>
+          <!-- bow strap across chest -->
+          <line x1="10" y1="22" x2="50" y2="48" stroke="#3a2010" stroke-width="2"/>
+          <!-- hood up -->
+          <path d="M 12 4 Q 30 -4 48 4 L 50 22 Q 30 18 10 22 Z" fill="#5a4030" stroke="#1a1a1a" stroke-width="2"/>
+          <!-- face -->
+          <rect x="20" y="8" width="20" height="18" fill="#f4d4a4" stroke="#1a1a1a" stroke-width="2"/>
+          <rect x="24" y="14" width="3" height="3" fill="#000"/>
+          <rect x="33" y="14" width="3" height="3" fill="#000"/>
+          <!-- leather vest -->
+          <rect x="14" y="22" width="32" height="28" fill="#7a4f1f" stroke="#1a1a1a" stroke-width="2"/>
+          <path d="M 22 22 L 30 30 L 38 22" stroke="#3a2010" stroke-width="2" fill="none"/>
+          <!-- bow on back -->
+          <path d="M 50 30 Q 56 40 50 50" stroke="#3a2010" stroke-width="2.5" fill="none"/>
+          <line x1="50" y1="32" x2="50" y2="48" stroke="#7a8090" stroke-width="1"/>
+          <!-- pants -->
+          <rect x="20" y="50" width="9" height="22" fill="#3a3026" stroke="#1a1a1a" stroke-width="2"/>
+          <rect x="31" y="50" width="9" height="22" fill="#3a3026" stroke="#1a1a1a" stroke-width="2"/>
         </svg>
-        <div class="fighter-label">HUNTER</div>
+        <div class="fighter-label">HUNTER<br/>(ATREUS)</div>
       </div>
-      <div class="kratos-fighter">
+      <div class="kratos-fighter kratos">
         <svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
-          <!-- bald dad mini -->
-          <rect x="20" y="0" width="20" height="20" fill="#e8c89c" stroke="#000" stroke-width="2"/>
+          <!-- bald head, pale -->
+          <rect x="18" y="0" width="24" height="22" fill="#e3d3b8" stroke="#1a1a1a" stroke-width="2"/>
           <ellipse cx="26" cy="4" rx="4" ry="1.5" fill="#fff" opacity="0.6"/>
-          <rect x="24" y="10" width="3" height="3" fill="#000"/>
-          <rect x="33" y="10" width="3" height="3" fill="#000"/>
-          <rect x="14" y="20" width="32" height="28" fill="#1a1a1a" stroke="#000" stroke-width="2"/>
-          <text x="30" y="38" text-anchor="middle" font-family="monospace" font-size="6" fill="#ffe66d" font-weight="bold">DAD</text>
-          <rect x="20" y="48" width="9" height="22" fill="#3a3a3a" stroke="#000" stroke-width="2"/>
-          <rect x="31" y="48" width="9" height="22" fill="#3a3a3a" stroke="#000" stroke-width="2"/>
+          <!-- red war paint stripe -->
+          <path d="M 22 4 Q 30 14 38 4 L 38 12 Q 30 22 22 12 Z" fill="#c8102e" opacity="0.85"/>
+          <!-- red beard -->
+          <path d="M 18 18 Q 30 30 42 18 L 42 26 Q 30 32 18 26 Z" fill="#a83018" stroke="#1a1a1a" stroke-width="1.5"/>
+          <!-- eyes -->
+          <rect x="22" y="10" width="3" height="3" fill="#000"/>
+          <rect x="35" y="10" width="3" height="3" fill="#000"/>
+          <!-- chest, dark armor with red leather -->
+          <rect x="12" y="22" width="36" height="28" fill="#3a2818" stroke="#1a1a1a" stroke-width="2"/>
+          <path d="M 12 26 L 48 26 M 12 36 L 48 36" stroke="#c8102e" stroke-width="1.5"/>
+          <!-- Leviathan axe in hand on right -->
+          <g transform="translate(48 30)">
+            <line x1="0" y1="0" x2="0" y2="24" stroke="#5a4a36" stroke-width="2.5"/>
+            <polygon points="-6,-2 6,-2 8,8 -8,8" fill="#a8d8e8" stroke="#1a1a1a" stroke-width="1.5"/>
+            <line x1="0" y1="-2" x2="0" y2="8" stroke="#7aa8c0" stroke-width="1"/>
+          </g>
+          <!-- pants -->
+          <rect x="20" y="50" width="9" height="22" fill="#1a1a1a" stroke="#1a1a1a" stroke-width="2"/>
+          <rect x="31" y="50" width="9" height="22" fill="#1a1a1a" stroke="#1a1a1a" stroke-width="2"/>
         </svg>
-        <div class="fighter-label">BALD DAD</div>
+        <div class="fighter-label">BALD DAD<br/>(KRATOS)</div>
       </div>
     </div>
     <div class="combo-meter" id="combo-meter">
@@ -1516,7 +1776,16 @@
         <div class="combo-zone"></div>
         <div class="combo-cursor" id="combo-cursor"></div>
       </div>
-      <div class="combo-label">TAP IN THE GREEN ZONE!</div>
+      <div class="combo-label">TAP IN THE GREEN — THROW THE AXE</div>
+    </div>
+    <!-- Leviathan axe flies through on a perfect hit -->
+    <div class="axe-flash" id="axe-flash">
+      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <line x1="40" y1="20" x2="40" y2="68" stroke="#5a4a36" stroke-width="5"/>
+        <polygon points="22,18 58,18 64,40 16,40" fill="#a8d8e8" stroke="#1a1a1a" stroke-width="2.5"/>
+        <line x1="40" y1="18" x2="40" y2="40" stroke="#5a8090" stroke-width="2"/>
+        <circle cx="40" cy="6" r="6" fill="#a8d8e8" stroke="#1a1a1a" stroke-width="2"/>
+      </svg>
     </div>
     <button class="mash-btn" id="mash-btn" onclick="mashBoss()">BOY!</button>
   </div>
@@ -1627,11 +1896,35 @@
       <div class="stage-counter">7 / 8</div>
     </div>
     <div class="algo-boss-container" id="algo-boss-container">
-      <div class="algorithm-boss"></div>
+      <div class="algorithm-boss" id="algorithm-boss">
+        <svg viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg">
+          <!-- phone body -->
+          <rect x="10" y="14" width="180" height="252" rx="22" fill="#101820" stroke="#000" stroke-width="3"/>
+          <!-- screen -->
+          <rect x="20" y="24" width="160" height="232" rx="12" fill="#fff" stroke="#000" stroke-width="2"/>
+          <!-- top YT-style bar -->
+          <rect x="20" y="24" width="160" height="22" fill="#dd1a1a"/>
+          <text x="100" y="40" text-anchor="middle" font-family="'Bangers', monospace" font-size="14" fill="#fff" font-weight="bold">YouToob</text>
+          <!-- big play-button mouth area becomes a face -->
+          <!-- eyebrows (angle gets meaner via CSS data state) -->
+          <path id="boss-brow-left" d="M 50 78 L 88 90" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+          <path id="boss-brow-right" d="M 150 78 L 112 90" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+          <!-- eyes -->
+          <ellipse class="boss-eye-left" cx="68" cy="108" rx="14" ry="14" fill="#fff" stroke="#000" stroke-width="2.5"/>
+          <ellipse class="boss-eye-right" cx="132" cy="108" rx="14" ry="14" fill="#fff" stroke="#000" stroke-width="2.5"/>
+          <circle cx="68" cy="110" r="6" fill="#dd1a1a"/>
+          <circle cx="132" cy="110" r="6" fill="#dd1a1a"/>
+          <!-- mouth -->
+          <path id="boss-mouth" class="boss-mouth" d="M 60 156 Q 100 170 140 156 L 140 174 Q 100 184 60 174 Z" fill="#000"/>
+          <!-- fake red subscribe button -->
+          <rect x="50" y="216" width="100" height="28" rx="6" fill="#dd1a1a" stroke="#000" stroke-width="2"/>
+          <text x="100" y="234" text-anchor="middle" font-family="'Bangers', monospace" font-size="14" fill="#fff" font-weight="bold">SUBSCRIBE</text>
+        </svg>
+      </div>
       <div class="boss-hp-text" id="algo-hp-text">ALGORITHM HP: 100%</div>
     </div>
     <div class="hate-zone" id="hate-zone"></div>
-    <div class="instructions" style="bottom: 8%;">TAP THE FALLING DISLIKES BEFORE THEY HIT THE BOSS!</div>
+    <div class="instructions" style="bottom: 8%;">TAP THE BRAIN-ROT CARDS BEFORE THEY HIT THE ALGORITHM!</div>
     <button class="start-btn next-btn" id="algo-next-btn" onclick="nextStage()" style="display:none; position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%); z-index: 10;">VICTORY → NEXT</button>
   </div>
 
@@ -1654,17 +1947,21 @@
         <span style="color:#888;">P.S. PIZZER WHEN WE GET BACK.</span>
       </div>
     </div>
-    <button class="start-btn next-btn" onclick="showNextGamePicker()" style="margin-top: 30px;">WHAT'S NEXT? →</button>
+    <div class="finale-followup" id="finale-followup">
+      <div class="finale-q">…ALSO, BOY:</div>
+      <div class="finale-a">WANT TO BUILD YOUR <em>OWN</em> GAME WITH DAD NEXT?</div>
+    </div>
+    <button class="start-btn next-btn" onclick="showNextGamePicker()" style="margin-top: 22px;">LET'S BUILD ONE TOGETHER →</button>
   </div>
 
 </div>
 
 <!-- NEXT GAME PICKER -->
 <div class="cutscene" id="next-game-picker" style="background: linear-gradient(180deg, #001a4d 0%, #4a0e6e 100%);">
-  <div class="cutscene-banner" style="color: #00ff66; text-shadow: 4px 4px 0 #f72585, 8px 8px 0 #000;">GAME 2 LOADING...</div>
+  <div class="cutscene-banner" style="color: #00ff66; text-shadow: 4px 4px 0 #f72585, 8px 8px 0 #000;">PICK OUR NEXT GAME</div>
   <div class="cutscene-panel" style="border-color: #00ff66;">
     <div class="cutscene-bubble dad" data-delay="0">
-      <span class="cutscene-speaker">DAD:</span>so what we buildin' next, BOY? you pick. we make it together.
+      <span class="cutscene-speaker">DAD:</span>real talk BOY — what we BUILDIN' next? you pick. we make it together this week.
     </div>
     <div class="dinner-options" style="grid-template-columns: 1fr;">
       <button class="dinner-btn" onclick="pickNextGame(this, 'TACOS QUEST 🌮')">🌮 TACOS QUEST</button>
@@ -1711,6 +2008,17 @@
     </div>
   </div>
   <button class="cutscene-continue" id="dinner-continue" onclick="advanceFromDinner()">TAP TO CONTINUE →</button>
+</div>
+
+<!-- STAGE CLEAR overlay — pops up briefly after every stage win -->
+<div class="stage-clear" id="stage-clear">
+  <div class="stage-clear-card">
+    <div class="stage-clear-stars">
+      <span>★</span><span>★</span><span>★</span>
+    </div>
+    <div class="stage-clear-title">STAGE CLEAR!</div>
+    <div class="stage-clear-sub" id="stage-clear-sub">NICE ONE, HUNTER</div>
+  </div>
 </div>
 
 <!-- ROUND BANNER -->
@@ -1837,6 +2145,22 @@
     el.style.top = (topPct == null ? 50 : topPct) + '%';
     parent.appendChild(el);
     setTimeout(() => el.remove(), 900);
+  }
+
+  // Pop the shared STAGE CLEAR celebration. Sub line is a short victory message, then cb fires.
+  function showStageClear(sub, cb) {
+    const el = document.getElementById('stage-clear');
+    document.getElementById('stage-clear-sub').textContent = sub || 'NICE ONE, HUNTER';
+    el.classList.remove('active');
+    void el.offsetWidth;
+    el.classList.add('active');
+    // Layered chimes for that "got it!" feel
+    [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playBeep(f, 0.15, 'square', 0.18), i * 80));
+    buzz([40, 60, 40, 60, 100]);
+    setTimeout(() => {
+      el.classList.remove('active');
+      if (cb) cb();
+    }, 1800);
   }
 
   // Briefly shake the active stage. Used on player-damage and big boss hits.
@@ -2170,10 +2494,11 @@
       banner: 'CHAPTER 4: A TROLL APPEARS',
       cast: ['hunter', 'dad'],
       lines: [
-        { who: 'narrator', text: '*the ground shakes*' },
+        { who: 'narrator', text: '*the ground shakes. snow falls.*' },
         { who: 'hunter', text: 'DAD WHAT WAS THAT' },
-        { who: 'dad', text: '...the troll. tag-team, BOY.' },
-        { who: 'dad', text: 'tap when the cursor hits the GREEN.' }
+        { who: 'dad', text: '...the troll. close your fist, BOY.' },
+        { who: 'dad', text: 'tap when the cursor hits the GREEN.' },
+        { who: 'dad', text: 'hit perfect — i throw the axe.' }
       ]
     },
     stage6: {
@@ -2386,7 +2711,11 @@
     const mj = document.getElementById('mj-char');
     if (mj) mj.style.transform = '';
     const spidey = document.getElementById('spidey-char');
-    if (spidey) spidey.style.transform = '';
+    if (spidey) {
+      spidey.style.left = '50%';
+      spidey.style.top = '35%';
+      spidey.style.transform = 'translate(-50%, -50%)';
+    }
     document.getElementById('boss-prompt').innerHTML = 'HUNTER + BALD DAD<br/>VS<br/>THE TROLL';
     showStage(0);
   }
@@ -2399,6 +2728,29 @@
   let spideyCurrentTarget = null;
   let spideyCurrentRing = null;
   let spideyCurrentTimer = null;
+  // Spidey's current pose (% of the stage). He swings between targets.
+  let spideyXpct = 50;
+  let spideyYpct = 35;
+  function setSpideyPose(xPct, yPct, tilt) {
+    spideyXpct = xPct;
+    spideyYpct = yPct;
+    const spidey = document.getElementById('spidey-char');
+    if (!spidey) return;
+    spidey.style.left = xPct + '%';
+    spidey.style.top = yPct + '%';
+    spidey.style.transform = `translate(-50%, -50%) rotate(${tilt || 0}deg)`;
+  }
+  function fireWeb(fromXpct, fromYpct, toXpct, toYpct) {
+    const svg = document.getElementById('web-line-svg');
+    const line = document.getElementById('web-line');
+    if (!svg || !line) return;
+    line.setAttribute('x1', fromXpct);
+    line.setAttribute('y1', fromYpct);
+    line.setAttribute('x2', toXpct);
+    line.setAttribute('y2', toYpct);
+    svg.classList.add('firing');
+    setTimeout(() => svg.classList.remove('firing'), 450);
+  }
   function initSpideyGame(roundResume) {
     if (spideyGameRunning) return;
     spideyGameRunning = true;
@@ -2406,10 +2758,8 @@
     spideyMisses = 0;
     if (!roundResume) spideyRound = 1;
     document.getElementById('swing-counter').textContent = `R${spideyRound} • SWINGS: 0/6 • MISS: 0/5`;
-    document.getElementById('web-line').style.opacity = '0';
-    document.getElementById('web-line').style.height = '0';
-    const spidey = document.getElementById('spidey-char');
-    spidey.style.transform = '';
+    document.getElementById('web-line-svg').classList.remove('firing');
+    setSpideyPose(50, 35, 0);
     document.getElementById('spidey-phase').textContent = 'PHASE 1: WARMUP';
     spawnSpideyTarget();
   }
@@ -2469,18 +2819,11 @@
       if (target.dataset.popped) return;
       target.dataset.popped = '1';
       spideyHits++;
-      // Animate spidey + web to that position
-      const tx = (x / 100) * stageRect.width;
-      const ty = (y / 100) * stageRect.height;
-      const offX = tx - stageRect.width / 2;
-      const offY = ty - stageRect.height / 2;
-      const webLine = document.getElementById('web-line');
-      webLine.style.opacity = '1';
-      webLine.style.transform = `translateX(${tx - stageRect.width / 2}px)`;
-      webLine.style.height = `${ty}px`;
-      const spidey = document.getElementById('spidey-char');
-      spidey.style.transition = 'transform 0.5s cubic-bezier(.35,1.6,.55,.5)';
-      spidey.style.transform = `translate(${offX}px, ${offY}px) rotate(${spideyHits % 2 === 0 ? 15 : -15}deg)`;
+      // First THWIP! the web from spidey to the target so the line is visible during the swing,
+      // then update spidey's pose to land at the target with a slight tilt (alternating).
+      fireWeb(spideyXpct, spideyYpct, x, y);
+      const tilt = spideyHits % 2 === 0 ? 12 : -12;
+      setSpideyPose(x, y, tilt);
 
       // Hit text
       const flash = document.createElement('div');
@@ -2506,7 +2849,7 @@
       if (spideyHits >= 6) {
         spideyGameRunning = false;
         cleanupSpideyTarget();
-        document.getElementById('web-line').style.opacity = '0';
+        document.getElementById('web-line-svg').classList.remove('firing');
         if (spideyRound < 2) {
           document.getElementById('swing-counter').textContent = `🕷️ ROUND 1 CLEAR! 🕸️`;
           playWinSound();
@@ -2517,7 +2860,7 @@
         } else {
           document.getElementById('swing-counter').textContent = `🕷️ NICE SWINGING, KID! 🕸️`;
           playWinSound();
-          setTimeout(nextStage, 1400);
+          setTimeout(() => showStageClear('SPIDER-SENSE: ON POINT', nextStage), 600);
         }
         return;
       }
@@ -2693,7 +3036,7 @@
         } else {
           document.getElementById('mj-prompt').textContent = 'NICE MOONWALK!';
           playWinSound();
-          setTimeout(nextStage, 1200);
+          setTimeout(() => showStageClear('SMOOTH CRIMINAL', nextStage), 500);
         }
       }
     } else {
@@ -2771,6 +3114,17 @@
             const nuggetX = parseFloat(el.style.left) || 50;
             showScorePopup(stage, '+1 NUGG!', '#ff8a3d', nuggetX, 78);
             buzz(20);
+            // Splash droplets at the cup mouth
+            for (let i = 0; i < 5; i++) {
+              const drop = document.createElement('div');
+              drop.className = 'milk-splash';
+              drop.style.left = `${nuggetCupX}%`;
+              drop.style.bottom = `calc(4% + 130px)`;
+              drop.style.setProperty('--dx', `${(i - 2) * 16}px`);
+              drop.style.animationDelay = `${i * 25}ms`;
+              stage.appendChild(drop);
+              setTimeout(() => drop.remove(), 600);
+            }
             if (nuggetCount >= 8) {
               nuggetGameRunning = false;
               if (nuggetRound < 2) {
@@ -2781,9 +3135,9 @@
                   showRoundBanner('ROUND 2!', 'MORE BROCCOLI — STAY ALERT', () => initNuggetGame(true));
                 }, 600);
               } else {
-                document.getElementById('nugget-skip').style.display = 'inline-block';
                 document.getElementById('nugget-score').textContent = `🍗 NICE! ${nuggetCount} NUGGETS COLLECTED 🥛`;
                 playWinSound();
+                setTimeout(() => showStageClear('CHOCKY MILK CHAMPION', nextStage), 500);
               }
             }
           } else {
@@ -2969,9 +3323,9 @@
             showRoundBanner('ROUND 2!', 'CHAOS MODE — 15s TO ESCAPE', () => initDodgeGame(true));
           }, 600);
         } else {
-          document.getElementById('dodge-timer').textContent = `🌀 ESCAPED 🌀`;
-          document.getElementById('dodge-next-btn').style.display = 'inline-block';
+          document.getElementById('dodge-timer').textContent = `🌀 ESCAPED SPRINGFIELD 🌀`;
           playWinSound();
+          setTimeout(() => showStageClear('AY CARUMBA — YOU MADE IT', nextStage), 500);
         }
       }
     }, 1000);
@@ -3050,8 +3404,30 @@
     syncComboZoneVisual();
 
     document.getElementById('boss-hp').style.width = `${Math.max(0, bossHp)}%`;
-    const prompts = ['BOY!', 'BOY!!!', 'OPEN YOUR EYES, BOY.', 'WE ARE GOING.', 'DAD UR BALD!', 'KEEP GOING!', 'HIT HIM AGAIN!', '6-7!!!', 'PIZZER POWER!', 'YEAH BOY!'];
+    const prompts = [
+      'BOY!', 'BOY!!!', 'OPEN YOUR EYES, BOY.', 'WE ARE GOING.',
+      'AXE!', 'STRIKE, BOY!', 'GET UP, BOY!', 'BREATHE, BOY.',
+      'DAD UR BALD!', '6-7!!!', 'PIZZER POWER!', 'YEAH BOY!',
+      'AGAIN.', 'YOU HAVE STRENGTH IN YOU.', 'MIMIR — WATCH THIS.'
+    ];
     document.getElementById('boss-prompt').innerHTML = prompts[Math.floor(Math.random() * prompts.length)];
+
+    // On a PERFECT hit: throw the Leviathan axe across screen + frost shimmer
+    if (isPerfect) {
+      const axe = document.getElementById('axe-flash');
+      if (axe) {
+        axe.classList.remove('fire');
+        void axe.offsetWidth;
+        axe.classList.add('fire');
+      }
+      const stageEl = document.getElementById('stage5');
+      if (stageEl) {
+        stageEl.classList.remove('frost-pulse');
+        void stageEl.offsetWidth;
+        stageEl.classList.add('frost-pulse');
+        setTimeout(() => stageEl.classList.remove('frost-pulse'), 500);
+      }
+    }
 
     const boss = document.getElementById('boss-troll');
     boss.classList.remove('shake');
@@ -3095,7 +3471,7 @@
       stopComboLoop();
       document.getElementById('boss-prompt').textContent = 'WE BEAT HIM, BOY!';
       boss.style.opacity = '0';
-      setTimeout(nextStage, 1100);
+      setTimeout(() => showStageClear('GOOD JOB, BOY.', nextStage), 800);
     }
   }
 
@@ -3120,7 +3496,27 @@
     const zone = document.getElementById('hate-zone');
     zone.innerHTML = '';
 
-    const symbols = ['👎', '😡', '💔', '🤬', '🚫'];
+    // Brain-rot "Recommended" cards. Each entry: [label, fill, textColor]
+    const ROT_CARDS = [
+      ['SKIBIDI', '#7a3fc4', '#fff'],
+      ['MR BEAST', '#f7e26b', '#1a1a1a'],
+      ['RIZZ', '#3fc4a8', '#1a1a1a'],
+      ['ADS', '#dd1a1a', '#fff'],
+      ['CRINGE', '#ff6b35', '#1a1a1a'],
+      ['GOOFY AHH', '#3a5cae', '#fff'],
+      ['BRAINROT', '#a83018', '#fff'],
+      ['UNSKIP', '#999', '#fff'],
+    ];
+    function rotCardSvg() {
+      const [label, fill, txt] = ROT_CARDS[Math.floor(Math.random() * ROT_CARDS.length)];
+      return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="4" width="92" height="92" rx="10" fill="${fill}" stroke="#1a1a1a" stroke-width="3"/>
+        <rect x="10" y="10" width="80" height="50" fill="#fff" stroke="#1a1a1a" stroke-width="2"/>
+        <polygon points="42,24 42,46 62,35" fill="${fill}"/>
+        <rect x="10" y="64" width="80" height="26" fill="${fill}"/>
+        <text x="50" y="83" text-anchor="middle" font-family="'Bangers', monospace" font-size="16" fill="${txt}" font-weight="bold">${label}</text>
+      </svg>`;
+    }
 
     function spawnDislike() {
       if (!algoGameRunning) return;
@@ -3128,7 +3524,7 @@
       const stageRect = stage.getBoundingClientRect();
       const d = document.createElement('div');
       d.className = 'dislike';
-      d.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      d.innerHTML = rotCardSvg();
       const x = Math.random() * 80 + 10;
       d.style.left = `${x}%`;
       d.style.top = `100%`;
@@ -3147,8 +3543,19 @@
         d.classList.add('popped');
         algoHp = Math.max(0, algoHp - 8);
         document.getElementById('algo-hp-text').textContent = `R${algoRound} • HP: ${algoHp}% • MISS: ${algoMisses}/10`;
-        boss.style.transform = `scale(${1 - (100 - algoHp) / 200}) rotate(${(100 - algoHp) * 1.5}deg)`;
+        // Anger ramp: 1 = annoyed, 2 = mad, 3 = full rage shake (scale + glow are CSS)
+        boss.classList.remove('angry-1', 'angry-2', 'angry-3');
+        if (algoHp < 33) boss.classList.add('angry-3');
+        else if (algoHp < 66) boss.classList.add('angry-2');
+        else if (algoHp < 90) boss.classList.add('angry-1');
         playBeep(660 + algoHp * 4, 0.08);
+        const stage = document.getElementById('stage7');
+        const stageRect = stage.getBoundingClientRect();
+        const dRect = d.getBoundingClientRect();
+        const lx = ((dRect.left + dRect.width/2) - stageRect.left) / stageRect.width * 100;
+        const ly = ((dRect.top + dRect.height/2) - stageRect.top) / stageRect.height * 100;
+        showScorePopup(stage, '-8 HP', '#00ff66', lx, ly);
+        buzz(20);
         setTimeout(() => d.remove(), 500);
         if (algoHp <= 0) defeatAlgoFinal();
       });
@@ -3198,8 +3605,8 @@
       }, 600);
     } else {
       document.getElementById('algo-hp-text').textContent = `🔥 ALGORITHM DEFEATED 🔥`;
-      document.getElementById('algo-next-btn').style.display = 'inline-block';
       playWinSound();
+      setTimeout(() => showStageClear('YOU UNSUBSCRIBED THE BOSS', nextStage), 600);
     }
   }
 
@@ -3294,7 +3701,11 @@
     const boss = document.getElementById('boss-troll');
     if (boss) { boss.style.opacity = '1'; boss.style.transform = 'translate(-50%, -50%) scale(1)'; }
     const algoBoss = document.querySelector('.algorithm-boss');
-    if (algoBoss) { algoBoss.style.opacity = '1'; algoBoss.style.transform = 'scale(1)'; }
+    if (algoBoss) {
+      algoBoss.style.opacity = '1';
+      algoBoss.style.transform = 'scale(1)';
+      algoBoss.classList.remove('angry-1', 'angry-2', 'angry-3');
+    }
     document.getElementById('cutscene').classList.remove('active');
     document.getElementById('dinner-choice').classList.remove('active');
     document.getElementById('game-over').classList.remove('active');
