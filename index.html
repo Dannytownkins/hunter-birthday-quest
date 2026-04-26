@@ -416,23 +416,110 @@
   }
   .mash-btn:active { transform: translate(calc(-50% + 4px), 4px); box-shadow: 2px 2px 0 #000; }
   .duo {
-    position: absolute; bottom: 25%;
-    display: flex; gap: 40px;
+    position: absolute; bottom: 32%;
+    display: flex; gap: 60px;
     left: 50%; transform: translateX(-50%);
+    z-index: 4;
   }
-  .kratos-hunter, .kratos-dad {
-    padding: 12px 20px;
-    font-family: 'Bangers', cursive;
-    font-size: clamp(1rem, 2.5vw, 1.5rem);
-    background: #000;
+  .kratos-fighter {
+    width: 60px;
+    text-align: center;
+    animation: fighter-bob 0.8s infinite ease-in-out;
+  }
+  .kratos-fighter:nth-child(2) { animation-delay: 0.4s; }
+  .kratos-fighter svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); }
+  .fighter-label {
+    background: #000; color: #ffe66d;
+    border: 2px solid #ffe66d;
+    font-size: 0.55rem;
+    padding: 3px 5px;
+    margin-top: 4px;
+    font-family: 'Press Start 2P', monospace;
+  }
+  @keyframes fighter-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  .boss-prompt-wrap {
+    position: absolute; top: 90px;
+    left: 0; right: 0;
+    z-index: 5;
+  }
+  #boss-prompt {
+    margin: 0;
+    line-height: 1.1;
+  }
+  .boss-svg {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 220px;
+    z-index: 3;
+    transition: transform 0.15s, opacity 0.5s;
+    filter: drop-shadow(0 0 30px #ff0000);
+  }
+  .boss-svg svg { width: 100%; height: auto; display: block; }
+  .boss-svg.shake {
+    animation: boss-shake 0.2s;
+  }
+  @keyframes boss-shake {
+    0%, 100% { transform: translate(-50%, -50%); }
+    25% { transform: translate(calc(-50% - 10px), -50%); }
+    75% { transform: translate(calc(-50% + 10px), -50%); }
+  }
+  .combo-meter {
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(360px, 80vw);
+    z-index: 6;
+  }
+  .combo-track {
+    position: relative;
+    height: 24px;
+    background: #1a0000;
     border: 3px solid #ffe66d;
-    color: #ffe66d;
-    text-shadow: 2px 2px 0 #5e0000;
+    overflow: hidden;
   }
-  .kratos-dad {
-    background: #ffe66d; color: #5e0000;
-    text-shadow: none;
-    border-color: #000;
+  .combo-zone {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 40%;
+    width: 20%;
+    background: linear-gradient(180deg, #00ff66 0%, #00aa44 100%);
+    box-shadow: 0 0 12px #00ff66;
+  }
+  .combo-cursor {
+    position: absolute;
+    top: -3px; bottom: -3px;
+    width: 6px;
+    background: #fff;
+    box-shadow: 0 0 8px #fff;
+    left: 0;
+    z-index: 2;
+  }
+  .combo-label {
+    text-align: center;
+    color: #ffe66d;
+    font-size: 0.65rem;
+    margin-top: 8px;
+    font-family: 'Press Start 2P', monospace;
+    text-shadow: 2px 2px 0 #000;
+  }
+  .combo-flash {
+    position: absolute;
+    top: -40px; left: 50%; transform: translateX(-50%);
+    font-family: 'Bangers', cursive;
+    font-size: 2rem;
+    pointer-events: none;
+    animation: combo-flash 0.6s forwards;
+  }
+  @keyframes combo-flash {
+    0% { transform: translate(-50%, 0) scale(1.5); opacity: 0; }
+    20% { opacity: 1; transform: translate(-50%, -10px) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -40px) scale(1); }
   }
 
   /* Stage 6: Cursed Simpsons level */
@@ -927,11 +1014,69 @@
       <div class="stage-counter">5 / 8</div>
     </div>
     <div class="health-bar"><div class="health-fill" id="boss-hp" style="width: 100%;"></div></div>
-    <div class="big-text" id="boss-prompt">HUNTER & BALD DAD vs THE BOSS</div>
-    <div class="boss"></div>
+    <div class="boss-prompt-wrap">
+      <div class="big-text" id="boss-prompt">HUNTER + BALD DAD<br/>VS<br/>THE TROLL</div>
+    </div>
+    <div class="boss-svg" id="boss-troll">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <!-- body -->
+        <ellipse cx="100" cy="120" rx="70" ry="60" fill="#3a4a2a" stroke="#000" stroke-width="3"/>
+        <!-- head -->
+        <ellipse cx="100" cy="60" rx="50" ry="42" fill="#4a5a3a" stroke="#000" stroke-width="3"/>
+        <!-- horns -->
+        <polygon points="65,30 70,8 80,30" fill="#5a3a1a" stroke="#000" stroke-width="2"/>
+        <polygon points="135,30 130,8 120,30" fill="#5a3a1a" stroke="#000" stroke-width="2"/>
+        <!-- eyes (red glow) -->
+        <circle cx="82" cy="58" r="9" fill="#ff0000"/>
+        <circle cx="82" cy="58" r="4" fill="#000"/>
+        <circle cx="118" cy="58" r="9" fill="#ff0000"/>
+        <circle cx="118" cy="58" r="4" fill="#000"/>
+        <!-- snarl mouth with fangs -->
+        <path d="M 70 80 Q 100 95 130 80 L 130 90 L 120 88 L 115 96 L 108 88 L 100 92 L 92 88 L 85 96 L 80 88 L 70 90 Z" fill="#000"/>
+        <polygon points="85,88 89,98 92,88" fill="#fff"/>
+        <polygon points="108,88 112,98 115,88" fill="#fff"/>
+        <!-- chest scar -->
+        <path d="M 80 110 L 120 130 M 85 130 L 115 110" stroke="#8b0000" stroke-width="3"/>
+        <!-- arms holding -->
+        <ellipse cx="35" cy="110" rx="22" ry="28" fill="#3a4a2a" stroke="#000" stroke-width="3" transform="rotate(-15 35 110)"/>
+        <ellipse cx="165" cy="110" rx="22" ry="28" fill="#3a4a2a" stroke="#000" stroke-width="3" transform="rotate(15 165 110)"/>
+      </svg>
+    </div>
     <div class="duo">
-      <div class="kratos-hunter">HUNTER</div>
-      <div class="kratos-dad">BALD DAD</div>
+      <div class="kratos-fighter">
+        <svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+          <!-- hunter mini -->
+          <rect x="20" y="0" width="20" height="20" fill="#f4d4a4" stroke="#000" stroke-width="2"/>
+          <rect x="16" y="-2" width="28" height="8" fill="#0046b8" stroke="#000" stroke-width="2"/>
+          <rect x="24" y="10" width="3" height="3" fill="#000"/>
+          <rect x="33" y="10" width="3" height="3" fill="#000"/>
+          <rect x="14" y="20" width="32" height="28" fill="#ff6b35" stroke="#000" stroke-width="2"/>
+          <rect x="20" y="48" width="9" height="22" fill="#1e3a8a" stroke="#000" stroke-width="2"/>
+          <rect x="31" y="48" width="9" height="22" fill="#1e3a8a" stroke="#000" stroke-width="2"/>
+        </svg>
+        <div class="fighter-label">HUNTER</div>
+      </div>
+      <div class="kratos-fighter">
+        <svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+          <!-- bald dad mini -->
+          <rect x="20" y="0" width="20" height="20" fill="#e8c89c" stroke="#000" stroke-width="2"/>
+          <ellipse cx="26" cy="4" rx="4" ry="1.5" fill="#fff" opacity="0.6"/>
+          <rect x="24" y="10" width="3" height="3" fill="#000"/>
+          <rect x="33" y="10" width="3" height="3" fill="#000"/>
+          <rect x="14" y="20" width="32" height="28" fill="#1a1a1a" stroke="#000" stroke-width="2"/>
+          <text x="30" y="38" text-anchor="middle" font-family="monospace" font-size="6" fill="#ffe66d" font-weight="bold">DAD</text>
+          <rect x="20" y="48" width="9" height="22" fill="#3a3a3a" stroke="#000" stroke-width="2"/>
+          <rect x="31" y="48" width="9" height="22" fill="#3a3a3a" stroke="#000" stroke-width="2"/>
+        </svg>
+        <div class="fighter-label">BALD DAD</div>
+      </div>
+    </div>
+    <div class="combo-meter" id="combo-meter">
+      <div class="combo-track">
+        <div class="combo-zone"></div>
+        <div class="combo-cursor" id="combo-cursor"></div>
+      </div>
+      <div class="combo-label">TAP IN THE GREEN ZONE!</div>
     </div>
     <button class="mash-btn" id="mash-btn" onclick="mashBoss()">BOY!</button>
   </div>
@@ -1044,6 +1189,8 @@
     currentStage = idx;
     if (stages[idx] === 'stage3') initMJRhythm();
     if (stages[idx] === 'stage4') initNuggetGame();
+    if (stages[idx] === 'stage5') startComboLoop();
+    else stopComboLoop();
     if (stages[idx] === 'stage6') { initSixSevenRain(); initDodgeGame(); }
     if (stages[idx] === 'stage7') initAlgoBoss();
     if (stages[idx] === 'stage8') { burstConfetti(); playWinSound(); }
@@ -1453,20 +1600,71 @@
     }
   }
 
-  // STAGE 5: Kratos boss
+  // STAGE 5: Kratos boss with combo timing
   let bossHp = 100;
+  let comboCursorPct = 0;
+  let comboCursorDir = 1;
+  let comboLoop = null;
+  function startComboLoop() {
+    if (comboLoop) return;
+    const cursor = document.getElementById('combo-cursor');
+    const speed = 1.6; // pct per frame
+    comboCursorPct = 0;
+    comboCursorDir = 1;
+    function tick() {
+      comboCursorPct += comboCursorDir * speed;
+      if (comboCursorPct >= 100) { comboCursorPct = 100; comboCursorDir = -1; }
+      if (comboCursorPct <= 0) { comboCursorPct = 0; comboCursorDir = 1; }
+      if (cursor) cursor.style.left = `${comboCursorPct}%`;
+      comboLoop = requestAnimationFrame(tick);
+    }
+    comboLoop = requestAnimationFrame(tick);
+  }
+  function stopComboLoop() {
+    if (comboLoop) cancelAnimationFrame(comboLoop);
+    comboLoop = null;
+  }
   function mashBoss() {
-    bossHp -= 12;
+    if (!comboLoop) startComboLoop();
+    // Combo zone is 40-60%
+    const inZone = comboCursorPct >= 40 && comboCursorPct <= 60;
+    const isPerfect = comboCursorPct >= 47 && comboCursorPct <= 53;
+    let dmg = 8;
+    let flashText = 'HIT!';
+    let flashColor = '#ffe66d';
+    if (isPerfect) { dmg = 28; flashText = 'PERFECT BOY!'; flashColor = '#00ff66'; }
+    else if (inZone) { dmg = 18; flashText = 'GREAT!'; flashColor = '#00ffcc'; }
+    bossHp -= dmg;
+
     document.getElementById('boss-hp').style.width = `${Math.max(0, bossHp)}%`;
     const prompts = ['BOY!', 'BOY!!!', 'OPEN YOUR EYES, BOY.', 'WE ARE GOING.', 'DAD UR BALD!', 'KEEP GOING!', 'HIT HIM AGAIN!', '6-7!!!', 'PIZZER POWER!', 'YEAH BOY!'];
-    document.getElementById('boss-prompt').textContent = prompts[Math.floor(Math.random() * prompts.length)];
-    const boss = document.querySelector('#stage5 .boss');
-    boss.style.transition = 'transform 0.1s';
-    boss.style.transform = `translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px) scale(${1 - (100 - bossHp) / 200})`;
+    document.getElementById('boss-prompt').innerHTML = prompts[Math.floor(Math.random() * prompts.length)];
+
+    const boss = document.getElementById('boss-troll');
+    boss.classList.remove('shake');
+    void boss.offsetWidth;
+    boss.classList.add('shake');
+    boss.style.transform = `translate(-50%, -50%) scale(${Math.max(0.4, 1 - (100 - bossHp) / 200)})`;
+
+    // Combo flash text
+    const meter = document.getElementById('combo-meter');
+    const flash = document.createElement('div');
+    flash.className = 'combo-flash';
+    flash.textContent = flashText;
+    flash.style.color = flashColor;
+    flash.style.textShadow = '3px 3px 0 #000';
+    meter.appendChild(flash);
+    setTimeout(() => flash.remove(), 700);
+
+    if (isPerfect) playWinSound();
+    else if (inZone) playSwing();
+    else playPunch();
+
     if (bossHp <= 0) {
-      document.getElementById('boss-prompt').textContent = 'VICTORY!';
+      stopComboLoop();
+      document.getElementById('boss-prompt').textContent = 'WE BEAT HIM, BOY!';
       boss.style.opacity = '0';
-      setTimeout(nextStage, 800);
+      setTimeout(nextStage, 1100);
     }
   }
 
