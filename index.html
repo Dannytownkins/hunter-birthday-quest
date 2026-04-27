@@ -3552,6 +3552,9 @@
       ], { duration: fallDuration, easing: 'linear', fill: 'forwards' });
 
       setTimeout(() => {
+        // If round already ended (R1 transitioning to R2), ignore in-flight catches —
+        // otherwise an extra nugget arriving milliseconds late would skip Round 2 entirely.
+        if (!nuggetGameRunning) { el.remove(); return; }
         const cupRect = cup.getBoundingClientRect();
         const elRect = el.getBoundingClientRect();
         const xCenter = elRect.left + elRect.width/2;
@@ -3648,15 +3651,35 @@
 
     let playerXpct = 50;
     function movePlayer(e) {
+      // For touch events, use the first touch point. preventDefault so iOS Safari
+      // doesn't try to scroll/swipe-back while dragging.
+      let clientX;
+      if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        if (e.cancelable) e.preventDefault();
+      } else {
+        clientX = e.clientX;
+      }
+      if (clientX == null) return;
       const rect = arena.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const x = ((clientX - rect.left) / rect.width) * 100;
       playerXpct = Math.max(8, Math.min(92, x));
       player.style.left = `${playerXpct}%`;
     }
-    arena.onpointermove = movePlayer;
-    arena.ontouchmove = movePlayer;
-    arena.onclick = movePlayer;
+    // Detach any prior listeners from earlier rounds before re-binding for this round.
+    if (arena._dodgeMove) {
+      arena.removeEventListener('pointermove', arena._dodgeMove);
+      arena.removeEventListener('pointerdown', arena._dodgeMove);
+      arena.removeEventListener('touchmove', arena._dodgeMove);
+      arena.removeEventListener('touchstart', arena._dodgeMove);
+      arena.removeEventListener('click', arena._dodgeMove);
+    }
+    arena._dodgeMove = movePlayer;
+    arena.addEventListener('pointermove', movePlayer);
+    arena.addEventListener('pointerdown', movePlayer);
+    arena.addEventListener('touchmove', movePlayer, { passive: false });
+    arena.addEventListener('touchstart', movePlayer, { passive: false });
+    arena.addEventListener('click', movePlayer);
 
     function spawnCursed() {
       if (!dodgeRunning) return;
