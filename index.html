@@ -1525,6 +1525,115 @@
   .duo .kratos-fighter:nth-child(2) svg { animation-delay: 0.6s; }
   .character-row .rblx-char:nth-child(2) svg { animation-delay: 0.4s; }
 
+  /* Per-stage onboarding screen — "how to play this level" with a READY button */
+  .stage-onboarding {
+    position: fixed; inset: 0;
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 1000;
+    background: linear-gradient(160deg, #0a1428 0%, #1a0a3a 50%, #2d0046 100%);
+    padding: 30px 16px;
+  }
+  .stage-onboarding.active { display: flex; animation: cutscene-fade 0.3s ease; }
+  .onboarding-card {
+    width: min(420px, 92vw);
+    background: rgba(0,0,0,0.5);
+    border: 4px solid #ffe66d;
+    border-radius: 18px;
+    padding: 26px 22px;
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6), inset 0 0 24px rgba(255,230,109,0.15);
+    transform: scale(0);
+    animation: onboarding-pop 0.45s cubic-bezier(.35,1.6,.55,.5) forwards;
+  }
+  @keyframes onboarding-pop {
+    0% { transform: scale(0) rotate(-6deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .onboarding-stage-num {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(0.8rem, 2vw, 1rem);
+    color: #00ff66;
+    letter-spacing: 4px;
+    text-shadow: 2px 2px 0 #000;
+    margin-bottom: 14px;
+  }
+  .onboarding-emoji {
+    font-size: clamp(4rem, 14vw, 6rem);
+    line-height: 1;
+    margin: 4px 0 14px;
+    filter: drop-shadow(0 6px 8px rgba(0,0,0,0.5));
+    animation: onboarding-bob 1.4s ease-in-out infinite;
+  }
+  @keyframes onboarding-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .onboarding-title {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(2rem, 6.5vw, 3rem);
+    color: #ffe66d;
+    text-shadow: 4px 4px 0 #f72585, 7px 7px 0 #000;
+    letter-spacing: 3px;
+    line-height: 1;
+    margin-bottom: 14px;
+  }
+  .onboarding-tip {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(0.7rem, 1.9vw, 0.95rem);
+    color: #fff;
+    line-height: 1.6;
+    text-shadow: 2px 2px 0 #000;
+    margin: 0 4px 16px;
+  }
+  .onboarding-gesture {
+    min-height: 38px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #ffe66d;
+    font-size: 1.6rem;
+  }
+  .onboarding-gesture .drag-arrows {
+    display: inline-flex; gap: 6px;
+    animation: drag-shimmer 1.2s ease-in-out infinite;
+  }
+  @keyframes drag-shimmer {
+    0%, 100% { transform: translateX(-12px); }
+    50% { transform: translateX(12px); }
+  }
+  .onboarding-gesture .tap-dot {
+    width: 18px; height: 18px;
+    background: #ffe66d;
+    border: 3px solid #000;
+    border-radius: 50%;
+    box-shadow: 0 0 14px #ffe66d;
+    animation: tap-pulse 0.9s ease-in-out infinite;
+  }
+  @keyframes tap-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.6; }
+  }
+  .onboarding-ready {
+    background: #00ff66;
+    color: #000;
+    border: 4px solid #000;
+    padding: 18px 38px;
+    font-family: 'Bangers', cursive;
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    letter-spacing: 3px;
+    cursor: pointer;
+    box-shadow: 6px 6px 0 #000;
+    border-radius: 10px;
+    animation: pulse 1.1s infinite;
+  }
+  .onboarding-ready:active {
+    transform: translate(3px, 3px);
+    box-shadow: 2px 2px 0 #000;
+  }
+
   /* Shared "STAGE CLEAR!" celebration that pops between every stage win and the next cutscene */
   .stage-clear {
     position: fixed; inset: 0;
@@ -2183,6 +2292,18 @@
   <button class="cutscene-continue" id="dinner-continue" onclick="advanceFromDinner()">TAP TO CONTINUE →</button>
 </div>
 
+<!-- STAGE ONBOARDING — quick "how to play" with READY button before each gameplay stage -->
+<div class="stage-onboarding" id="stage-onboarding">
+  <div class="onboarding-card">
+    <div class="onboarding-stage-num" id="onboarding-stage-num">STAGE ?</div>
+    <div class="onboarding-emoji" id="onboarding-emoji">🎮</div>
+    <div class="onboarding-title" id="onboarding-title">GET READY</div>
+    <div class="onboarding-tip" id="onboarding-tip">tip goes here</div>
+    <div class="onboarding-gesture" id="onboarding-gesture"></div>
+    <button class="onboarding-ready" id="onboarding-ready">I'M READY →</button>
+  </div>
+</div>
+
 <!-- STAGE CLEAR overlay — pops up briefly after every stage win -->
 <div class="stage-clear" id="stage-clear">
   <div class="stage-clear-card">
@@ -2336,6 +2457,79 @@
     }, 1800);
   }
 
+  // Per-stage onboarding cards. Each entry shapes the "GET READY" overlay that
+  // pops before the gameplay starts so Hunter knows exactly what to do.
+  const STAGE_ONBOARDING = {
+    stage2: {
+      num: 'STAGE 2 / 8',
+      emoji: '🕷️',
+      title: 'WEBSLING',
+      tip: 'TARGETS APPEAR. THE GLOWING RING SHRINKS. TAP THE TARGET BEFORE THE RING CLOSES!',
+      gesture: 'tap',
+    },
+    stage3: {
+      num: 'STAGE 3 / 8',
+      emoji: '🕺',
+      title: 'MOONWALK',
+      tip: 'PINK NOTES FALL DOWN 3 LANES. TAP THE LANE BUTTON WHEN A NOTE HITS THE YELLOW LINE.',
+      gesture: 'lanes',
+    },
+    stage4: {
+      num: 'STAGE 4 / 8',
+      emoji: '🍗',
+      title: 'NUGGET RAIN',
+      tip: 'DRAG THE CHOCKY MILK SIDE TO SIDE. CATCH NUGGETS — DODGE BROCCOLI! 🥦',
+      gesture: 'drag',
+    },
+    stage5: {
+      num: 'STAGE 5 / 8',
+      emoji: '🪓',
+      title: 'BOY!',
+      tip: 'A WHITE CURSOR SLIDES LEFT-RIGHT. TAP "BOY!" WHEN IT\'S IN THE GREEN ZONE. PERFECT = AXE THROW!',
+      gesture: 'tap',
+    },
+    stage6: {
+      num: 'STAGE ??? / 8',
+      emoji: '🍩',
+      title: 'SPRINGFIELD',
+      tip: 'DRAG TO MOVE BART. DODGE BAD STUFF. TAP DONUTS / KRUSTY / SLINGSHOTS FOR BONUS!',
+      gesture: 'drag',
+    },
+    stage7: {
+      num: 'STAGE 7 / 8',
+      emoji: '📺',
+      title: 'ALGORITHM',
+      tip: 'BRAIN-ROT CARDS RISE TOWARD THE PHONE. TAP EACH ONE BEFORE IT REACHES THE BOSS!',
+      gesture: 'tap',
+    },
+  };
+  function showOnboarding(stageId, onReady) {
+    const data = STAGE_ONBOARDING[stageId];
+    if (!data) { onReady(); return; }
+    const overlay = document.getElementById('stage-onboarding');
+    document.getElementById('onboarding-stage-num').textContent = data.num;
+    document.getElementById('onboarding-emoji').textContent = data.emoji;
+    document.getElementById('onboarding-title').textContent = data.title;
+    document.getElementById('onboarding-tip').textContent = data.tip;
+    const gestureEl = document.getElementById('onboarding-gesture');
+    if (data.gesture === 'drag') {
+      gestureEl.innerHTML = '<span class="drag-arrows">← →</span>';
+    } else if (data.gesture === 'lanes') {
+      gestureEl.innerHTML = '<span class="tap-dot"></span><span class="tap-dot" style="animation-delay:0.2s"></span><span class="tap-dot" style="animation-delay:0.4s"></span>';
+    } else {
+      gestureEl.innerHTML = '<span class="tap-dot"></span>';
+    }
+    overlay.classList.add('active');
+    const btn = document.getElementById('onboarding-ready');
+    // Replace the click handler each time so we don't stack closures from prior stages.
+    btn.onclick = () => {
+      overlay.classList.remove('active');
+      playBeep(660, 0.1, 'square', 0.18);
+      buzz(20);
+      onReady();
+    };
+  }
+
   // Briefly shake the active stage. Used on player-damage and big boss hits.
   function shakeActiveStage() {
     const stage = document.querySelector('.stage.active');
@@ -2444,15 +2638,30 @@
       const jingleLen = jingle ? jingle.length * 90 + 200 : 0;
       setTimeout(() => { if (stages[currentStage] === stages[idx]) startBGM(stages[idx]); }, jingleLen);
     }
-    if (stages[idx] === 'stage2') initSpideyGame();
-    else { spideyGameRunning = false; cleanupSpideyTarget(); }
-    if (stages[idx] === 'stage3') initMJRhythm();
-    if (stages[idx] === 'stage4') initNuggetGame();
-    if (stages[idx] === 'stage5') startComboLoop();
-    else stopComboLoop();
-    if (stages[idx] === 'stage6') { initSixSevenRain(); initDodgeGame(); }
-    if (stages[idx] === 'stage7') initAlgoBoss();
-    if (stages[idx] === 'stage8') burstConfetti();
+    // Gate gameplay init behind a "READY?" onboarding screen so Hunter sees what to do
+    // before any timers/spawns start. Stages without an entry in STAGE_ONBOARDING (like
+    // stage1 spawn screen, stage8 finale) start immediately as before.
+    const stageId = stages[idx];
+    const startGameplay = () => {
+      if (stages[currentStage] !== stageId) return; // user navigated away while reading
+      if (stageId === 'stage2') initSpideyGame();
+      else { spideyGameRunning = false; cleanupSpideyTarget(); }
+      if (stageId === 'stage3') initMJRhythm();
+      if (stageId === 'stage4') initNuggetGame();
+      if (stageId === 'stage5') startComboLoop();
+      else if (stageId !== 'stage5') stopComboLoop();
+      if (stageId === 'stage6') { initSixSevenRain(); initDodgeGame(); }
+      if (stageId === 'stage7') initAlgoBoss();
+      if (stageId === 'stage8') burstConfetti();
+    };
+    if (STAGE_ONBOARDING[stageId]) {
+      // Make sure no leftover timers / combo loops are running while user reads the card.
+      stopComboLoop();
+      spideyGameRunning = false; cleanupSpideyTarget();
+      showOnboarding(stageId, startGameplay);
+    } else {
+      startGameplay();
+    }
   }
   function startGame() {
     // Unlock audio on first user gesture (mobile Safari requirement)
@@ -4285,6 +4494,8 @@
     document.getElementById('game-over').classList.remove('active');
     document.getElementById('round-banner').classList.remove('active');
     document.getElementById('next-game-picker').classList.remove('active');
+    const onb = document.getElementById('stage-onboarding');
+    if (onb) onb.classList.remove('active');
     cutsceneTargetIdx = null; dinnerNextIdx = null; gameOverPrevStage = null;
     stopBGM();
   }
