@@ -3848,23 +3848,32 @@
     }
   }
 
-  // STAGE 5: Kratos boss with combo timing
+  // STAGE 5: Kratos boss with combo timing (multi-round)
   let bossHp = 100;
+  let bossRound = 1;
   let comboCursorPct = 0;
   let comboCursorDir = 1;
   let comboLoop = null;
-  function startComboLoop() {
+  function startComboLoop(roundResume) {
     if (comboLoop) return;
     bossHp = 100;
     bossMisses = 0;
+    if (!roundResume) bossRound = 1;
     syncComboZoneVisual();
     document.getElementById('boss-hp').style.width = '100%';
+    const bossEl = document.getElementById('boss-troll');
+    if (bossEl) { bossEl.style.opacity = '1'; bossEl.style.transform = 'translate(-50%, -50%)'; }
+    document.getElementById('boss-prompt').innerHTML = bossRound === 2
+      ? 'ROUND 2 — TROLL IS PISSED'
+      : 'ATREUS + KRATOS<br/>VS<br/>THE TROLL';
     const cursor = document.getElementById('combo-cursor');
     comboCursorPct = 0;
     comboCursorDir = 1;
     function tick() {
-      // round 1 super slow, round 2 (low hp) faster
-      const speed = bossHp > 50 ? 0.55 : 1.1;
+      // round-aware speed: r1 slow→med, r2 always fast
+      const speed = bossRound === 2
+        ? (bossHp > 50 ? 1.2 : 1.8)
+        : (bossHp > 50 ? 0.55 : 1.1);
       comboCursorPct += comboCursorDir * speed;
       if (comboCursorPct >= 100) { comboCursorPct = 100; comboCursorDir = -1; }
       if (comboCursorPct <= 0) { comboCursorPct = 0; comboCursorDir = 1; }
@@ -3879,7 +3888,11 @@
   }
   let bossMisses = 0;
   function getComboZone() {
-    // Round 1 = MUCH easier. Round 2 (low hp) tightens.
+    // Round 1: roomy. Round 2: cut in half.
+    if (bossRound === 2) {
+      if (bossHp > 50) return { left: 35, right: 65, pLeft: 46, pRight: 54 };
+      return { left: 42, right: 58, pLeft: 48, pRight: 52 };
+    }
     if (bossHp > 50) return { left: 20, right: 80, pLeft: 40, pRight: 60 };
     return { left: 32, right: 68, pLeft: 45, pRight: 55 };
   }
@@ -3960,7 +3973,7 @@
 
     // Update prompt/HUD with miss count
     if (!isPerfect && !inZone) {
-      const remaining = 5 - bossMisses;
+      const remaining = 10 - bossMisses;
       if (remaining > 0) {
         document.getElementById('boss-prompt').innerHTML = `MISS! TROLL COUNTERS IN ${remaining}`;
       }
@@ -3972,15 +3985,28 @@
       showGameOver('THE TROLL HIT BACK! TIME YOUR TAPS!');
       bossMisses = 0;
       bossHp = 100;
+      bossRound = 1;
       document.getElementById('boss-hp').style.width = '100%';
       return;
     }
 
     if (bossHp <= 0) {
       stopComboLoop();
-      document.getElementById('boss-prompt').textContent = 'WE BEAT HIM, BOY!';
-      boss.style.opacity = '0';
-      setTimeout(() => showStageClear('GOOD JOB, BOY.', nextStage), 800);
+      if (bossRound < 2) {
+        document.getElementById('boss-prompt').innerHTML = 'IT GETS BACK UP...';
+        boss.style.opacity = '0';
+        bossRound = 2;
+        setTimeout(() => {
+          showRoundBanner('ROUND 2!', 'TROLL IS PISSED — TINY GREEN ZONE', () => {
+            comboLoop = null; // ensure clean restart
+            startComboLoop(true);
+          });
+        }, 800);
+      } else {
+        document.getElementById('boss-prompt').textContent = 'WE BEAT HIM, BOY!';
+        boss.style.opacity = '0';
+        setTimeout(() => showStageClear('GOOD JOB, BOY.', nextStage), 800);
+      }
     }
   }
 
@@ -4234,7 +4260,7 @@
     document.querySelectorAll('.rhythm-note').forEach(n => n.remove());
     nuggetCount = 0; nuggetRound = 1; nuggetGameRunning = false;
     document.querySelectorAll('.nugget, .broccoli').forEach(n => n.remove());
-    bossHp = 100; bossMisses = 0; stopComboLoop();
+    bossHp = 100; bossMisses = 0; bossRound = 1; stopComboLoop();
     dodgeRunning = false; dodgeRound = 1;
     if (dodgeTickTimer) clearInterval(dodgeTickTimer);
     if (dodgeSpawnTimer) clearTimeout(dodgeSpawnTimer);
