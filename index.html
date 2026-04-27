@@ -991,6 +991,7 @@
     cursor: pointer;
     box-shadow: 6px 6px 0 #000;
     border-radius: 8px;
+    z-index: 9; /* must sit above the snow mountains backdrop (z:1) and combo meter (z:6) */
   }
   .mash-btn:active { transform: translate(calc(-50% + 4px), 4px); box-shadow: 2px 2px 0 #000; }
   .duo {
@@ -1211,8 +1212,11 @@
   .algo-boss-container {
     position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
     display: flex; flex-direction: column; align-items: center; gap: 10px;
-    z-index: 5;
+    z-index: 3;
+    /* Boss is not tappable — let card clicks pass through when a card is in front of him */
+    pointer-events: none;
   }
+  .algo-boss-container .boss-hp-text { pointer-events: auto; } /* keep HP readable, no taps needed though */
   .algorithm-boss {
     width: 200px; height: 280px;
     position: relative;
@@ -1234,7 +1238,7 @@
     transform-origin: center;
     pointer-events: auto;
     cursor: pointer;
-    z-index: 4;
+    z-index: 6; /* must beat .algo-boss-container so taps reach the card not the boss */
     filter: drop-shadow(0 6px 10px rgba(0,0,0,0.5));
   }
   .hate-zone .dislike svg { width: 100%; height: auto; display: block; }
@@ -4176,13 +4180,22 @@
     const container = document.getElementById('stage-select');
     if (!container) return;
     container.innerHTML = '';
-    for (let i = 1; i < STAGE_INFO.length; i++) {
+    // Stage 8 is the Universal Studios reveal — keep it locked from the select grid
+    // so Hunter doesn't spoil his own surprise by tapping around.
+    for (let i = 1; i < STAGE_INFO.length - 1; i++) {
       const info = STAGE_INFO[i];
       const btn = document.createElement('button');
       btn.innerHTML = `<div style="font-size:1.4rem;line-height:1;margin-bottom:4px;">${info.emoji}</div>${i}<br/>${info.name}`;
       btn.onclick = () => pickStage(i);
       container.appendChild(btn);
     }
+    // Locked finale tile — visible but unclickable + tells him why
+    const locked = document.createElement('button');
+    locked.disabled = true;
+    locked.style.opacity = '0.45';
+    locked.style.cursor = 'not-allowed';
+    locked.innerHTML = `<div style="font-size:1.4rem;line-height:1;margin-bottom:4px;">🔒</div>8<br/>?????`;
+    container.appendChild(locked);
   }
   function pickStage(idx) {
     // Clean any in-progress game state first, then jump straight to the chosen stage (skip cutscenes).
