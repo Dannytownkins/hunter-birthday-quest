@@ -4079,10 +4079,10 @@
     comboCursorPct = 0;
     comboCursorDir = 1;
     function tick() {
-      // round-aware speed: r1 slow→med, r2 always fast
+      // Round-aware speed, kid-friendly: R1 slow → just-fast, R2 a bit faster but not brutal.
       const speed = bossRound === 2
-        ? (bossHp > 50 ? 1.2 : 1.8)
-        : (bossHp > 50 ? 0.55 : 1.1);
+        ? (bossHp > 50 ? 0.85 : 1.1)
+        : (bossHp > 50 ? 0.55 : 0.8);
       comboCursorPct += comboCursorDir * speed;
       if (comboCursorPct >= 100) { comboCursorPct = 100; comboCursorDir = -1; }
       if (comboCursorPct <= 0) { comboCursorPct = 0; comboCursorDir = 1; }
@@ -4097,13 +4097,13 @@
   }
   let bossMisses = 0;
   function getComboZone() {
-    // Round 1: roomy. Round 2: cut in half.
+    // Round 1 roomy, Round 2 a step tighter — but not punishing for an 8-year-old.
     if (bossRound === 2) {
-      if (bossHp > 50) return { left: 35, right: 65, pLeft: 46, pRight: 54 };
-      return { left: 42, right: 58, pLeft: 48, pRight: 52 };
+      if (bossHp > 50) return { left: 26, right: 74, pLeft: 43, pRight: 57 };
+      return { left: 32, right: 68, pLeft: 45, pRight: 55 };
     }
-    if (bossHp > 50) return { left: 20, right: 80, pLeft: 40, pRight: 60 };
-    return { left: 32, right: 68, pLeft: 45, pRight: 55 };
+    if (bossHp > 50) return { left: 18, right: 82, pLeft: 38, pRight: 62 };
+    return { left: 28, right: 72, pLeft: 43, pRight: 57 };
   }
   function syncComboZoneVisual() {
     const z = getComboZone();
